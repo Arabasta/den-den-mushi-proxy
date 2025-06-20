@@ -1,0 +1,28 @@
+{
+  "app": {
+    "name": "den-den-mushi-proxy",
+    "environment": "dev",
+    "version": "1.0.0",
+    "port": 45007,
+    "base_url": "http://localhost:45007"
+  },
+  "development": {
+    "SshTestKeyPath": "/Users/kei/Desktop/repos/ddm-proxy-tmp/ephemeral-ssh4192716415/id_ed25519"
+  },
+  "logging": {
+    "level": "debug",
+    "format": "json"
+  },
+  "Puppet": {
+    "Endpoints": [
+      "https://puppet-green.example.com/api/v1",
+      "https://puppet-blue.example.com/api/v1"
+    ],
+    "TaskTimeoutSeconds": 120,
+    "RetryAttempts": 3
+  },
+  "token": {
+    "secret": "peanut",
+    "expiry": 3600
+  }
+}
