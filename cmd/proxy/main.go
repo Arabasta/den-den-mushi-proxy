@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 )
 
-//go:embed static/* static/css/* static/js/* static/js/settings/*
+//go:embed all:../../static/*
 var staticFiles embed.FS
 
 func main() {
