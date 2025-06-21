@@ -2,7 +2,7 @@ package websocket
 
 import (
 	"context"
-	"den-den-mushi-Go/internal/pseudoty/connect"
+	"den-den-mushi-Go/internal/pseudo/connect"
 	"den-den-mushi-Go/internal/websocket/io"
 	"den-den-mushi-Go/pkg/token"
 	"github.com/gorilla/websocket"

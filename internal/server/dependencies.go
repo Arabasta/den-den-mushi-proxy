@@ -4,7 +4,7 @@ import (
 	"den-den-mushi-Go/internal/config"
 	"den-den-mushi-Go/internal/control_server_tmp"
 	"den-den-mushi-Go/internal/orchestrator/puppet"
-	"den-den-mushi-Go/internal/pseudoty/connect"
+	"den-den-mushi-Go/internal/pseudo/connect"
 	"den-den-mushi-Go/internal/validator"
 	"den-den-mushi-Go/internal/websocket"
 	"github.com/golang-jwt/jwt/v5"
