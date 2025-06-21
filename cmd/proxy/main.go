@@ -1,17 +1,14 @@
 package main
 
 import (
+	"den-den-mushi-Go"
 	"den-den-mushi-Go/internal/config"
 	"den-den-mushi-Go/internal/server"
 	"den-den-mushi-Go/pkg/logger"
-	"embed"
 	"go.uber.org/zap"
 	"os"
 	"path/filepath"
 )
-
-//go:embed all:../../static/*
-var staticFiles embed.FS
 
 func main() {
 	exe, _ := os.Executable()
@@ -23,7 +20,7 @@ func main() {
 		_ = log.Sync()
 	}()
 
-	s := server.New(staticFiles, cfg, log)
+	s := server.New(static.Files, cfg, log)
 	if err := server.Start(s, cfg); err != nil {
 		log.Fatal("failed to start server: %v", zap.Error(err))
 	}
