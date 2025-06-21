@@ -17,7 +17,7 @@ type SshOrchestratorKeyConnection struct {
 }
 
 func (c *SshOrchestratorKeyConnection) Connect(ctx context.Context, claims *token.Claims) (*os.File, error) {
-	keyPath, pubKey, cleanup, err := pseudoty.GenerateEphemeralKey()
+	keyPath, pubKey, cleanup, err := pseudo.GenerateEphemeralKey()
 	if err != nil {
 		return nil, err
 	}
@@ -30,8 +30,8 @@ func (c *SshOrchestratorKeyConnection) Connect(ctx context.Context, claims *toke
 		return nil, err
 	}
 
-	cmd := pseudoty.BuildSshCmd(keyPath, claims.Connection)
-	pty, err := pseudoty.Spawn(cmd)
+	cmd := pseudo.BuildSshCmd(keyPath, claims.Connection)
+	pty, err := pseudo.Spawn(cmd)
 	if err != nil {
 		// handle error
 	} else {

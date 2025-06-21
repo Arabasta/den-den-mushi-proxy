@@ -16,6 +16,6 @@ type SshTestKeyConnection struct {
 
 func (c *SshTestKeyConnection) Connect(_ context.Context, claims *token.Claims) (*os.File, error) {
 	keyPath := c.Cfg.Development.SshTestKeyPath
-	cmd := pseudoty.BuildSshCmd(keyPath, claims.Connection)
-	return pseudoty.Spawn(cmd)
+	cmd := pseudo.BuildSshCmd(keyPath, claims.Connection)
+	return pseudo.Spawn(cmd)
 }

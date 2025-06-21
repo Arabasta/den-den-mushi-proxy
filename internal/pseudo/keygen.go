@@ -1,4 +1,4 @@
-package pseudoty
+package pseudo
 
 import (
 	"fmt"

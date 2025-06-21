@@ -15,6 +15,6 @@ type LocalShellConnection struct {
 }
 
 func (c *LocalShellConnection) Connect(_ context.Context, _ *token.Claims) (*os.File, error) {
-	cmd := pseudoty.BuildBashCmd()
-	return pseudoty.Spawn(cmd)
+	cmd := pseudo.BuildBashCmd()
+	return pseudo.Spawn(cmd)
 }
