@@ -1,11 +1,9 @@
 import {terminal} from "./terminal.js";
-import {config} from './config.js';
 
-const { term, fitAddon } = terminal;
+const {term, fitAddon} = terminal;
 
 const socketManager = {
     socket: null,
-    reconnectAttempts: 0,
 
     connect() {
         if (this.socket?.readyState === WebSocket.OPEN) return;
@@ -13,10 +11,10 @@ const socketManager = {
         // get the jwt from url param
         // todo: dont do it like this lol
         const params = new URLSearchParams(location.search);
-        const jwt    = params.get('jwt_tmp');
+        const jwt = params.get('jwt_tmp');
 
         // connect to proxy
-        let websocketUrl = `ws://${window.location.hostname}:${config.port}/ws`;
+        let websocketUrl = `ws://${window.location.hostname}:45007/ws`;
         console.log(websocketUrl);
         this.socket = new WebSocket(websocketUrl, ['jwt', jwt]);
 
@@ -26,29 +24,29 @@ const socketManager = {
         };
 
         this.socket.onopen = () => {
-            this.reconnectAttempts = 0;
+            console.log("WebSocket connection opened");
             term.write('\r\n\x1b[32mConnected to terminal session\x1b[0m\r\n');
             term.focus();
         };
 
         this.socket.onclose = ({code, reason}) => {
-            if (code === 1003) { // Unsupported platform
-                term.write(`\r\x1b[31m${reason}\x1b[0m\r\n`);
-                return;
-            }
-
-            if (this.reconnectAttempts < config.maxReconnectAttempts) {
-                this.reconnectAttempts++;
-                term.write(`\r\x1b[33mReconnecting (${this.reconnectAttempts}/${config.maxReconnectAttempts})...\x1b[0m\r\n`);
-                setTimeout(() => this.connect(), config.reconnectDelay);
-            } else {
-                term.write('\r\n\x1b[31mMax reconnection attempts reached\x1b[0m\r\n');
-            }
         };
 
         this.socket.onerror = (error) => {
             term.write(`\r\n\x1b[31mError: ${error.message}\x1b[0m\r\n`);
         };
+    },
+
+    sendResize(cols, rows) {
+        const buffer = new Uint8Array(5);
+        buffer[0] = 0x01; // custom protocol header for resize
+
+        // backend expects big endian
+        buffer[1] = (cols >> 8) & 0xff;
+        buffer[2] = cols & 0xff;
+        buffer[3] = (rows >> 8) & 0xff;
+        buffer[4] = rows & 0xff;
+        this.socket.send(buffer);
     },
 
     getSocket() {

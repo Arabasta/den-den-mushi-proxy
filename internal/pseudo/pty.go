@@ -16,3 +16,10 @@ func Spawn(cmd *exec.Cmd) (*os.File, error) {
 
 	return ptmx, nil
 }
+
+func Resize(ptmx *os.File, cols, rows uint16) error {
+	return pty.Setsize(ptmx, &pty.Winsize{
+		Cols: cols,
+		Rows: rows,
+	})
+}
