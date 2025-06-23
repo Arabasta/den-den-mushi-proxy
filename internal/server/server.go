@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"log"
 )
 
 type Server struct {
@@ -26,6 +25,7 @@ func New(staticFiles embed.FS, cfg *config.Config, log *zap.Logger) *Server {
 	r := gin.New()
 	r.Use(
 		middleware.RequestLogger(log),
+		middleware.Cors(log),
 		gin.Recovery())
 
 	registerUnprotectedRoutes(r, deps, cfg, log)
@@ -37,6 +37,5 @@ func New(staticFiles embed.FS, cfg *config.Config, log *zap.Logger) *Server {
 
 func Start(s *Server, cfg *config.Config) error {
 	addr := fmt.Sprintf(":%d", cfg.App.Port)
-	log.Printf("Serving on port %d", cfg.App.Port)
 	return s.engine.Run(addr)
 }
