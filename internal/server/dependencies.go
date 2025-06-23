@@ -23,7 +23,7 @@ func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
 	puppetClient := puppet.NewPuppetClient(cfg, log)
 
 	connectionMethodFactory := connect.NewConnectionMethodFactory(connect.Deps{Puppet: puppetClient, Cfg: cfg, Log: log})
-	websocketService := websocket.NewWebsocketService(connectionMethodFactory)
+	websocketService := websocket.NewWebsocketService(connectionMethodFactory, log)
 
 	secret, iss, aud := cfg.Token.Secret, "control", "proxy"
 	ttl := 60 * time.Second

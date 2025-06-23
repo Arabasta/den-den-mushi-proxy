@@ -47,11 +47,13 @@ func (i *Issuer) Mint(userID string, conn connection.Connection, jti string) (st
 
 func RegisterIssuerRoutes(r *gin.RouterGroup, issuer *Issuer, log *zap.Logger) {
 	issr := r.Group("")
-	issr.POST("/token", mintToken(issuer))
+	issr.POST("/token", mintToken(issuer, log))
 }
 
-func mintToken(issuer *Issuer) gin.HandlerFunc {
+func mintToken(issuer *Issuer, log *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		log.Info("Issuing token")
+
 		var body struct {
 			UserID     string                `json:"user_id"`
 			Connection connection.Connection `json:"connection" binding:"required"`
@@ -62,11 +64,20 @@ func mintToken(issuer *Issuer) gin.HandlerFunc {
 			return
 		}
 		jti := uuid.NewString()
+
+		log.Debug("Minting token",
+			zap.String("userID", body.UserID),
+			zap.String("jti", jti),
+			zap.Any("connection", body.Connection))
+
 		tok, err := issuer.Mint(body.UserID, body.Connection, jti)
 		if err != nil {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
 		}
+
+		log.Debug("Token minted successfully", zap.String("token", tok))
+
 		c.JSON(200, gin.H{"token": tok})
 	}
 }

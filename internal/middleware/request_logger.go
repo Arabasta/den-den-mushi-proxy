@@ -34,8 +34,8 @@ func RequestLogger(log *zap.Logger) gin.HandlerFunc {
 			log.Error("HTTP request", logFields...)
 		case status >= 400:
 			log.Warn("HTTP request", logFields...)
-			//default:
-			//	log.Info("HTTP request", logFields...)
+		default:
+			log.Info("HTTP request", logFields...)
 		}
 	}
 }
