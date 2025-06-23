@@ -18,7 +18,7 @@ func BuildSshCmd(privateKeyPath string, c connection.Connection) *exec.Cmd {
 		"-o", "ConnectTimeout=30",
 		"-tt",
 	}
-	fmt.Println(args)
+
 	cmd := exec.Command("ssh", args...)
 	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
 	return cmd

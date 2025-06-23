@@ -3,7 +3,6 @@ package websocket
 import (
 	"den-den-mushi-Go/internal/config"
 	"den-den-mushi-Go/pkg/token"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -16,15 +15,6 @@ func websocketHandler(svc *Service, cfg *config.Config, log *zap.Logger) gin.Han
 	return func(c *gin.Context) {
 		val, _ := c.Get("claims")
 		claims := val.(*token.Claims)
-
-		// todo: remove after testing
-		fmt.Println("\nToken validated successfully:")
-		fmt.Println("- Subject (user):", claims.Subject)
-		fmt.Println("- Server IP:", claims.Connection.ServerIP)
-		fmt.Println("- OS User:", claims.Connection.OSUser)
-		fmt.Println("- Change ID:", claims.Connection.ChangeID)
-		fmt.Println("- Type:", claims.Connection.Type)
-		fmt.Println("- JTI:", claims.ID)
 
 		ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {

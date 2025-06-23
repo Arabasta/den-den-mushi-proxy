@@ -8,12 +8,7 @@ import (
 	"sync"
 )
 
-func Bridge(ws *websocket.Conn, pty io.ReadWriteCloser, opts ...Option) {
-	bridgeConfig := &bridgeConfig{}
-	for _, o := range opts {
-		o(bridgeConfig)
-	}
-
+func Bridge(ws *websocket.Conn, pty io.ReadWriteCloser) {
 	closeOnce := sync.Once{}
 	closeAll := func() {
 		closeOnce.Do(func() {
@@ -31,11 +26,8 @@ func Bridge(ws *websocket.Conn, pty io.ReadWriteCloser, opts ...Option) {
 				closeAll()
 				return
 			}
-			out := applyFilters(buf[:n], bridgeConfig)
-			if len(out) == 0 {
-				continue
-			}
-			if err := ws.WriteMessage(websocket.TextMessage, out); err != nil {
+
+			if err := ws.WriteMessage(websocket.TextMessage, buf[:n]); err != nil {
 				closeAll()
 				return
 			}
