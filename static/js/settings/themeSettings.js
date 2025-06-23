@@ -1,6 +1,7 @@
 import {terminal} from "../terminal.js";
 import {themes} from "./themes.js";
-const { term, fitAddon } = terminal;
+
+const {term, fitAddon} = terminal;
 
 export function applyTheme(themeName) {
     const theme = themes[themeName];

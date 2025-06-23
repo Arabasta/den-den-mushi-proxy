@@ -1,4 +1,4 @@
-import { Terminal } from 'https://cdn.jsdelivr.net/npm/@xterm/xterm/+esm';
+import {Terminal} from 'https://cdn.jsdelivr.net/npm/@xterm/xterm/+esm';
 import {FitAddon} from 'https://cdn.jsdelivr.net/npm/@xterm/addon-fit/+esm';
 
 const term = new Terminal({
@@ -8,4 +8,4 @@ const term = new Terminal({
 const fitAddon = new FitAddon();
 term.loadAddon(fitAddon);
 
-export const terminal = { term, fitAddon };
+export const terminal = {term, fitAddon};

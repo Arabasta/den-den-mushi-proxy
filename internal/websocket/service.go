@@ -3,7 +3,6 @@ package websocket
 import (
 	"context"
 	"den-den-mushi-Go/internal/pseudo/connect"
-	"den-den-mushi-Go/internal/websocket/io"
 	"den-den-mushi-Go/pkg/token"
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
@@ -54,5 +53,5 @@ func (s *Service) Run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 		}
 	}(pty)
 
-	io.Bridge(ws, pty)
+	Bridge(ws, pty)
 }

@@ -4,10 +4,35 @@
     <meta charset="UTF-8">
     <title>JumpSys Test Connect Demo</title>
     <style>
-        body{font-family:system-ui;background:#111;color:#eee;margin:2rem}
-        textarea,input,button{width:100%;padding:.6rem;margin:.4rem 0;background:#222;color:#eee;border:1px solid #444;border-radius:6px}
-        button{cursor:pointer;font-weight:bold}
-        pre{white-space:pre-wrap;word-break:break-all;background:#222;padding:1rem;border-radius:6px}
+        body {
+            font-family: system-ui;
+            background: #111;
+            color: #eee;
+            margin: 2rem
+        }
+
+        textarea, input, button {
+            width: 100%;
+            padding: .6rem;
+            margin: .4rem 0;
+            background: #222;
+            color: #eee;
+            border: 1px solid #444;
+            border-radius: 6px
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: bold
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-all;
+            background: #222;
+            padding: 1rem;
+            border-radius: 6px
+        }
     </style>
 </head>
 <body>
@@ -41,12 +66,12 @@
         console.log("Request body:", body);
 
         // get the jwt
-        const res  = await fetch('/token', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
+        const res = await fetch('/token', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
             body
         });
-        const { token } = await res.json();
+        const {token} = await res.json();
         document.getElementById('out').textContent = token;
 
         // pass the token to the websocket.js page through  parameter

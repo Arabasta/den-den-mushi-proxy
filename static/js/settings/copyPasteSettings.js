@@ -1,5 +1,6 @@
-import { terminal } from '../terminal.js';
-const { term } = terminal;
+import {terminal} from '../terminal.js';
+
+const {term} = terminal;
 
 let selectionChangeDisposable;
 let pasteHandler;

@@ -1,5 +1,6 @@
-import { terminal } from "../terminal.js";
-const { term, fitAddon } = terminal;
+import {terminal} from "../terminal.js";
+
+const {term, fitAddon} = terminal;
 
 let currentFontSize = parseInt(localStorage.getItem("fontSize")) || 16;
 const minFontSize = 8;

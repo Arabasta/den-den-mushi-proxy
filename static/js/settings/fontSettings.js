@@ -1,5 +1,6 @@
 import {terminal} from "../terminal.js";
-const { term } = terminal;
+
+const {term} = terminal;
 
 export function applyFont(font) {
     term.options.fontFamily = font;

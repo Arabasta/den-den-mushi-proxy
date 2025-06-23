@@ -1,4 +1,4 @@
-package io
+package websocket
 
 import (
 	"den-den-mushi-Go/internal/websocket/handler"
