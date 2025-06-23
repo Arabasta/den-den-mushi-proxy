@@ -19,8 +19,17 @@ const socketManager = {
         this.socket = new WebSocket(websocketUrl, ['jwt', jwt]);
 
         this.socket.onmessage = (event) => {
-            console.log('Received from server:', event.data);
-            term.write(event.data);
+            const buffer = new Uint8Array(event.data);
+            const header = buffer[0];
+            const payload = buffer.slice(1);
+
+            switch (header) {
+                case 0x01: // custom protocol header for output
+                    term.write(new TextDecoder().decode(payload));
+                    break;
+                default:
+                    console.warn("Unknown header:", header);
+            }
         };
 
         this.socket.onopen = () => {
@@ -35,11 +44,13 @@ const socketManager = {
         this.socket.onerror = (error) => {
             term.write(`\r\n\x1b[31mError: ${error.message}\x1b[0m\r\n`);
         };
+
+        this.socket.binaryType = "arraybuffer";
     },
 
     sendResize(cols, rows) {
         const buffer = new Uint8Array(5);
-        buffer[0] = 0x01; // custom protocol header for resize
+        buffer[0] = 0x10; // custom protocol header for resize
 
         // backend expects big endian
         buffer[1] = (cols >> 8) & 0xff;

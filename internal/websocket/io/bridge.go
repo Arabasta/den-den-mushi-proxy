@@ -20,6 +20,8 @@ func Bridge(ws *websocket.Conn, pty io.ReadWriteCloser) {
 	// pty > websocket
 	go func() {
 		buf := make([]byte, 4096)
+		outputHandler := &handler.OutputHandler{}
+
 		for {
 			n, err := pty.Read(buf)
 			if err != nil {
@@ -27,7 +29,12 @@ func Bridge(ws *websocket.Conn, pty io.ReadWriteCloser) {
 				return
 			}
 
-			if err := ws.WriteMessage(websocket.TextMessage, buf[:n]); err != nil {
+			if err := outputHandler.Handle(
+				protocol.Packet{
+					Header: protocol.Output,
+					Data:   buf[:n],
+				},
+				nil, ws); err != nil {
 				closeAll()
 				return
 			}

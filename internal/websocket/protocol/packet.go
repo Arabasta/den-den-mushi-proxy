@@ -12,3 +12,7 @@ func Parse(msg []byte) Packet {
 
 	return Packet{Header(msg[0]), msg[1:]}
 }
+
+func PacketToByte(pkt Packet) []byte {
+	return append([]byte{byte(pkt.Header)}, pkt.Data...)
+}
