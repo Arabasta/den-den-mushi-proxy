@@ -12,9 +12,11 @@ const (
 	// Error for errors from the proxy server
 	Error Header = 0x02
 
-	Reserved1 Header = 0x03
+	// Warn for warnings from the proxy server, e.g., "10 minutes left on your session"
+	Warn Header = 0x03
 
-	Reserved2 Header = 0x04
+	// Broadcast is used for broadcasting messages to all connected clients, e.g., "Server is going down for maintenance"
+	Broadcast Header = 0x04
 
 	Reserved3 Header = 0x05
 
