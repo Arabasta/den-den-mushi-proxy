@@ -6,10 +6,10 @@ import (
 )
 
 type PuppetClient struct {
-	cfg    *config.Config
-	logger *zap.Logger
+	cfg *config.Config
+	log *zap.Logger
 }
 
-func NewPuppetClient(cfg *config.Config, logger *zap.Logger) *PuppetClient {
-	return &PuppetClient{cfg: cfg, logger: logger}
+func NewPuppetClient(cfg *config.Config, log *zap.Logger) *PuppetClient {
+	return &PuppetClient{cfg: cfg, log: log}
 }

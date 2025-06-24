@@ -1,13 +1,22 @@
-package pseudo
+package command
 
 import (
 	"den-den-mushi-Go/pkg/connection"
 	"fmt"
+	"go.uber.org/zap"
 	"os"
 	"os/exec"
 )
 
-func BuildSshCmd(privateKeyPath string, c connection.Connection) *exec.Cmd {
+type Builder struct {
+	log *zap.Logger
+}
+
+func NewBuilder(log *zap.Logger) *Builder {
+	return &Builder{log: log}
+}
+
+func (b *Builder) BuildSshCmd(privateKeyPath string, c connection.Connection) *exec.Cmd {
 	args := []string{
 		"-i", privateKeyPath,
 		"-p", c.Port,
@@ -21,12 +30,16 @@ func BuildSshCmd(privateKeyPath string, c connection.Connection) *exec.Cmd {
 
 	cmd := exec.Command("ssh", args...)
 	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
+
+	b.log.Info("Created SSH command", zap.String("command", cmd.String()))
 	return cmd
 }
 
-func BuildBashCmd() *exec.Cmd {
+func (b *Builder) BuildBashCmd() *exec.Cmd {
 	cmd := exec.Command("bash")
 	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
 	cmd.Dir = os.Getenv("HOME")
+
+	b.log.Info("Created Bash command", zap.String("command", cmd.String()))
 	return cmd
 }

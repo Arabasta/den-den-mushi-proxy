@@ -4,6 +4,7 @@ import (
 	"context"
 	"den-den-mushi-Go/internal/config"
 	"den-den-mushi-Go/internal/orchestrator/puppet"
+	"den-den-mushi-Go/internal/pseudo/command"
 	"den-den-mushi-Go/pkg/connection"
 	"den-den-mushi-Go/pkg/token"
 	"go.uber.org/zap"
@@ -11,9 +12,19 @@ import (
 )
 
 type Deps struct {
-	Puppet *puppet.PuppetClient
-	Cfg    *config.Config
-	Log    *zap.Logger
+	puppet         *puppet.PuppetClient
+	commandBuilder *command.Builder
+	cfg            *config.Config
+	log            *zap.Logger
+}
+
+func NewDeps(puppet *puppet.PuppetClient, commandBuilder *command.Builder, cfg *config.Config, log *zap.Logger) Deps {
+	return Deps{
+		puppet:         puppet,
+		commandBuilder: commandBuilder,
+		cfg:            cfg,
+		log:            log,
+	}
 }
 
 type ConnectionMethodFactory struct {
@@ -28,26 +39,29 @@ type ConnectionMethod interface {
 	Connect(ctx context.Context, claims *token.Claims) (*os.File, error)
 }
 
-// Build returns the correct ConnectionMethod for the requested type
+// Create returns the correct ConnectionMethod for the requested type
 func (f *ConnectionMethodFactory) Create(t connection.ConnectionType) ConnectionMethod {
 	switch t {
 	case connection.LocalShell:
 		return &LocalShellConnection{
-			Log: f.deps.Log,
-			Cfg: f.deps.Cfg,
+			log:            f.deps.log,
+			cfg:            f.deps.cfg,
+			commandBuilder: f.deps.commandBuilder,
 		}
 
 	case connection.SshTestKey:
 		return &SshTestKeyConnection{
-			Log: f.deps.Log,
-			Cfg: f.deps.Cfg,
+			log:            f.deps.log,
+			cfg:            f.deps.cfg,
+			commandBuilder: f.deps.commandBuilder,
 		}
 
 	case connection.SshOrchestratorKey:
 		return &SshOrchestratorKeyConnection{
-			Puppet: f.deps.Puppet,
-			Cfg:    f.deps.Cfg,
-			Log:    f.deps.Log,
+			puppet:         f.deps.puppet,
+			cfg:            f.deps.cfg,
+			log:            f.deps.log,
+			commandBuilder: f.deps.commandBuilder,
 		}
 
 	default:
