@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-func Bridge(ws *websocket.Conn, pty io.ReadWriteCloser) {
+func bridge(ws *websocket.Conn, pty io.ReadWriteCloser) {
 	closeOnce := sync.Once{}
 	closeAll := func() {
 		closeOnce.Do(func() {

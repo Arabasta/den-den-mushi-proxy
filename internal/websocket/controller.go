@@ -31,6 +31,6 @@ func websocketHandler(svc *Service, cfg *config.Config, log *zap.Logger) gin.Han
 			return
 		}
 
-		svc.Run(c.Request.Context(), ws, claims)
+		svc.run(c.Request.Context(), ws, claims)
 	}
 }

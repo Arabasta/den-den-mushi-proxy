@@ -21,7 +21,7 @@ func NewWebsocketService(c *connect.ConnectionMethodFactory, log *zap.Logger) *S
 	}
 }
 
-func (s *Service) Run(ctx context.Context, ws *websocket.Conn, claims *token.Claims) {
+func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Claims) {
 	conn := s.ConnectionMethodFactory.Create(claims.Connection.Type)
 	if conn == nil {
 		s.Log.Error("Unsupported connection type", zap.String("type", string(claims.Connection.Type)))
@@ -53,5 +53,5 @@ func (s *Service) Run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 		}
 	}(pty)
 
-	Bridge(ws, pty)
+	bridge(ws, pty)
 }
