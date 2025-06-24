@@ -12,5 +12,6 @@ type Handler interface {
 
 var Get = map[protocol.Header]Handler{
 	protocol.Input:  &InputHandler{},
+	protocol.Output: &OutputHandler{},
 	protocol.Resize: &ResizeHandler{},
 }
