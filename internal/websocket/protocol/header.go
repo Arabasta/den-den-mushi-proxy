@@ -29,7 +29,7 @@ const (
 	// Resize called when the terminal is resized from the client
 	Resize Header = 0x10
 
-	// Sudo is called when the client wants to switch to root
+	// Sudo is called when the client wants to switch users. Required since "su" is blocked.
 	Sudo Header = 0x11
 
 	// ParseError indicates an error in parsing the header

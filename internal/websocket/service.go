@@ -28,33 +28,23 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 	conn := s.connectionMethodFactory.Create(claims.Connection.Type)
 	if conn == nil {
 		s.log.Error("Unsupported connection type", zap.String("type", string(claims.Connection.Type)))
-		err := ws.Close()
-		if err != nil {
-			s.log.Error("Failed to close websocket connection", zap.Error(err))
-		}
+		s.closeWs(ws)
 		return
 	}
-
 	s.log.Info("Connected to websocket, establishing pty connection", zap.String("type", string(claims.Connection.Type)))
+
 	pty, err := conn.Connect(ctx, claims)
 	if err != nil {
 		s.log.Error("Failed to connect to pseudo terminal", zap.Error(err),
 			zap.String("type", string(claims.Connection.Type)))
-		err := ws.Close()
-		if err != nil {
-			s.log.Error("Failed to close websocket connection", zap.Error(err))
-		}
+		s.closeWs(ws)
 		return
 	}
-
-	s.log.Info("Connected to pseudo terminal", zap.String("type", string(claims.Connection.Type)))
+	s.log.Info("Connected to pseudo terminal, bridging connection", zap.String("type", string(claims.Connection.Type)))
 
 	defer func(pty *os.File) {
-		err := pty.Close()
-		if err != nil {
-			s.log.Error("Failed to close pseudo terminal", zap.Error(err))
-		}
+		s.closePty(pty)
 	}(pty)
 
-	s.bridge(ws, pty)
+	s.bridge(ws, pty, claims)
 }

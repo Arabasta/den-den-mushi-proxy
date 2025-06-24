@@ -3,6 +3,7 @@ package handler
 import (
 	"den-den-mushi-Go/internal/pseudo"
 	"den-den-mushi-Go/internal/websocket/protocol"
+	"den-den-mushi-Go/pkg/token"
 	"encoding/binary"
 	"github.com/gorilla/websocket"
 	"io"
@@ -11,7 +12,7 @@ import (
 
 type ResizeHandler struct{}
 
-func (h *ResizeHandler) Handle(pkt protocol.Packet, pty io.Writer, _ *websocket.Conn) error {
+func (h *ResizeHandler) Handle(pkt protocol.Packet, pty io.Writer, _ *websocket.Conn, _ *token.Claims) error {
 	if len(pkt.Data) != 4 {
 		return nil
 	}

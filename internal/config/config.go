@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 type Config struct {
 	App struct {
 		Name        string
@@ -27,5 +29,14 @@ type Config struct {
 	Token struct {
 		Secret string
 		Expiry int
+	}
+
+	Websocket struct {
+		PingPong struct {
+			PingIntervalSeconds time.Duration
+			PingTimeoutSeconds  time.Duration
+			PongWaitSeconds     time.Duration
+			MaxPingMissed       int
+		}
 	}
 }

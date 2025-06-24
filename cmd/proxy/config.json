@@ -24,5 +24,13 @@
   "token": {
     "secret": "peanut",
     "expiry": 3600
+  },
+  "Websocket": {
+    "PingPong": {
+      "PingIntervalSeconds": 30,
+      "PingTimeoutSeconds": 10,
+      "MaxPingMissed": 3,
+      "PongWaitSeconds": 5000
+    }
   }
 }
