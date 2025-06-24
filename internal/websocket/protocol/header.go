@@ -15,7 +15,7 @@ const (
 	// Warn for warnings from the proxy server, e.g., "10 minutes left on your session"
 	Warn Header = 0x03
 
-	// Broadcast is used for broadcasting messages to all connected clients, e.g., "Server is going down for maintenance"
+	// Broadcast for broadcasting messages to all connected clients, e.g., "Server is going down for maintenance"
 	Broadcast Header = 0x04
 
 	Reserved3 Header = 0x05
