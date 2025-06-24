@@ -11,7 +11,9 @@
   },
   "logging": {
     "level": "debug",
-    "format": "json"
+    "format": "console",
+    "output": "both",
+    "filePath": "./log/ddm-proxy.log"
   },
   "Puppet": {
     "Endpoints": [

@@ -3,6 +3,7 @@ package logger
 import (
 	"den-den-mushi-Go/internal/config"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"go.uber.org/zap"
@@ -10,38 +11,72 @@ import (
 )
 
 func Init(cfg *config.Config) *zap.Logger {
-	level := setLogLevel(cfg)
-	encoder := setLogFormat(cfg)
+	level := getLogLevel(cfg)
+	encoder := getLogEncoder(cfg)
 
-	core := zapcore.NewCore(
-		encoder,
-		zapcore.AddSync(zapcore.Lock(os.Stdout)),
-		level)
+	var cores []zapcore.Core
 
-	return zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+	// stdout writer
+	if cfg.Logging.Output == "stdout" || cfg.Logging.Output == "both" {
+		cores = append(cores, zapcore.NewCore(
+			encoder,
+			zapcore.AddSync(os.Stdout),
+			level,
+		))
+	}
+
+	// file writer
+	if cfg.Logging.Output == "file" || cfg.Logging.Output == "both" {
+		logPath := cfg.Logging.FilePath
+		logDir := filepath.Dir(logPath)
+		if err := os.MkdirAll(logDir, 0755); err != nil {
+			panic("Failed to create log directory: " + err.Error())
+		}
+
+		file, err := os.OpenFile(cfg.Logging.FilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+		if err != nil {
+			panic("Failed to open log file: " + err.Error())
+		}
+		cores = append(cores, zapcore.NewCore(
+			encoder,
+			zapcore.AddSync(file),
+			level,
+		))
+	}
+
+	logger := zap.New(zapcore.NewTee(cores...), zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+
+	if cfg.App.Environment == "development" {
+		logger = logger.WithOptions(zap.Development())
+	}
+
+	return logger
 }
 
-func setLogLevel(cfg *config.Config) zapcore.Level {
+func getLogLevel(cfg *config.Config) zapcore.Level {
 	var level zapcore.Level
 	if err := level.UnmarshalText([]byte(cfg.Logging.Level)); err != nil {
-		level = zapcore.InfoLevel
+		return zapcore.InfoLevel
 	}
 	return level
 }
 
-func setLogFormat(cfg *config.Config) zapcore.Encoder {
+func getLogEncoder(cfg *config.Config) zapcore.Encoder {
 	encoderCfg := zap.NewProductionEncoderConfig()
 	encoderCfg.TimeKey = "timestamp"
 	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderCfg.CallerKey = "caller"
+	encoderCfg.LevelKey = "level"
+	encoderCfg.MessageKey = "msg"
 
 	if strings.ToLower(cfg.Logging.Format) == "json" {
 		return zapcore.NewJSONEncoder(encoderCfg)
+	} else if strings.ToLower(cfg.Logging.Format) == "console" {
+		if cfg.App.Environment == "development" {
+			encoderCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		}
+		return zapcore.NewConsoleEncoder(encoderCfg)
 	}
 
-	if cfg.App.Environment == "development" {
-		encoderCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	}
-
-	return zapcore.NewConsoleEncoder(encoderCfg)
+	return nil
 }

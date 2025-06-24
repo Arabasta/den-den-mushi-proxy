@@ -16,8 +16,10 @@ type Config struct {
 	}
 
 	Logging struct {
-		Level  string
-		Format string
+		Level    string
+		Format   string
+		Output   string
+		FilePath string
 	}
 
 	Puppet struct {
