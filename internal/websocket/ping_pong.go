@@ -20,18 +20,18 @@ func (s *Service) handlePing(ws *websocket.Conn, missedPongs *int32) {
 				time.Now().Add(s.cfg.Websocket.PingPong.PingTimeoutSeconds*time.Second),
 			)
 			if err != nil {
-				s.log.Error("WebSocket ping failed", zap.Error(err))
-				s.closeWs(ws)
-				return
-			}
-			newMissed := atomic.AddInt32(missedPongs, 1)
-			s.log.Debug("Sent ping", zap.Int32("missedPongs", newMissed))
+				newMissed := atomic.AddInt32(missedPongs, 1)
+				s.log.Debug("WebSocket ping failed",
+					zap.Int32("missedPongs", newMissed),
+				)
 
-			if newMissed >= int32(s.cfg.Websocket.PingPong.MaxPingMissed) {
-				s.log.Warn("Max missed pongs exceeded", zap.Int32("missedPongs", newMissed))
-				s.closeWs(ws)
-				return
+				if newMissed >= int32(s.cfg.Websocket.PingPong.MaxPingMissed) {
+					s.log.Warn("Max missed pings exceeded, closing WebSocket")
+					s.closeWs(ws)
+					return
+				}
 			}
+			s.log.Debug("Sent ping")
 		}
 	}
 }
@@ -39,20 +39,7 @@ func (s *Service) handlePing(ws *websocket.Conn, missedPongs *int32) {
 func (s *Service) handlePong(ws *websocket.Conn, missedPongs *int32) {
 	ws.SetPongHandler(func(appData string) error {
 		s.log.Debug("Received pong from client", zap.String("data", appData))
-		atomic.StoreInt32(missedPongs, 0) // reset on pong
-
-		err := ws.SetReadDeadline(time.Now().Add(s.cfg.Websocket.PingPong.PongWaitSeconds * time.Second))
-		if err != nil {
-			s.log.Error("Failed to set read deadline after pong", zap.Error(err))
-			s.closeWs(ws)
-			return err
-		}
-
-		return nil
+		atomic.StoreInt32(missedPongs, 0) // reset missed counter
+		return ws.SetReadDeadline(time.Now().Add(s.cfg.Websocket.PingPong.PongWaitSeconds * time.Second))
 	})
-
-	if err := ws.SetReadDeadline(time.Now().Add(s.cfg.Websocket.PingPong.PongWaitSeconds * time.Second)); err != nil {
-		s.log.Error("Failed to set initial read deadline", zap.Error(err))
-		s.closeWs(ws)
-	}
 }

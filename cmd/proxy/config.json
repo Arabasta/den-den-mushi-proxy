@@ -31,8 +31,8 @@
     "PingPong": {
       "PingIntervalSeconds": 30,
       "PingTimeoutSeconds": 10,
-      "MaxPingMissed": 3,
-      "PongWaitSeconds": 5000
+      "MaxPingMissed": 10,
+      "PongWaitSeconds": 10
     }
   }
 }
