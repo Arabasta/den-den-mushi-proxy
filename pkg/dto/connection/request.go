@@ -15,8 +15,13 @@ const (
 	SshTestKey ConnectionType = "ssh_test_key"
 	/* For development purposes only End*/
 
+	/* New Connection */
 	SshOrchestratorKey ConnectionType = "ssh_orchestrator_key"
 	SshPassword        ConnectionType = "ssh_password"
+
+	/* Join Existing */
+	JoinAsImplementor ConnectionType = "join_as_implementor"
+	JoinAsObserver    ConnectionType = "join_as_observer"
 )
 
 type Connection struct {

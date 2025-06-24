@@ -1,7 +1,7 @@
 package control_server_tmp
 
 import (
-	"den-den-mushi-Go/pkg/connection"
+	"den-den-mushi-Go/pkg/dto/connection"
 	"den-den-mushi-Go/pkg/token"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"

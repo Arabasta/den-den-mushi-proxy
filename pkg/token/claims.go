@@ -1,7 +1,7 @@
 package token
 
 import (
-	"den-den-mushi-Go/pkg/connection"
+	"den-den-mushi-Go/pkg/dto/connection"
 	"github.com/golang-jwt/jwt/v5"
 )
 

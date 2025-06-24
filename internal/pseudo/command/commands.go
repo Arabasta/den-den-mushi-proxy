@@ -1,7 +1,7 @@
 package command
 
 import (
-	"den-den-mushi-Go/pkg/connection"
+	"den-den-mushi-Go/pkg/dto/connection"
 	"fmt"
 	"go.uber.org/zap"
 	"os"

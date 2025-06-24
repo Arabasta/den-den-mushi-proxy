@@ -5,7 +5,7 @@ import (
 	"den-den-mushi-Go/internal/config"
 	"den-den-mushi-Go/internal/orchestrator/puppet"
 	"den-den-mushi-Go/internal/pseudo/command"
-	"den-den-mushi-Go/pkg/connection"
+	"den-den-mushi-Go/pkg/dto/connection"
 	"den-den-mushi-Go/pkg/token"
 	"go.uber.org/zap"
 	"os"

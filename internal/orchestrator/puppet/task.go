@@ -1,7 +1,7 @@
 package puppet
 
 import (
-	"den-den-mushi-Go/pkg/connection"
+	"den-den-mushi-Go/pkg/dto/connection"
 	"errors"
 	"fmt"
 )
