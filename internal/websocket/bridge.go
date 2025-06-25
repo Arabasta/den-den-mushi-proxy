@@ -14,7 +14,7 @@ func (s *Service) bridge(ws *websocket.Conn, pty io.ReadWriteCloser, claims *tok
 
 	// temp for demo
 	logPath := "./log/" + claims.Connection.ChangeID + "_" + claims.Connection.ServerIP + "_" + claims.Connection.OSUser + "_" + string(claims.Connection.Purpose) + ".log"
-	logFile, err := os.OpenFile(logPath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+	logFile, err := os.OpenFile(logPath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		s.log.Error("Failed to open log file", zap.Error(err))
 		return

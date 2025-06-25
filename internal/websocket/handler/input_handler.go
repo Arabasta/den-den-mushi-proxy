@@ -14,7 +14,7 @@ type InputHandler struct {
 	buf []byte
 }
 
-func (h *InputHandler) Handle(pkt protocol.Packet, pty io.Writer, _ *websocket.Conn, claims *token.Claims) (string, error) {
+func (h *InputHandler) Handle(pkt protocol.Packet, pty io.Writer, ws *websocket.Conn, claims *token.Claims) (string, error) {
 	fmt.Println(string(pkt.Data))
 
 	// allow all
@@ -26,6 +26,9 @@ func (h *InputHandler) Handle(pkt protocol.Packet, pty io.Writer, _ *websocket.C
 	} else if claims.Connection.Purpose == "health" { // dummy implementation
 		if banned, reason := isBannedControl(pkt.Data); banned {
 			fmt.Println("Blocked input:", reason)
+
+			ws.WriteMessage(websocket.BinaryMessage, protocol.PacketToByte(protocol.Packet{Header: protocol.BlockedControl, Data: []byte(fmt.Sprintf("\r\n[BLOCKED CONTROL CHAR] %s", reason))}))
+
 			return fmt.Sprintf("\n[BLOCKED CONTROL CHAR DETECTED] %s", reason), nil
 		} else {
 			if bytes.Equal(pkt.Data, Enter) {
@@ -39,6 +42,7 @@ func (h *InputHandler) Handle(pkt protocol.Packet, pty io.Writer, _ *websocket.C
 				} else {
 					// blocked, send Ctrl-C to pty
 					fmt.Println("Blocked input:", string(h.buf))
+					ws.WriteMessage(websocket.BinaryMessage, protocol.PacketToByte(protocol.Packet{Header: protocol.BlockedCommand, Data: []byte(fmt.Sprintf("[BLACKLISTED COMMAND] %s", string(h.buf)))}))
 					_, _ = pty.Write([]byte{3}) // send Ctrl-C
 					h.buf = nil                 // clear even if blocked
 					return fmt.Sprintf("\n[BLOCKED COMMAND DETECTED, SENDING CTRL+C] %s", string(h.buf)), nil
@@ -80,28 +84,27 @@ func (h *InputHandler) isNaiveFilterOk() bool {
 func isBannedControl(data []byte) (bool, string) {
 	switch {
 	case bytes.Equal(data, ArrowUp):
-		return true, "ArrowUp"
+		return true, "Arrow Up"
 	case bytes.Equal(data, ArrowDown):
-		return true, "ArrowDown"
+		return true, "Arrow Down"
 	case bytes.Equal(data, ArrowRight):
-		return true, "ArrowRight"
+		return true, "Arrow Right"
 	case bytes.Equal(data, ArrowLeft):
-		return true, "ArrowLeft"
+		return true, "Arrow Left"
 	case bytes.Equal(data, CtrlR):
-		return true, "CtrlR"
+		return true, "Ctrl+R"
 	case bytes.HasPrefix(data, PasteStart) && bytes.HasSuffix(data, PasteEnd):
-		fmt.Println("Copy paste detected, blocking input")
 		return true, "Paste"
 	case bytes.Equal(data, SemiColon):
-		return true, "SemiColon"
+		return true, ";"
 	case bytes.Equal(data, Ampersand):
-		return true, "Ampersand"
+		return true, "&"
 	case bytes.Equal(data, Pipe):
-		return true, "Pipe"
+		return true, "|"
 	case bytes.Equal(data, LeftParenthesis):
-		return true, "LeftParenthesis"
+		return true, "("
 	case bytes.Equal(data, RightParenthesis):
-		return true, "RightParenthesis"
+		return true, ")"
 	default:
 		return false, ""
 	}

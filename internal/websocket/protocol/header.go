@@ -12,22 +12,23 @@ const (
 	// Error for errors from the proxy server
 	Error Header = 0x02
 
-	// Blocked for blocked messages from the proxy server, e.g., "You are not allowed to run su -"
-	Blocked Header = 0x03
+	// BlockedControl for messages from the proxy server, e.g., "Arrow keys not allowed"
+	BlockedControl Header = 0x03
+
+	// BlockedCommand for messages from the proxy server, e.g., "You are not allowed to run su -"
+	BlockedCommand Header = 0x04
 
 	// Warn for warnings from the proxy server, e.g., "10 minutes left on your session"
-	Warn Header = 0x04
+	Warn Header = 0x05
 
 	// Broadcast for broadcasting messages to all connected clients, e.g., "Server is going down for maintenance"
-	Broadcast Header = 0x05
+	Broadcast Header = 0x06
 
-	Reserved3 Header = 0x06
+	Reserved3 Header = 0x07
 
-	Reserved4 Header = 0x07
+	Reserved4 Header = 0x08
 
-	Reserved5 Header = 0x08
-
-	Reserved6 Header = 0x09
+	Reserved5 Header = 0x09
 
 	// Resize called when the terminal is resized from the client
 	Resize Header = 0x10

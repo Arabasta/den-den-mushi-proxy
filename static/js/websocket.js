@@ -27,6 +27,13 @@ const socketManager = {
                 case 0x01: // custom protocol header for output
                     term.write(new TextDecoder().decode(payload));
                     break;
+                case 0x03: // blocked control char detected
+                    console.log("blocked control char detected")
+                    showToast(new TextDecoder().decode(payload))
+                    break;
+                case 0x04: // blocked command detected
+                    term.write(`\r\n\x1b[31m${new TextDecoder().decode(payload)}\x1b[0m\r\n`);
+                    break;
                 default:
                     console.warn("Unknown header:", header);
             }
@@ -66,3 +73,23 @@ const socketManager = {
 };
 
 export default socketManager;
+
+// just whatever lol frontend no one cares
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.innerText = message;
+    toast.style = `
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #f87171;
+        color: white;
+        padding: 10px 10px;
+        border-radius: 6px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        z-index: 9999;
+        font-weight: bold;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
