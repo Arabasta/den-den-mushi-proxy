@@ -7,9 +7,10 @@ import (
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 	"io"
+	"os"
 )
 
-func (s *Service) handleInput(ws *websocket.Conn, pty io.ReadWriteCloser, claims *token.Claims) {
+func (s *Service) handleInput(ws *websocket.Conn, pty io.ReadWriteCloser, claims *token.Claims, logFile *os.File) {
 	for {
 		msgType, msg, err := ws.ReadMessage()
 		if err != nil {
@@ -36,6 +37,16 @@ func (s *Service) handleInput(ws *websocket.Conn, pty io.ReadWriteCloser, claims
 			return
 		}
 
-		_ = h.Handle(packet, pty, ws, claims)
+		logMsg, err := h.Handle(packet, pty, ws, claims)
+		if packet.Header == protocol.Input {
+			if err != nil {
+				s.log.Error("Error handling input packet", zap.Error(err), zap.String("message", logMsg))
+				s.closeAll(ws, pty)
+				return
+			}
+			if logMsg != "" && logFile != nil {
+				logFile.WriteString(logMsg)
+			}
+		}
 	}
 }

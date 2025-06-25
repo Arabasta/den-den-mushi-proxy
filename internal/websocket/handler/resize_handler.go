@@ -12,16 +12,16 @@ import (
 
 type ResizeHandler struct{}
 
-func (h *ResizeHandler) Handle(pkt protocol.Packet, pty io.Writer, _ *websocket.Conn, _ *token.Claims) error {
+func (h *ResizeHandler) Handle(pkt protocol.Packet, pty io.Writer, _ *websocket.Conn, _ *token.Claims) (string, error) {
 	if len(pkt.Data) != 4 {
-		return nil
+		return "", nil
 	}
 
 	cols := binary.BigEndian.Uint16(pkt.Data[0:2])
 	rows := binary.BigEndian.Uint16(pkt.Data[2:4])
 
 	if f, ok := pty.(*os.File); ok {
-		return pseudo.Resize(f, cols, rows)
+		return "", pseudo.Resize(f, cols, rows)
 	}
-	return nil
+	return "", nil
 }

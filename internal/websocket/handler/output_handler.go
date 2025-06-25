@@ -9,6 +9,6 @@ import (
 
 type OutputHandler struct{}
 
-func (h *OutputHandler) Handle(pkt protocol.Packet, _ io.Writer, ws *websocket.Conn, _ *token.Claims) error {
-	return ws.WriteMessage(websocket.BinaryMessage, protocol.PacketToByte(pkt))
+func (h *OutputHandler) Handle(pkt protocol.Packet, _ io.Writer, ws *websocket.Conn, _ *token.Claims) (string, error) {
+	return "", ws.WriteMessage(websocket.BinaryMessage, protocol.PacketToByte(pkt))
 }

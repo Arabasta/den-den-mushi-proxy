@@ -8,7 +8,7 @@ import (
 )
 
 type Handler interface {
-	Handle(packet protocol.Packet, pty io.Writer, ws *websocket.Conn, claims *token.Claims) error
+	Handle(pkt protocol.Packet, pty io.Writer, ws *websocket.Conn, claims *token.Claims) (string, error)
 }
 
 var Get = map[protocol.Header]Handler{
