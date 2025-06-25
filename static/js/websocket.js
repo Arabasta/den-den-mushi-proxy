@@ -28,7 +28,6 @@ const socketManager = {
                     term.write(new TextDecoder().decode(payload));
                     break;
                 case 0x03: // blocked control char detected
-                    console.log("blocked control char detected")
                     showToast(new TextDecoder().decode(payload))
                     break;
                 case 0x04: // blocked command detected
@@ -91,5 +90,5 @@ function showToast(message) {
         font-weight: bold;
     `;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+    setTimeout(() => toast.remove(), 10000);
 }

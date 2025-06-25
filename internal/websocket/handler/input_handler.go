@@ -15,7 +15,7 @@ type InputHandler struct {
 }
 
 func (h *InputHandler) Handle(pkt protocol.Packet, pty io.Writer, ws *websocket.Conn, claims *token.Claims) (string, error) {
-	fmt.Println(string(pkt.Data))
+	fmt.Println(pkt.Data)
 
 	// allow all
 	if claims.Connection.Purpose == "change" {
@@ -72,7 +72,7 @@ func (h *InputHandler) isNaiveFilterOk() bool {
 	inputStr := string(h.buf)
 	fmt.Println("User entered:", inputStr)
 
-	if strings.HasPrefix(strings.TrimSpace(inputStr), "su") {
+	if strings.Contains(strings.TrimSpace(inputStr), "su -") {
 		return false
 	} else if strings.HasPrefix(strings.TrimSpace(inputStr), "exec") {
 		return false
