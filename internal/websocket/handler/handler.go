@@ -11,6 +11,7 @@ type Handler interface {
 	Handle(pkt protocol.Packet, pty io.Writer, ws *websocket.Conn, claims *token.Claims) (string, error)
 }
 
+// todo: preinit once they are stateless
 var Get = map[protocol.Header]Handler{
 	protocol.Input:  &InputHandler{},
 	protocol.Output: &OutputHandler{},
