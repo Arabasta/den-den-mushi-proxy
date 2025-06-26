@@ -16,7 +16,11 @@ func (s *Service) handleOutput(ws *websocket.Conn, pty io.ReadWriteCloser, logFi
 	for {
 		n, err := pty.Read(buf)
 		if err != nil {
-			s.log.Error("Error reading from pty", zap.Error(err))
+			if err == io.EOF {
+				s.log.Info("PTY session ended normally")
+			} else {
+				s.log.Error("Error reading from pty", zap.Error(err))
+			}
 			s.closeAll(ws, pty)
 			return
 		}
