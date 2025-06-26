@@ -14,7 +14,19 @@ func (s *Service) handleInput(ws *websocket.Conn, pty io.ReadWriteCloser, claims
 	for {
 		msgType, msg, err := ws.ReadMessage()
 		if err != nil {
-			s.log.Error("Error reading message from websocket", zap.Error(err))
+			// todo: refactor once pty decoupled from websocket
+			if err == io.EOF {
+				s.log.Info("PTY session ended normally")
+
+			} else if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
+				s.log.Info("WebSocket closed normally") // client sends close, currently not implemented in frontend
+			} else if websocket.IsCloseError(err, websocket.CloseGoingAway) {
+				s.log.Info("WebSocket closed. Probably tab closed") // most closures are this
+			} else if websocket.IsUnexpectedCloseError(err, websocket.CloseAbnormalClosure) {
+				s.log.Warn("WebSocket closed unexpectedly", zap.Error(err))
+			} else {
+				s.log.Error("Error reading message from websocket", zap.Error(err))
+			}
 			s.closeAll(ws, pty)
 			return
 		}
@@ -29,6 +41,8 @@ func (s *Service) handleInput(ws *websocket.Conn, pty io.ReadWriteCloser, claims
 			s.closeAll(ws, pty)
 			return
 		}
+
+		// todo: validate header
 
 		h, exists := handler.Get[packet.Header]
 		if !exists {
