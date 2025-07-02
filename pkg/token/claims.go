@@ -1,11 +1,11 @@
 package token
 
 import (
-	"den-den-mushi-Go/pkg/dto/connection"
+	"den-den-mushi-Go/pkg/dto"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type Claims struct {
-	Connection connection.Connection `json:"connection"`
+	Connection dto.Connection `json:"connection"`
 	jwt.RegisteredClaims
 }

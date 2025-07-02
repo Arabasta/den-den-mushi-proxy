@@ -10,7 +10,7 @@
     "SshTestKeyPath": "/Users/kei/Desktop/repos/ddm-proxy-tmp/ephemeral-ssh4192716415/id_ed25519"
   },
   "logging": {
-    "level": "debug",
+    "level": "info",
     "format": "console",
     "output": "both",
     "filePath": "./log/ddm-proxy.log"

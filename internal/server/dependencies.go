@@ -2,10 +2,11 @@ package server
 
 import (
 	"den-den-mushi-Go/internal/config"
+	"den-den-mushi-Go/internal/connect"
 	"den-den-mushi-Go/internal/control_server_tmp"
+	"den-den-mushi-Go/internal/core/session_manager"
 	"den-den-mushi-Go/internal/orchestrator/puppet"
-	"den-den-mushi-Go/internal/pseudo/command"
-	"den-den-mushi-Go/internal/pseudo/connect"
+	"den-den-mushi-Go/internal/pty_helpers"
 	"den-den-mushi-Go/internal/validator"
 	"den-den-mushi-Go/internal/websocket"
 	"github.com/golang-jwt/jwt/v5"
@@ -22,11 +23,14 @@ type Deps struct {
 func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
 	connectionMethodFactory := connect.NewConnectionMethodFactory(
 		connect.NewDeps(
-			puppet.NewPuppetClient(cfg, log),
-			command.NewBuilder(log),
+			puppet.NewClient(cfg, log),
+			pty_helpers.NewBuilder(log),
 			cfg,
 			log))
-	websocketService := websocket.NewWebsocketService(connectionMethodFactory, log, cfg)
+
+	sessionManager := session_manager.New(log)
+
+	websocketService := websocket.NewWebsocketService(connectionMethodFactory, sessionManager, log, cfg)
 
 	secret, iss, aud := cfg.Token.Secret, "control", "proxy"
 	ttl := 60 * time.Second

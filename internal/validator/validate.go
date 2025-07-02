@@ -22,6 +22,7 @@ func NewValidator(p *jwt.Parser, secret string, ttl time.Duration) *Validator {
 	return v
 }
 
+// todo: follow https://www.rfc-editor.org/rfc/rfc8725.html#name-best-practices
 func (v *Validator) Validate(_ context.Context, tokenString string) (*token.Claims, error) {
 	claims := new(token.Claims)
 	_, err := v.parser.ParseWithClaims(tokenString, claims, func(_ *jwt.Token) (interface{}, error) {

@@ -3,6 +3,7 @@ package server
 import (
 	"den-den-mushi-Go/internal/config"
 	"den-den-mushi-Go/internal/middleware"
+	middleware2 "den-den-mushi-Go/pkg/middleware"
 	"embed"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,7 @@ func New(staticFiles embed.FS, cfg *config.Config, log *zap.Logger) *Server {
 
 	r := gin.New()
 	r.Use(
-		middleware.RequestLogger(log),
+		middleware2.RequestLogger(log),
 		middleware.Cors(log),
 		gin.Recovery())
 
