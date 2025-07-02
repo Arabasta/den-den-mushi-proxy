@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// todo: test and move it to core
 func (s *Service) handlePing(ws *websocket.Conn, missedPongs *int32) {
 	ticker := time.NewTicker(s.cfg.Websocket.PingPong.PingIntervalSeconds * time.Second)
 	defer ticker.Stop()

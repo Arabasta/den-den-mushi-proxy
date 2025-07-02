@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// todo: secrure
 func WsAuthMiddleware(v *validator.Validator, cfg *config.Config, log *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h := c.GetHeader("Sec-WebSocket-Protocol")

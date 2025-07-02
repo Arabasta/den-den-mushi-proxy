@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// todo: secure
 func Cors(log *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.GetHeader("Origin")

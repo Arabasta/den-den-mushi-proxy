@@ -41,15 +41,14 @@
 <label>Request JSON:</label>
 <textarea id="req" rows="12">
 {
-  "user_id": "user123",
-  "connection": {
-    "purpose": "change",
-    "type": "ssh_test_key",
-    "server_ip": "54.255.144.215",
+  "purpose": "change_request",
+  "change_id": "CR-123",
+  "server": {
+    "ip": "54.255.144.215",
     "port": "22",
-    "os_user": "ec2-user",
-    "change_id": "CR-123"
-  }
+    "os_user": "ec2-user"
+  },
+  "connection_type": "ssh_test_key"
 }
 </textarea>
 

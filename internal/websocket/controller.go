@@ -8,26 +8,19 @@ import (
 )
 
 func RegisterWebsocketRoutes(r *gin.RouterGroup, cfg *config.Config, log *zap.Logger, svc *Service) {
-	r.GET("/ws", websocketHandler(svc, cfg, log))
+	r.GET("/ws", websocketHandler(svc, log))
 }
 
-func websocketHandler(svc *Service, cfg *config.Config, log *zap.Logger) gin.HandlerFunc {
+func websocketHandler(svc *Service, log *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Info("websocketHandler called", zap.String("url", c.Request.URL.String()))
 
 		val, _ := c.Get("claims")
 		claims := val.(*token.Claims)
 
-		log.Info("WebSocket claims",
-			zap.String("Connection OSUser", claims.Connection.OSUser),
-			zap.String("Connection ServerIP", claims.Connection.ServerIP),
-			zap.String("Connection Port", claims.Connection.Port),
-			zap.String("Connection Purpose", string(claims.Connection.Purpose)),
-			zap.String("Connection Type", string(claims.Connection.Type)))
-
 		ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
-			log.Error("Failed to upgrade connection", zap.Error(err))
+			log.Error("Failed to upgrade websocket connection", zap.Error(err))
 			return
 		}
 

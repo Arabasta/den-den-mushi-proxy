@@ -5,11 +5,11 @@ import (
 	"go.uber.org/zap"
 )
 
-type PuppetClient struct {
+type Client struct {
 	cfg *config.Config
 	log *zap.Logger
 }
 
-func NewPuppetClient(cfg *config.Config, log *zap.Logger) *PuppetClient {
-	return &PuppetClient{cfg: cfg, log: log}
+func NewClient(cfg *config.Config, log *zap.Logger) *Client {
+	return &Client{cfg: cfg, log: log}
 }
