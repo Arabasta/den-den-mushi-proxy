@@ -8,7 +8,8 @@ import (
 )
 
 func RegisterWebsocketRoutes(r *gin.RouterGroup, cfg *config.Config, log *zap.Logger, svc *Service) {
-	r.GET("/ws", websocketHandler(svc, log))
+	ws := r.Group("/v1")
+	ws.GET("/ws", websocketHandler(svc, log))
 }
 
 func websocketHandler(svc *Service, log *zap.Logger) gin.HandlerFunc {
