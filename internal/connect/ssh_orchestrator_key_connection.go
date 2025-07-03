@@ -4,7 +4,7 @@ import (
 	"context"
 	"den-den-mushi-Go/internal/config"
 	"den-den-mushi-Go/internal/orchestrator/puppet"
-	"den-den-mushi-Go/internal/pty_helpers"
+	"den-den-mushi-Go/internal/pty_util"
 	"den-den-mushi-Go/pkg/token"
 	"go.uber.org/zap"
 	"os"
@@ -14,11 +14,11 @@ type SshOrchestratorKeyConnection struct {
 	puppet         *puppet.Client
 	cfg            *config.Config
 	log            *zap.Logger
-	commandBuilder *pty_helpers.Builder
+	commandBuilder *pty_util.Builder
 }
 
 func (c *SshOrchestratorKeyConnection) Connect(ctx context.Context, claims *token.Claims) (*os.File, error) {
-	keyPath, pubKey, cleanup, err := pty_helpers.GenerateEphemeralKey(c.cfg, c.log)
+	keyPath, pubKey, cleanup, err := pty_util.GenerateEphemeralKey(c.cfg, c.log)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (c *SshOrchestratorKeyConnection) Connect(ctx context.Context, claims *toke
 	}
 
 	cmd := c.commandBuilder.BuildSshCmd(keyPath, claims.Connection.Server)
-	pty, err := pty_helpers.Spawn(cmd)
+	pty, err := pty_util.Spawn(cmd)
 	if err != nil {
 		c.log.Error("Failed to spawn pseudo terminal", zap.Error(err))
 		return nil, err

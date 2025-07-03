@@ -7,7 +7,7 @@ import (
 	"den-den-mushi-Go/internal/core/session_manager"
 	"den-den-mushi-Go/internal/jwt_validator"
 	"den-den-mushi-Go/internal/orchestrator/puppet"
-	"den-den-mushi-Go/internal/pty_helpers"
+	"den-den-mushi-Go/internal/pty_util"
 	"den-den-mushi-Go/internal/websocket"
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
@@ -24,7 +24,7 @@ func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
 	connectionMethodFactory := connect.NewConnectionMethodFactory(
 		connect.NewDeps(
 			puppet.NewClient(cfg, log),
-			pty_helpers.NewBuilder(log),
+			pty_util.NewBuilder(log),
 			cfg,
 			log))
 

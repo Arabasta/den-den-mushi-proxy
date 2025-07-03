@@ -4,7 +4,7 @@ import (
 	"context"
 	"den-den-mushi-Go/internal/config"
 	"den-den-mushi-Go/internal/orchestrator/puppet"
-	"den-den-mushi-Go/internal/pty_helpers"
+	"den-den-mushi-Go/internal/pty_util"
 	"den-den-mushi-Go/pkg/dto"
 	"den-den-mushi-Go/pkg/token"
 	"go.uber.org/zap"
@@ -13,12 +13,12 @@ import (
 
 type Deps struct {
 	puppet         *puppet.Client
-	commandBuilder *pty_helpers.Builder
+	commandBuilder *pty_util.Builder
 	cfg            *config.Config
 	log            *zap.Logger
 }
 
-func NewDeps(puppet *puppet.Client, commandBuilder *pty_helpers.Builder, cfg *config.Config, log *zap.Logger) Deps {
+func NewDeps(puppet *puppet.Client, commandBuilder *pty_util.Builder, cfg *config.Config, log *zap.Logger) Deps {
 	return Deps{
 		puppet:         puppet,
 		commandBuilder: commandBuilder,

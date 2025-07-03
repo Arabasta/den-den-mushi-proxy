@@ -1,4 +1,4 @@
-package pty_helpers
+package pty_util
 
 import (
 	"den-den-mushi-Go/internal/config"
