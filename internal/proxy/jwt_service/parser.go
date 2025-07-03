@@ -1,4 +1,4 @@
-package jwt_validator
+package jwt_service
 
 import (
 	"den-den-mushi-Go/internal/proxy/config"

@@ -1,12 +1,12 @@
 package middleware
 
 import (
-	"den-den-mushi-Go/internal/proxy/jwt_validator"
+	"den-den-mushi-Go/internal/proxy/jwt_service"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-func WsJwtMiddleware(v *jwt_validator.Validator, log *zap.Logger) gin.HandlerFunc {
+func WsJwtMiddleware(v *jwt_service.Validator, log *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h := c.GetHeader("Sec-WebSocket-Protocol")
 		rawToken, err := v.ExtractTokenFromHeader(h)
