@@ -47,7 +47,7 @@ func (i *Issuer) Mint(userID string, conn dto.Connection, jti string) (string, e
 }
 
 func RegisterIssuerRoutes(r *gin.RouterGroup, issuer *Issuer, log *zap.Logger) {
-	issr := r.Group("")
+	issr := r.Group("/api/v1")
 	issr.POST("/token", mintToken(issuer, log))
 }
 

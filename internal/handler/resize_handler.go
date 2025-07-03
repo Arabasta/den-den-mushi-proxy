@@ -2,7 +2,7 @@ package handler
 
 import (
 	"den-den-mushi-Go/internal/protocol"
-	"den-den-mushi-Go/internal/pty_helpers"
+	"den-den-mushi-Go/internal/pty_util"
 	"den-den-mushi-Go/pkg/token"
 	"encoding/binary"
 	"github.com/gorilla/websocket"
@@ -21,7 +21,7 @@ func (h *ResizeHandler) Handle(pkt protocol.Packet, pty io.Writer, _ *websocket.
 	rows := binary.BigEndian.Uint16(pkt.Data[2:4])
 
 	if f, ok := pty.(*os.File); ok {
-		return "", pty_helpers.Resize(f, cols, rows)
+		return "", pty_util.Resize(f, cols, rows)
 	}
 	return "", nil
 }

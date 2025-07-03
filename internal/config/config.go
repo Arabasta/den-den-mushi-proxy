@@ -8,7 +8,6 @@ type Config struct {
 		Environment string
 		Version     string
 		Port        int
-		BaseURL     string
 	}
 
 	Development struct {

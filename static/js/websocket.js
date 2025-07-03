@@ -14,7 +14,7 @@ const socketManager = {
         const jwt = params.get('jwt_tmp');
 
         // connect to proxy
-        let websocketUrl = `ws://${window.location.hostname}:45007/ws`;
+        let websocketUrl = `ws://${window.location.hostname}:45007/v1/ws`;
         console.log(websocketUrl);
         this.socket = new WebSocket(websocketUrl, ['jwt', jwt]);
 

@@ -64,7 +64,7 @@
         console.log("Request body:", body);
 
         // get the jwt
-        const res = await fetch('/token', {
+        const res = await fetch('/api/v1/token', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body

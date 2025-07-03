@@ -3,14 +3,13 @@
     "name": "den-den-mushi-proxy",
     "environment": "dev",
     "version": "1.0.0",
-    "port": 45007,
-    "base_url": "http://localhost:45007"
+    "port": 45007
   },
   "development": {
     "SshTestKeyPath": "/Users/kei/Desktop/repos/ddm-proxy-tmp/ephemeral-ssh4192716415/id_ed25519"
   },
   "logging": {
-    "level": "info",
+    "level": "debug",
     "format": "console",
     "output": "both",
     "filePath": "./log/ddm-proxy.log"

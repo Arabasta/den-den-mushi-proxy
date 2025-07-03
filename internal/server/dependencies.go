@@ -5,9 +5,9 @@ import (
 	"den-den-mushi-Go/internal/connect"
 	"den-den-mushi-Go/internal/control_server_tmp"
 	"den-den-mushi-Go/internal/core/session_manager"
+	"den-den-mushi-Go/internal/jwt_validator"
 	"den-den-mushi-Go/internal/orchestrator/puppet"
-	"den-den-mushi-Go/internal/pty_helpers"
-	"den-den-mushi-Go/internal/validator"
+	"den-den-mushi-Go/internal/pty_util"
 	"den-den-mushi-Go/internal/websocket"
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
@@ -16,7 +16,7 @@ import (
 
 type Deps struct {
 	WebsocketService *websocket.Service
-	Validator        *validator.Validator
+	Validator        *jwt_validator.Validator
 	Issuer           *control_server_tmp.Issuer // todo: tmp move this to control server
 }
 
@@ -24,7 +24,7 @@ func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
 	connectionMethodFactory := connect.NewConnectionMethodFactory(
 		connect.NewDeps(
 			puppet.NewClient(cfg, log),
-			pty_helpers.NewBuilder(log),
+			pty_util.NewBuilder(log),
 			cfg,
 			log))
 
@@ -41,7 +41,7 @@ func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
 		jwt.WithIssuer(iss),
 	)
 
-	val := validator.NewValidator(parser, cfg.Token.Secret, ttl)
+	val := jwt_validator.NewValidator(parser, cfg.Token.Secret, ttl)
 
 	return &Deps{
 		WebsocketService: websocketService,
