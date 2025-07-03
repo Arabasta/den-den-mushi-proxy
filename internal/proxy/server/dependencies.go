@@ -6,6 +6,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/control_server_tmp"
 	"den-den-mushi-Go/internal/proxy/core/session_manager"
 	"den-den-mushi-Go/internal/proxy/jwt_service"
+	"den-den-mushi-Go/internal/proxy/jwt_service/jti"
 	"den-den-mushi-Go/internal/proxy/orchestrator/puppet"
 	"den-den-mushi-Go/internal/proxy/pty_util"
 	"den-den-mushi-Go/internal/proxy/websocket"
@@ -36,7 +37,11 @@ func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
 	issuer := control_server_tmp.NewIssuer(cfg.Token.Secret, cfg.Token.Issuer, cfg.Token.Audience, ttl)
 
 	parser := jwt_service.NewParser(cfg, log)
-	val := jwt_service.NewValidator(parser, cfg.Token.Secret, ttl, cfg, log)
+
+	jtiInMemRepo := jti.NewInMemRepository(log)
+	jtiService := jti.New(jtiInMemRepo, ttl, log)
+
+	val := jwt_service.NewValidator(parser, jtiService, cfg.Token.Secret, cfg, log)
 
 	return &Deps{
 		WebsocketService: websocketService,

@@ -2,6 +2,7 @@ package jwt_service
 
 import (
 	"den-den-mushi-Go/internal/proxy/config"
+	"den-den-mushi-Go/internal/proxy/jwt_service/jti"
 	"den-den-mushi-Go/pkg/token"
 	"errors"
 	"github.com/golang-jwt/jwt/v5"
@@ -13,16 +14,16 @@ import (
 type Validator struct {
 	parser *jwt.Parser
 	secret []byte
-	replay *jtiStore
+	jti    *jti.Service
 	cfg    *config.Config
 	log    *zap.Logger
 }
 
-func NewValidator(p *jwt.Parser, secret string, ttl time.Duration, cfg *config.Config, log *zap.Logger) *Validator {
+func NewValidator(p *jwt.Parser, jti *jti.Service, secret string, cfg *config.Config, log *zap.Logger) *Validator {
 	v := &Validator{
 		parser: p,
 		secret: []byte(secret),
-		replay: &jtiStore{ttl: ttl},
+		jti:    jti,
 		cfg:    cfg,
 		log:    log}
 	return v
@@ -47,12 +48,12 @@ func (v *Validator) ValidateClaims(claims *token.Claims, tok *jwt.Token) error {
 	}
 
 	// check replay
-	if v.replay.isConsumed(claims.ID) {
+	if v.jti.IsConsumed(claims.ID) {
 		v.log.Error("Token already consumed", zap.String("jti", claims.ID))
 		return errors.New("token already consumed")
 	}
 
-	if !v.replay.consume(claims.ID) {
+	if !v.jti.Consume(claims.ID) {
 		v.log.Error("Failed to consume token", zap.String("jti", claims.ID))
 		return errors.New("failed to consume token")
 	}
