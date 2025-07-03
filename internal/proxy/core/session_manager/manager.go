@@ -8,7 +8,9 @@ import (
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 	"os"
+	"strconv"
 	"sync"
+	"time"
 )
 
 type SessionManager struct {
@@ -28,7 +30,7 @@ func (m *SessionManager) CreatePtySession(pty *os.File, log *zap.Logger) *pseudo
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	id := uuid.NewString()
+	id := uuid.NewString() + strconv.FormatInt(time.Now().Unix(), 10)
 	s := pseudotty.New(id, pty, log)
 
 	m.AddPtySession(id, s)
