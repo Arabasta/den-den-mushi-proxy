@@ -2,8 +2,8 @@ package main
 
 import (
 	"den-den-mushi-Go"
-	"den-den-mushi-Go/internal/config"
-	"den-den-mushi-Go/internal/server"
+	"den-den-mushi-Go/internal/proxy/config"
+	"den-den-mushi-Go/internal/proxy/server"
 	"den-den-mushi-Go/pkg/logger"
 	"flag"
 	"go.uber.org/zap"

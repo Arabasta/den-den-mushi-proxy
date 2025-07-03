@@ -23,6 +23,9 @@
     "RetryAttempts": 3
   },
   "token": {
+    "issuer": "control-server",
+    "audience": "proxy-storage",
+    "expectedTyp": "proxy/ws+jwt",
     "secret": "peanut",
     "expiry": 3600
   },

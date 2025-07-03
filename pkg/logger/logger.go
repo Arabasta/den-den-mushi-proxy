@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"den-den-mushi-Go/internal/config"
+	"den-den-mushi-Go/internal/proxy/config"
 	"os"
 	"path/filepath"
 	"strings"
