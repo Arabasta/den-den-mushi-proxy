@@ -1,4 +1,4 @@
-package validator
+package jwt_validator
 
 import (
 	"sync"

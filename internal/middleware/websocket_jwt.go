@@ -3,14 +3,14 @@ package middleware
 import (
 	"context"
 	"den-den-mushi-Go/internal/config"
-	"den-den-mushi-Go/internal/validator"
+	"den-den-mushi-Go/internal/jwt_validator"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"strings"
 )
 
 // todo: secrure
-func WsAuthMiddleware(v *validator.Validator, cfg *config.Config, log *zap.Logger) gin.HandlerFunc {
+func WsAuthMiddleware(v *jwt_validator.Validator, cfg *config.Config, log *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h := c.GetHeader("Sec-WebSocket-Protocol")
 		parts := strings.SplitN(h, ",", 2)
