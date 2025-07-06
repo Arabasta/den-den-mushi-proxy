@@ -1,6 +1,6 @@
 package jti
 
-type repository interface {
-	tryGetJti(jti string) (bool, error)
-	addJti(jti string) error
+type Repository interface {
+	tryGet(jti string) (bool, error)
+	save(jti string) error
 }

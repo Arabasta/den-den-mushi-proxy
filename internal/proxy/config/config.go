@@ -11,7 +11,8 @@ type Config struct {
 	}
 
 	Development struct {
-		SshTestKeyPath string
+		UseInMemoryRepository bool
+		SshTestKeyPath        string
 	}
 
 	Logging struct {

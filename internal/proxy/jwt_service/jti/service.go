@@ -6,12 +6,12 @@ import (
 )
 
 type Service struct {
-	repo repository
+	repo Repository
 	ttl  time.Duration
 	log  *zap.Logger
 }
 
-func New(repo repository, ttl time.Duration, log *zap.Logger) *Service {
+func New(repo Repository, ttl time.Duration, log *zap.Logger) *Service {
 	return &Service{
 		repo: repo,
 		ttl:  ttl,
@@ -20,7 +20,7 @@ func New(repo repository, ttl time.Duration, log *zap.Logger) *Service {
 }
 
 func (s *Service) IsConsumed(id string) bool {
-	found, err := s.repo.tryGetJti(id)
+	found, err := s.repo.tryGet(id)
 	if found {
 		s.log.Error("already consumed token", zap.String("id", id))
 		return true
@@ -37,7 +37,7 @@ func (s *Service) IsConsumed(id string) bool {
 
 func (s *Service) Consume(id string) bool {
 	s.log.Debug("consuming token", zap.String("id", id))
-	err := s.repo.addJti(id)
+	err := s.repo.save(id)
 	if err != nil {
 		s.log.Error("error consuming token", zap.String("id", id), zap.Error(err))
 		// fail hard if can't consume

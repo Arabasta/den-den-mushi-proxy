@@ -29,17 +29,22 @@ func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
 			log))
 
 	sessionManager := session_manager.New(log)
-
 	websocketService := websocket.NewWebsocketService(connectionMethodFactory, sessionManager, log, cfg)
 
 	ttl := 60 * time.Second // todo: tmp here for now
-
 	issuer := control_server_tmp.NewIssuer(cfg.Token.Secret, cfg.Token.Issuer, cfg.Token.Audience, ttl)
 
 	parser := jwt_service.NewParser(cfg, log)
 
-	jtiInMemRepo := jti.NewInMemRepository(log)
-	jtiService := jti.New(jtiInMemRepo, ttl, log)
+	var jtiRepo jti.Repository
+
+	if cfg.App.Environment == "dev" && cfg.Development.UseInMemoryRepository {
+		jtiRepo = jti.NewInMemRepository(log)
+	} else {
+		log.Fatal("JTI repository not implemented for this environment")
+	}
+
+	jtiService := jti.New(jtiRepo, ttl, log)
 
 	val := jwt_service.NewValidator(parser, jtiService, cfg.Token.Secret, cfg, log)
 

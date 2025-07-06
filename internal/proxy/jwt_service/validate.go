@@ -8,7 +8,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 	"strings"
-	"time"
 )
 
 type Validator struct {
@@ -41,12 +40,6 @@ func (v *Validator) ValidateClaims(claims *token.Claims, tok *jwt.Token) error {
 		return errors.New("token has unexpected type")
 	}
 
-	// check expiration
-	if !v.isBeforeExp(claims.RegisteredClaims.ExpiresAt) {
-		v.log.Error("Token is expired", zap.String("jti", claims.ID))
-		return errors.New("token is expired")
-	}
-
 	// check replay
 	if v.jti.IsConsumed(claims.ID) {
 		v.log.Error("Token already consumed", zap.String("jti", claims.ID))
@@ -66,11 +59,4 @@ func (v *Validator) isExpectedTyp(typ string, expectedTyp string) bool {
 		return false
 	}
 	return strings.TrimSpace(typ) == expectedTyp
-}
-
-func (v *Validator) isBeforeExp(exp *jwt.NumericDate) bool {
-	if exp == nil {
-		return false
-	}
-	return time.Now().Before(exp.Time)
 }

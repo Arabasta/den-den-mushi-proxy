@@ -17,7 +17,7 @@ func NewInMemRepository(log *zap.Logger) *InMemRepository {
 	}
 }
 
-func (r *InMemRepository) tryGetJti(jti string) (bool, error) {
+func (r *InMemRepository) tryGet(jti string) (bool, error) {
 	_, found := r.jtiStore.Load(jti)
 	if found {
 		r.log.Debug("JTI already exists", zap.String("jti", jti))
@@ -27,7 +27,7 @@ func (r *InMemRepository) tryGetJti(jti string) (bool, error) {
 	return false, nil
 }
 
-func (r *InMemRepository) addJti(jti string) error {
+func (r *InMemRepository) save(jti string) error {
 	r.jtiStore.Store(jti, struct{}{})
 	r.log.Debug("JTI added", zap.String("jti", jti))
 	return nil

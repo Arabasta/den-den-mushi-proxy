@@ -18,5 +18,11 @@ func NewParser(cfg *config.Config, log *zap.Logger) *jwt.Parser {
 		jwt.WithAudience(cfg.Token.Audience),
 
 		// RFC8725 3.8 validate issuer
-		jwt.WithIssuer(cfg.Token.Issuer))
+		jwt.WithIssuer(cfg.Token.Issuer),
+
+		// makes exp claim mandatory and checks it
+		jwt.WithExpirationRequired(),
+
+		// makes iat claim mandatory and checks it
+		jwt.WithIssuedAt())
 }

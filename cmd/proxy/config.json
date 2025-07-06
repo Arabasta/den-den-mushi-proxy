@@ -6,6 +6,7 @@
     "port": 45007
   },
   "development": {
+    "useInMemoryRepository": true,
     "SshTestKeyPath": "/Users/kei/Desktop/repos/ddm-proxy-tmp/ephemeral-ssh4192716415/id_ed25519"
   },
   "logging": {
