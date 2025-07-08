@@ -34,7 +34,7 @@ func (s *Session) readPty() {
 
 		s.mu.Lock()
 		s.ptyLastPackets = append(s.ptyLastPackets, pkt)
-		maxLastPackets := 20 // todo: make configurable and maybe track line or something
+		maxLastPackets := 100 // todo: make configurable and maybe track line or something
 		if len(s.ptyLastPackets) >= maxLastPackets {
 			s.ptyLastPackets = s.ptyLastPackets[1:]
 		}

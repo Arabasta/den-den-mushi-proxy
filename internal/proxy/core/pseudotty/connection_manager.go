@@ -96,9 +96,15 @@ func (s *Session) addConn(c *client.Connection) {
 		s.LogHeader()
 	} else {
 		// is joining existing pty session, notify everyone
-		s.logf("[%s] %s joined as observer", c.Claims.Subject, c.Claims.Connection.UserSession.Id)
-		pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " joined as observer")}
-		s.outboundCh <- pkt
+		if c.Claims.Connection.UserSession.StartRole == dto.Observer {
+			s.logf("[%s] %s joined as observer", c.Claims.Subject, c.Claims.Connection.UserSession.Id)
+			pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " joined as observer")}
+			s.outboundCh <- pkt
+		} else if c.Claims.Connection.UserSession.StartRole == dto.Implementor {
+			s.logf("[%s] %s joined as implementor", c.Claims.Subject, c.Claims.Connection.UserSession.Id)
+			pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " joined as implementor")}
+			s.outboundCh <- pkt
+		}
 
 		for i := range s.ptyLastPackets {
 			sendToConn(c, s.ptyLastPackets[i])

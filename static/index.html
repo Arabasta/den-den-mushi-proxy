@@ -127,6 +127,25 @@
 <label>Jwt:</label>
 <pre id="observeOut"></pre>
 
+<h3>Rejoin</h3>
+<label>Request JSON:</label>
+<textarea id="imp_req" rows="12">
+{
+  "purpose": "health_check",
+  "server": {
+    "ip": "54.255.144.215",
+    "port": "22",
+    "os_user": "ec2-user"
+  },
+  "connection_type": "ssh_test_key",
+  "pty_session_id": "fill_in_with_a_valid_session_id",
+  "start_role": "implementor"
+}
+</textarea>
+<button id="implementor_join">Connect</button>
+
+<label>Jwt:</label>
+<pre id="imp_out"></pre>
 
 <script>
     document.getElementById('get_token1').onclick = async () => {
@@ -209,6 +228,25 @@
       });
       const {token} = await res.json();
       document.getElementById('observeOut').textContent = token;
+
+      // pass the token to the websocket.js page through  parameter
+      // todo: don't do it like this lol
+      const url = `/static/terminal.html?jwt_tmp=${encodeURIComponent(token)}`;
+      window.open(url, '_blank');
+    };
+
+    document.getElementById('implementor_join').onclick = async () => {
+      const body = document.getElementById('imp_req').value;
+      console.log("Request body:", body);
+
+      // get the jwt
+      const res = await fetch('/api/v1/token', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body
+      });
+      const {token} = await res.json();
+      document.getElementById('imp_out').textContent = token;
 
       // pass the token to the websocket.js page through  parameter
       // todo: don't do it like this lol
