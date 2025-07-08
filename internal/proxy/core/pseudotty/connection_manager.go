@@ -2,6 +2,8 @@ package pseudotty
 
 import (
 	"den-den-mushi-Go/internal/proxy/core/client"
+	"den-den-mushi-Go/internal/proxy/filter"
+	"den-den-mushi-Go/internal/proxy/protocol"
 	"den-den-mushi-Go/pkg/dto"
 	"den-den-mushi-Go/pkg/token"
 	"errors"
@@ -10,23 +12,33 @@ import (
 )
 
 func (s *Session) RegisterInitialConn(ws *websocket.Conn, claims *token.Claims) error {
+	s.startClaims = claims
+
 	s.Log.Info("Registering initial websocket connection to pty session")
 	err := s.RegisterConn(ws, claims)
-
-	if claims.Connection.Purpose == dto.Change {
-		s.purpose = &ChangeRequestPurpose{}
-	} else if claims.Connection.Purpose == dto.Healthcheck {
-		s.purpose = &HealthcheckPurpose{}
-	} else {
-		s.Log.Error("Unknown purpose for new connection", zap.String("purpose", string(claims.Connection.Purpose)))
-		return errors.New("unknown purpose")
-	}
-	if s.purpose == nil {
-		s.Log.Error("Purpose is nil")
-		return errors.New("purpose is nil")
+	if err != nil {
+		s.Log.Error("Failed to register initial connection", zap.Error(err))
+		return err
 	}
 
-	return err
+	s.Log.Info("Setting purpose for pty session", zap.String("purpose", string(claims.Connection.Purpose)))
+	err = setPurpose(s, claims.Connection.Purpose)
+	if err != nil {
+		s.Log.Error("Failed to register initial connection", zap.Error(err))
+		return err
+	}
+
+	if claims.Connection.Purpose == dto.Healthcheck {
+		s.Log.Info("Setting healthcheck filter")
+		s.filter = filter.GetFilter(claims.Connection.FilterType)
+		if s.filter == nil {
+			err = errors.New("invalid filter type")
+			s.Log.Error("Failed to register initial connection", zap.Error(err))
+			return err
+		}
+	}
+
+	return nil
 }
 
 // RegisterConn to client connection on websocket connect
@@ -37,7 +49,7 @@ func (s *Session) RegisterConn(ws *websocket.Conn, claims *token.Claims) error {
 	// check if primary already exists
 	if claims.Connection.UserSession.StartRole == dto.Implementor {
 		s.mu.Lock()
-		if s.Primary != nil {
+		if s.primary != nil {
 			s.mu.Unlock()
 			return errors.New("max of one primaryConn per pty session allowed")
 		}
@@ -45,8 +57,9 @@ func (s *Session) RegisterConn(ws *websocket.Conn, claims *token.Claims) error {
 	}
 
 	conn := &client.Connection{
-		Sock:   ws,
-		Claims: claims,
+		Sock:      ws,
+		Claims:    claims,
+		WsWriteCh: make(chan protocol.Packet, 100), // todo: make configurable
 	}
 	conn.Close = func() {
 		s.connDeregisterCh <- conn
@@ -63,7 +76,7 @@ func (s *Session) addConn(c *client.Connection) {
 		zap.String("role", string(c.Claims.Connection.UserSession.StartRole)))
 
 	if c.Claims.Connection.UserSession.StartRole == dto.Implementor {
-		s.Primary = c
+		s.primary = c
 	} else if c.Claims.Connection.UserSession.StartRole == dto.Observer {
 		s.observers[c] = struct{}{}
 	} else {
@@ -73,14 +86,27 @@ func (s *Session) addConn(c *client.Connection) {
 
 	s.Log.Info("Websocket connection registered")
 
+	// doesn't handle swapping roles for now
 	if c.Claims.Connection.UserSession.StartRole == dto.Implementor {
-		s.Log.Info("Is primaryConn role, starting readClient")
+		s.Log.Info("Is primary role, starting readClient")
 		go s.readClient(c)
 	}
 	if c.Claims.Connection.PtySession.IsNew {
 		s.Log.Info("Is new pty, adding log header")
 		s.LogHeader()
+	} else {
+		// is joining existing pty session, notify everyone
+		s.logf("[%s] %s joined as observer", c.Claims.Subject, c.Claims.Connection.UserSession.Id)
+		pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " joined as observer")}
+		s.outboundCh <- pkt
+
+		for i := range s.ptyLastPackets {
+			sendToConn(c, s.ptyLastPackets[i])
+		}
 	}
+
+	// start sending messages to the client
+	go c.WriteClient()
 }
 
 // removeConn when a new websocket connection is deregistered, called by the event loop
@@ -88,12 +114,13 @@ func (s *Session) removeConn(c *client.Connection) {
 	s.Log.Info("Deregistering websocket connection from pty session",
 		zap.String("userSessionId", c.Claims.Connection.UserSession.Id))
 
-	if s.Primary == c {
-		s.Primary = nil
+	if s.primary == c {
+		s.primary = nil
 	} else {
 		delete(s.observers, c)
 	}
 
-	// todo: more error handling eg check if ws is arleady closed
-	c.Sock.Close()
+	s.logf("[%s] %s has left the session", c.Claims.Subject, c.Claims.Connection.UserSession.Id)
+	pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " has left")}
+	s.outboundCh <- pkt
 }

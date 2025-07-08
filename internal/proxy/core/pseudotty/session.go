@@ -4,30 +4,36 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/client"
 	"den-den-mushi-Go/internal/proxy/filter"
 	"den-den-mushi-Go/internal/proxy/protocol"
+	"den-den-mushi-Go/pkg/token"
 	"go.uber.org/zap"
 	"io"
 	"os"
 	"sync"
+	"time"
 )
 
 type Session struct {
-	id      string
-	Pty     *os.File
+	id          string
+	Pty         *os.File
+	startClaims *token.Claims // claims from the creator of the session, this must not be modified
+	startTime   int64
+
 	purpose Purpose
 
 	Log       *zap.Logger
 	logWriter io.WriteCloser
 
-	Filter     *filter.CommandFilter // only for health check
-	LineEditor *filter.LineEditor    // only for health check, tracks pty's current line
+	filter filter.CommandFilter // only for health check
+	line   *filter.LineEditor   // only for health check, tracks pty's current line
 
-	Primary   *client.Connection
+	primary   *client.Connection
 	observers map[*client.Connection]struct{}
 
 	connRegisterCh   chan *client.Connection
 	connDeregisterCh chan *client.Connection
 
-	outboundCh chan protocol.Packet
+	outboundCh     chan protocol.Packet
+	ptyLastPackets []protocol.Packet
 
 	mu     sync.Mutex
 	closed bool
@@ -35,13 +41,17 @@ type Session struct {
 
 func New(id string, pty *os.File, log *zap.Logger) *Session {
 	s := &Session{
-		id:  id,
-		Pty: pty,
-		Log: log.With(zap.String("ptySession", id)),
+		id:        id,
+		Pty:       pty,
+		startTime: time.Now().Unix(),
+		Log:       log.With(zap.String("ptySession", id)),
+
+		line: new(filter.LineEditor),
 
 		observers: make(map[*client.Connection]struct{}),
 
-		outboundCh:       make(chan protocol.Packet, 100),
+		outboundCh: make(chan protocol.Packet, 100), // todo: make configurable
+
 		connRegisterCh:   make(chan *client.Connection),
 		connDeregisterCh: make(chan *client.Connection),
 	}
@@ -58,44 +68,24 @@ func New(id string, pty *os.File, log *zap.Logger) *Session {
 	return s
 }
 
-// eventLoop should be the only goroutine mutating Primary and observers, other code needs to lock if reading
-func (s *Session) eventLoop() {
-	for {
-		select {
-		case pkt, ok := <-s.outboundCh:
-			if !ok {
-				return
-			}
-			s.fanout(pkt)
-		case c := <-s.connRegisterCh:
-			s.addConn(c)
-		case c := <-s.connDeregisterCh:
-			s.removeConn(c)
-		}
-	}
+type SessionInfo struct {
+	SessionID   string        `json:"session_id"`
+	StartClaims *token.Claims `json:"claims"`
+	//Primary     *token.Claims         `json:"primary"`
+	//Observers   []*token.Claims       `json:"observers"`
 }
 
-// readPty and add data to outbound channel
-func (s *Session) readPty() {
-	buf := make([]byte, 4096)
-	for {
-		n, err := s.Pty.Read(buf)
-		if err != nil {
-			if err == io.EOF {
-				s.Log.Info("PTY session ended normally")
-			} else {
-				s.Log.Error("Error reading from pty", zap.Error(err))
-			}
-			close(s.outboundCh)
-			return
-		}
-
-		data := append([]byte{}, buf[:n]...)
-		s.outboundCh <- protocol.Packet{
-			Header: protocol.Output,
-			Data:   data,
-		}
-
-		s.Log.Info("Pty Output", zap.ByteString("data", data))
+func (s *Session) GetDetails() SessionInfo {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	observers := make([]*token.Claims, 0, len(s.observers))
+	for o := range s.observers {
+		observers = append(observers, o.Claims)
+	}
+	return SessionInfo{
+		SessionID:   s.id,
+		StartClaims: s.startClaims,
+		//Primary:     s.primary.Claims,
+		//Observers:   observers,
 	}
 }

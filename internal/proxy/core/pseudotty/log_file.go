@@ -46,7 +46,7 @@ func (s *Session) LogHeader() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	claims := s.Primary.Claims
+	claims := s.primary.Claims
 
 	header :=
 		"# Session Start Time: " + time.Now().UTC().Format(time.RFC3339) + "\n" +

@@ -13,20 +13,20 @@ import (
 	"time"
 )
 
-type SessionManager struct {
+type Service struct {
 	mu          sync.RWMutex
 	ptySessions map[string]*pseudotty.Session // todo use service and repo layer
 	log         *zap.Logger
 }
 
-func New(log *zap.Logger) *SessionManager {
-	return &SessionManager{
+func New(log *zap.Logger) *Service {
+	return &Service{
 		ptySessions: make(map[string]*pseudotty.Session),
 		log:         log,
 	}
 }
 
-func (m *SessionManager) CreatePtySession(pty *os.File, log *zap.Logger) *pseudotty.Session {
+func (m *Service) CreatePtySession(pty *os.File, log *zap.Logger) *pseudotty.Session {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -37,7 +37,7 @@ func (m *SessionManager) CreatePtySession(pty *os.File, log *zap.Logger) *pseudo
 	return s
 }
 
-func (m *SessionManager) AddPtySession(id string, sess *pseudotty.Session) {
+func (m *Service) AddPtySession(id string, sess *pseudotty.Session) {
 	m.log.Info("Adding pty session to map", zap.String("id", id))
 	if _, exists := m.ptySessions[id]; exists {
 		sess.Log.Error("Pty session already exists", zap.String("id", id))
@@ -45,7 +45,7 @@ func (m *SessionManager) AddPtySession(id string, sess *pseudotty.Session) {
 	m.ptySessions[id] = sess
 }
 
-func (m *SessionManager) GetPtySession(id string) (*pseudotty.Session, bool) {
+func (m *Service) GetPtySession(id string) (*pseudotty.Session, bool) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -54,7 +54,8 @@ func (m *SessionManager) GetPtySession(id string) (*pseudotty.Session, bool) {
 	return s, ok
 }
 
-func (m *SessionManager) DeletePtySession(id string) {
+// todo: need channel for pty sessions to notify
+func (m *Service) DeletePtySession(id string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -65,12 +66,28 @@ func (m *SessionManager) DeletePtySession(id string) {
 	}
 }
 
-// if pty session already exists, attach the websocket to the existing session
-func (m *SessionManager) AttachWebsocket(ws *websocket.Conn, claims *token.Claims) error {
+// AttachWebsocket if pty session already exists
+func (m *Service) AttachWebsocket(ws *websocket.Conn, claims *token.Claims) error {
 	session, exists := m.GetPtySession(claims.Connection.PtySession.Id)
 	if !exists {
 		return errors.New("pty session not found")
 	}
 
 	return session.RegisterConn(ws, claims)
+}
+
+// tmp  for demo
+func (m *Service) GetPtySessions() []pseudotty.SessionInfo {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	m.log.Info("Retrieving pty session info")
+	ptySessions := make([]pseudotty.SessionInfo, 0, len(m.ptySessions))
+
+	for s := range m.ptySessions {
+		session := m.ptySessions[s]
+		ptySessions = append(ptySessions, session.GetDetails())
+	}
+	m.log.Debug("Retrieved pty session info", zap.Any("ptySessions", ptySessions))
+	return ptySessions
 }

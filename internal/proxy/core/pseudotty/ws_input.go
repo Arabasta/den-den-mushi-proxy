@@ -9,12 +9,14 @@ import (
 	"io"
 )
 
-// readClient should only be accessible by the Primary connection
-func (s *Session) readClient(ws *client.Connection) {
+// readClient should only be accessible by the primary connection
+func (s *Session) readClient(c *client.Connection) {
 	for {
-		msgType, msg, err := ws.Sock.ReadMessage()
+		msgType, msg, err := c.Sock.ReadMessage()
 		if err != nil {
+			// close on any error
 			s.handleReadError(err)
+			s.removeConn(c)
 			return
 		}
 
@@ -41,14 +43,16 @@ func (s *Session) processClientMsg(pkt protocol.Packet) {
 	}
 
 	if err != nil {
+		// todo: more robust error handling
 		s.Log.Error("Failed writing to PTY", zap.Error(err))
 	}
 	if logMsg != "" {
+		s.Log.Info("Message from handler", zap.String("header", string(pkt.Header)),
+			zap.String("message", logMsg))
 		s.logLine(pkt.Header, logMsg)
 	}
 }
 
-// todo: handle errors properly
 func (s *Session) handleReadError(err error) {
 	switch {
 	case errors.Is(err, io.EOF):

@@ -38,8 +38,10 @@
 <body>
 
 <h2>Den Den Mushi demo</h2>
+
+<h3>Change Request</h3>
 <label>Request JSON:</label>
-<textarea id="req" rows="12">
+<textarea id="tokenreq1" rows="12">
 {
   "purpose": "change_request",
   "change_id": "CR-123",
@@ -52,15 +54,83 @@
 }
 </textarea>
 
-<button id="go">Connect</button>
+<button id="get_token1">Connect</button>
 
 <label>Jwt:</label>
-<pre id="out"></pre>
+<pre id="tokenout1"></pre>
+
+<h3>Healthcheck with Blacklist</h3>
+<label>Request JSON:</label>
+<textarea id="tokenreq2" rows="12">
+{
+  "purpose": "health_check",
+  "server": {
+    "ip": "54.255.144.215",
+    "port": "22",
+    "os_user": "ec2-user"
+  },
+  "connection_type": "ssh_test_key",
+  "filter_type": "blacklist"
+}
+</textarea>
+
+<button id="get_token2">Connect</button>
+
+<label>Jwt:</label>
+<pre id="tokenout2"></pre>
+
+<h3>Healthcheck with Whitelist</h3>
+<label>Request JSON:</label>
+<textarea id="tokenreq3" rows="12">
+{
+  "purpose": "health_check",
+  "server": {
+    "ip": "54.255.144.215",
+    "port": "22",
+    "os_user": "ec2-user"
+  },
+  "connection_type": "ssh_test_key",
+  "filter_type": "whitelist"
+}
+</textarea>
+
+<button id="get_token3">Connect</button>
+
+<label>Jwt:</label>
+<pre id="tokenout3"></pre>
+
+<h3>Pty Sessions</h3>
+<label>Request JSON:</label>
+
+<button id="pty_sessions_get">Get</button>
+
+<label>Result:</label>
+<pre id="ptysessout"></pre>
+
+<h3>Observe</h3>
+<label>Request JSON:</label>
+<textarea id="observe_req" rows="12">
+{
+  "purpose": "health_check",
+  "server": {
+    "ip": "54.255.144.215",
+    "port": "22",
+    "os_user": "ec2-user"
+  },
+  "connection_type": "ssh_test_key",
+  "pty_session_id": "fill_in_with_a_valid_session_id",
+  "start_role": "observer"
+}
+</textarea>
+<button id="observe_join">Connect</button>
+
+<label>Jwt:</label>
+<pre id="observeOut"></pre>
+
 
 <script>
-    document.getElementById('go').onclick = async () => {
-        const body = document.getElementById('req').value;
-
+    document.getElementById('get_token1').onclick = async () => {
+        const body = document.getElementById('tokenreq1').value;
         console.log("Request body:", body);
 
         // get the jwt
@@ -70,12 +140,80 @@
             body
         });
         const {token} = await res.json();
-        document.getElementById('out').textContent = token;
+        document.getElementById('tokenout1').textContent = token;
 
         // pass the token to the websocket.js page through  parameter
         // todo: don't do it like this lol
         const url = `/static/terminal.html?jwt_tmp=${encodeURIComponent(token)}`;
         window.open(url, '_blank');
+    };
+    document.getElementById('get_token2').onclick = async () => {
+        const body = document.getElementById('tokenreq2').value;
+        console.log("Request body:", body);
+
+        // get the jwt
+        const res = await fetch('/api/v1/token', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body
+        });
+        const {token} = await res.json();
+        document.getElementById('tokenout2').textContent = token;
+
+        // pass the token to the websocket.js page through  parameter
+        // todo: don't do it like this lol
+        const url = `/static/terminal.html?jwt_tmp=${encodeURIComponent(token)}`;
+        window.open(url, '_blank');
+    };
+
+    document.getElementById('get_token3').onclick = async () => {
+      const body = document.getElementById('tokenreq3').value;
+      console.log("Request body:", body);
+
+      // get the jwt
+      const res = await fetch('/api/v1/token', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body
+      });
+      const {token} = await res.json();
+      document.getElementById('tokenout3').textContent = token;
+
+      // pass the token to the websocket.js page through  parameter
+      // todo: don't do it like this lol
+      const url = `/static/terminal.html?jwt_tmp=${encodeURIComponent(token)}`;
+      window.open(url, '_blank');
+    };
+
+    document.getElementById('pty_sessions_get').onclick = async () => {
+
+      // get the jwt
+      const res = await fetch('/api/v1/pty_sessions', {
+        method: 'GET',
+        headers: {'Content-Type': 'application/json'},
+      });
+      const {sessions} = await res.json();
+      document.getElementById('ptysessout').textContent = JSON.stringify(sessions, null, 2);
+    };
+
+
+    document.getElementById('observe_join').onclick = async () => {
+      const body = document.getElementById('observe_req').value;
+      console.log("Request body:", body);
+
+      // get the jwt
+      const res = await fetch('/api/v1/token', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body
+      });
+      const {token} = await res.json();
+      document.getElementById('observeOut').textContent = token;
+
+      // pass the token to the websocket.js page through  parameter
+      // todo: don't do it like this lol
+      const url = `/static/terminal.html?jwt_tmp=${encodeURIComponent(token)}`;
+      window.open(url, '_blank');
     };
 </script>
 

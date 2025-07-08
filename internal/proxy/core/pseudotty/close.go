@@ -50,7 +50,7 @@ func (s *Session) closeTheWorld() func() {
 	var once sync.Once
 	return func() {
 		once.Do(func() {
-			s.closeWs(s.Primary)
+			s.closeWs(s.primary)
 			for o := range s.observers {
 				s.closeWs(o)
 			}

@@ -9,7 +9,9 @@ type MintRequest struct {
 	StartRole    StartRole         `json:"start_role,omitempty"`               // required if PtySessionId is provided
 	Type         ConnectionType    `json:"connection_type" binding:"required"` // temporarily from client, should be set based on server details
 	Server       ServerInfo        `json:"server" binding:"required"`
+	FilterType   FilterType        `json:"filter_type"` // should be set based on server details
 }
+
 type ServerInfo struct {
 	IP     string `json:"ip" binding:"required"`
 	Port   string `json:"port" binding:"required"`
@@ -23,6 +25,7 @@ type Connection struct {
 	UserSession   UserSession       `json:"user_session"`
 	PtySession    PtySession        `json:"pty_session"`
 	ChangeRequest ChangeRequest     `json:"change_request,omitempty"`
+	FilterType    FilterType        `json:"filter_type" binding:"required"` // should be set based on server details
 }
 
 type UserSession struct {
@@ -38,11 +41,11 @@ const (
 )
 
 type PtySession struct {
-	Id                        string        `json:"id,omitempty"`
-	IsNew                     bool          `json:"is_new,omitempty"` // true if creating new session, false if joining existing
-	IsObserverEnabled         bool          `json:"is_observer_enabled,omitempty"`
-	MaxObservers              int           `json:"max_observers,omitempty"`
-	MaxHeadlessMinutes        time.Duration `json:"max_headless_minutes,omitempty"`         // in minutes
+	Id                string `json:"id,omitempty"`
+	IsNew             bool   `json:"is_new,omitempty"` // true if creating new session, false if joining existing
+	IsObserverEnabled bool   `json:"is_observer_enabled,omitempty"`
+	MaxObservers      int    `json:"max_observers,omitempty"`
+	//MaxHeadlessMinutes        time.Duration `json:"max_headless_minutes,omitempty"`         // in minutes
 	MaxSessionDurationMinutes time.Duration `json:"max_session_duration_minutes,omitempty"` // in minutes
 }
 
@@ -57,7 +60,7 @@ type ConnectionPurpose string
 
 const (
 	Change      ConnectionPurpose = "change_request"
-	Healthcheck ConnectionPurpose = "healthcheck"
+	Healthcheck ConnectionPurpose = "health_check"
 )
 
 type ConnectionType string
@@ -71,4 +74,11 @@ const (
 	/* New Connection */
 	SshOrchestratorKey ConnectionType = "ssh_orchestrator_key"
 	SshPassword        ConnectionType = "ssh_password"
+)
+
+type FilterType string
+
+const (
+	Blacklist FilterType = "blacklist"
+	Whitelist FilterType = "whitelist"
 )

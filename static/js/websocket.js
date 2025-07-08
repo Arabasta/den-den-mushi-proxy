@@ -31,7 +31,10 @@ const socketManager = {
                     showToast(new TextDecoder().decode(payload))
                     break;
                 case 0x04: // blocked command detected
-                    term.write(`\r\n\x1b[31m${new TextDecoder().decode(payload)}\x1b[0m\r\n`);
+                    term.write(`\r\n\x1b[31m${new TextDecoder().decode(payload)} not allowed\x1b[0m\r\n`);
+                    break;
+                case 0x07: // pty session event
+                    showSideToast(new TextDecoder().decode(payload));
                     break;
                 default:
                     console.warn("Unknown header:", header);
@@ -76,7 +79,7 @@ export default socketManager;
 // just whatever lol frontend no one cares
 function showToast(message) {
     const toast = document.createElement('div');
-    toast.innerText = message;
+    toast.innerText = "Blocked control character: " + message;
     toast.style = `
         position: fixed;
         left: 50%;
@@ -90,5 +93,57 @@ function showToast(message) {
         font-weight: bold;
     `;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 10000);
+    setTimeout(() => toast.remove(), 1000);
+}
+
+function showSideToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.innerHTML = `
+        <div class="toast-content">
+            <div class="toast-message">${message}</div>
+        </div>
+    `;
+
+    // Base styles
+    toast.style.cssText = `
+        position: fixed;
+        right: 20px;
+        top: 20px;
+        width: 300px;
+        padding: 16px;
+        border-radius: 4px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        z-index: 9999;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        display: flex;
+        align-items: center;
+        transform: translateX(120%);
+        transition: transform 0.3s ease-out;
+        opacity: 0;
+    `;
+
+    // Type-specific styles
+    const typeStyles = {
+        info: `background: #f0f7ff; color: #0066cc; border-left: 4px solid #0066cc;`,
+        success: `background: #f0fff4; color: #0f9960; border-left: 4px solid #0f9960;`,
+        warning: `background: #fffaf0; color: #d9822b; border-left: 4px solid #d9822b;`,
+        error: `background: #fff0f0; color: #db3737; border-left: 4px solid #db3737;`
+    };
+
+    toast.style.cssText += typeStyles[type] || typeStyles.info;
+
+    document.body.appendChild(toast);
+
+    // Trigger the slide-in animation
+    setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+        toast.style.opacity = '1';
+    }, 10);
+
+    // Auto-remove after delay
+    setTimeout(() => {
+        toast.style.transform = 'translateX(120%)';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }

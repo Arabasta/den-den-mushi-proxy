@@ -28,7 +28,7 @@
     "audience": "proxy-storage",
     "expectedTyp": "proxy/ws+jwt",
     "secret": "peanut",
-    "expiry": 3600
+    "ttl": 120
   },
   "Websocket": {
     "PingPong": {

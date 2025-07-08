@@ -1,6 +1,7 @@
 package server
 
 import (
+	"den-den-mushi-Go/internal/proxy/admin_server_tmp"
 	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/internal/proxy/control_server_tmp"
 	"den-den-mushi-Go/internal/proxy/middleware"
@@ -15,7 +16,8 @@ import (
 func registerUnprotectedRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log *zap.Logger) {
 	unprotected := r.Group("")
 
-	control_server_tmp.RegisterIssuerRoutes(unprotected, deps.Issuer, log)
+	control_server_tmp.RegisterIssuerRoutes(unprotected, deps.Issuer, log)      // todo: remove
+	admin_server_tmp.RegisterAdminRoutes(unprotected, deps.SessionManager, log) // todo: remove
 }
 
 func registerWebsocketRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log *zap.Logger) {

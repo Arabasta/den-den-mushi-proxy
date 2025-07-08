@@ -11,13 +11,13 @@ import (
 	"den-den-mushi-Go/internal/proxy/pty_util"
 	"den-den-mushi-Go/internal/proxy/websocket"
 	"go.uber.org/zap"
-	"time"
 )
 
 type Deps struct {
 	WebsocketService *websocket.Service
 	Validator        *jwt_service.Validator
 	Issuer           *control_server_tmp.Issuer // todo: tmp move this to control server
+	SessionManager   *session_manager.Service   // todo: tmp remove this
 }
 
 func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
@@ -31,8 +31,7 @@ func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
 	sessionManager := session_manager.New(log)
 	websocketService := websocket.NewWebsocketService(connectionMethodFactory, sessionManager, log, cfg)
 
-	ttl := 60 * time.Second // todo: tmp here for now
-	issuer := control_server_tmp.NewIssuer(cfg.Token.Secret, cfg.Token.Issuer, cfg.Token.Audience, ttl)
+	issuer := control_server_tmp.New(cfg, log)
 
 	parser := jwt_service.NewParser(cfg, log)
 
@@ -44,7 +43,7 @@ func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
 		log.Fatal("JTI repository not implemented for this environment")
 	}
 
-	jtiService := jti.New(jtiRepo, ttl, log)
+	jtiService := jti.New(jtiRepo, log)
 
 	val := jwt_service.NewValidator(parser, jtiService, cfg.Token.Secret, cfg, log)
 
@@ -52,5 +51,6 @@ func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
 		WebsocketService: websocketService,
 		Validator:        val,
 		Issuer:           issuer,
+		SessionManager:   sessionManager,
 	}
 }

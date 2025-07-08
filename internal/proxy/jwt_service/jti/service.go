@@ -2,19 +2,16 @@ package jti
 
 import (
 	"go.uber.org/zap"
-	"time"
 )
 
 type Service struct {
 	repo Repository
-	ttl  time.Duration
 	log  *zap.Logger
 }
 
-func New(repo Repository, ttl time.Duration, log *zap.Logger) *Service {
+func New(repo Repository, log *zap.Logger) *Service {
 	return &Service{
 		repo: repo,
-		ttl:  ttl,
 		log:  log,
 	}
 }

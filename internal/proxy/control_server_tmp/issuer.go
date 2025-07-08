@@ -1,6 +1,7 @@
 package control_server_tmp
 
 import (
+	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/pkg/dto"
 	"den-den-mushi-Go/pkg/token"
 	"fmt"
@@ -15,18 +16,28 @@ import (
 // todo: move this to control server package
 
 type Issuer struct {
+	cfg    *config.Config
+	log    *zap.Logger
 	secret []byte
 	iss    string
 	aud    string
 	ttl    time.Duration
 }
 
-func NewIssuer(secret, issuer, audience string, ttl time.Duration) *Issuer {
+func New(cfg *config.Config, log *zap.Logger) *Issuer {
+	log.Info("Initializing JWT Issuer",
+		zap.String("issuer", cfg.Token.Issuer),
+		zap.String("audience", cfg.Token.Audience),
+		zap.Int("ttl_seconds", cfg.Token.Ttl),
+	)
+
 	return &Issuer{
-		secret: []byte(secret),
-		iss:    issuer,
-		aud:    audience,
-		ttl:    ttl,
+		cfg:    cfg,
+		log:    log,
+		secret: []byte(cfg.Token.Secret),
+		iss:    cfg.Token.Issuer,
+		aud:    cfg.Token.Audience,
+		ttl:    time.Duration(cfg.Token.Ttl) * time.Second,
 	}
 }
 
@@ -62,7 +73,8 @@ func RegisterIssuerRoutes(r *gin.RouterGroup, issuer *Issuer, log *zap.Logger) {
 func mintToken(issuer *Issuer, log *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body dto.MintRequest
-		if err := c.ShouldBindJSON(&body); err != nil {
+		err := c.ShouldBindJSON(&body)
+		if err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
 			log.Error("Failed to bind JSON", zap.Error(err))
 			return
@@ -70,8 +82,7 @@ func mintToken(issuer *Issuer, log *zap.Logger) gin.HandlerFunc {
 
 		log.Info("Mint request received", zap.Any("request", body))
 
-		// some simple example validation for now
-		//todo: improve validation
+		// todo: implement proper validation, this is just a placeholder demo simple junk thing
 		var startRole dto.StartRole
 
 		if body.PtySessionId == "" {
@@ -107,7 +118,6 @@ func mintToken(issuer *Issuer, log *zap.Logger) gin.HandlerFunc {
 				// todo: all these should be set by config or from db
 				IsObserverEnabled:         true,
 				MaxObservers:              5,
-				MaxHeadlessMinutes:        5,
 				MaxSessionDurationMinutes: 360,
 			},
 			ChangeRequest: dto.ChangeRequest{
@@ -116,6 +126,7 @@ func mintToken(issuer *Issuer, log *zap.Logger) gin.HandlerFunc {
 				EndTime:                  time.Now().Add(1 * time.Hour).Format(time.RFC3339), // todo: should be from change request
 				ChangeGracePeriodMinutes: 30,                                                 // todo: should be from config or db
 			},
+			FilterType: body.FilterType,
 		}
 
 		jti := uuid.NewString() + strconv.FormatInt(time.Now().Unix(), 10)

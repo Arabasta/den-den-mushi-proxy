@@ -12,12 +12,12 @@ import (
 
 type Service struct {
 	connectionMethodFactory *connect.ConnectionMethodFactory
-	sessionManager          *session_manager.SessionManager
+	sessionManager          *session_manager.Service
 	log                     *zap.Logger
 	cfg                     *config.Config
 }
 
-func NewWebsocketService(c *connect.ConnectionMethodFactory, sm *session_manager.SessionManager, log *zap.Logger,
+func NewWebsocketService(c *connect.ConnectionMethodFactory, sm *session_manager.Service, log *zap.Logger,
 	cfg *config.Config) *Service {
 	return &Service{
 		connectionMethodFactory: c,

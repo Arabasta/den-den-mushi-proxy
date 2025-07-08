@@ -33,7 +33,7 @@ type Config struct {
 		Audience    string
 		Secret      string
 		ExpectedTyp string
-		Expiry      int
+		Ttl         int
 	}
 
 	Websocket struct {

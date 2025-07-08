@@ -1,6 +1,7 @@
 package filter
 
 type LineEditor struct {
+	// todo: set max length, else users can cause out of memory
 	Buffer []rune
 	Cursor int
 }
