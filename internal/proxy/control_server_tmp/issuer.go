@@ -102,13 +102,17 @@ func mintToken(issuer *Issuer, log *zap.Logger) gin.HandlerFunc {
 			startRole = body.StartRole
 		}
 
+		if body.UserId == "" {
+			body.UserId = "keiyam"
+		}
+
 		// Construct the Connection DTO to embed in JWT
 		conn := dto.Connection{
 			Server:  body.Server,
 			Type:    body.Type, // todo: should be set based on server details
 			Purpose: body.Purpose,
 			UserSession: dto.UserSession{
-				Id:        "kei", // todo: should be user + uuid
+				Id:        body.UserId + uuid.NewString(), // todo: should be set with keycloak user id
 				StartRole: startRole,
 			},
 			PtySession: dto.PtySession{
@@ -131,7 +135,7 @@ func mintToken(issuer *Issuer, log *zap.Logger) gin.HandlerFunc {
 
 		jti := uuid.NewString() + strconv.FormatInt(time.Now().Unix(), 10)
 
-		tokenStr, err := issuer.Mint("kei", conn, jti)
+		tokenStr, err := issuer.Mint(body.UserId, conn, jti)
 		if err != nil {
 			log.Error("Failed to mint token", zap.Error(err))
 			c.JSON(500, gin.H{"error": err.Error()})

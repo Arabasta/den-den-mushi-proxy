@@ -17,6 +17,7 @@ func (s *Session) EndSession() {
 
 	s.Log.Info("Ending pty session")
 	s.closeTheWorld()
+	s.onClose(s.id)
 }
 
 func (s *Session) closeWs(c *client.Connection) {
@@ -33,8 +34,10 @@ func (s *Session) closePty() {
 			s.Log.Warn("Failed to close pty", zap.Error(err))
 		}
 	}
-	s.Log.Info("Closed pty")
+
+	s.Log.Info("Closed pty, shutting down all connections")
 	s.closeAllConnections()
+	s.onClose(s.id)
 }
 
 func (s *Session) closeLogWriter() {

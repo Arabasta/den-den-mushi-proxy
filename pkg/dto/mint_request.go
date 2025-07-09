@@ -10,6 +10,7 @@ type MintRequest struct {
 	Type         ConnectionType    `json:"connection_type" binding:"required"` // temporarily from client, should be set based on server details
 	Server       ServerInfo        `json:"server" binding:"required"`
 	FilterType   FilterType        `json:"filter_type"` // should be set based on server details
+	UserId       string            `json:"user_id"`     // temp, should be set with keycloak user id
 }
 
 type ServerInfo struct {

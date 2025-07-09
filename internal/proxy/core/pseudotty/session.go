@@ -35,8 +35,9 @@ type Session struct {
 	outboundCh     chan protocol.Packet
 	ptyLastPackets []protocol.Packet
 
-	mu     sync.Mutex
-	closed bool
+	mu      sync.Mutex
+	closed  bool
+	onClose func(string)
 }
 
 func New(id string, pty *os.File, log *zap.Logger) *Session {
@@ -68,16 +69,29 @@ func New(id string, pty *os.File, log *zap.Logger) *Session {
 	return s
 }
 
+func (s *Session) SetOnClose(f func(string)) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.onClose = f
+}
+
 type SessionInfo struct {
-	SessionID   string        `json:"session_id"`
-	StartClaims *token.Claims `json:"claims"`
-	//Primary     *token.Claims         `json:"primary"`
-	//Observers   []*token.Claims       `json:"observers"`
+	SessionID   string          `json:"session_id"`
+	StartClaims *token.Claims   `json:"start_claims"`
+	Primary     *token.Claims   `json:"current_implementor"`
+	Observers   []*token.Claims `json:"observers"`
 }
 
 func (s *Session) GetDetails() SessionInfo {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	var primary = (*token.Claims)(nil)
+
+	if s.primary != nil {
+		primary = s.primary.Claims
+	}
+
 	observers := make([]*token.Claims, 0, len(s.observers))
 	for o := range s.observers {
 		observers = append(observers, o.Claims)
@@ -85,7 +99,7 @@ func (s *Session) GetDetails() SessionInfo {
 	return SessionInfo{
 		SessionID:   s.id,
 		StartClaims: s.startClaims,
-		//Primary:     s.primary.Claims,
-		//Observers:   observers,
+		Primary:     primary,
+		Observers:   observers,
 	}
 }

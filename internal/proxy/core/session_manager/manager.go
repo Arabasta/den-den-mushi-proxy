@@ -32,6 +32,9 @@ func (m *Service) CreatePtySession(pty *os.File, log *zap.Logger) *pseudotty.Ses
 
 	id := uuid.NewString() + strconv.FormatInt(time.Now().Unix(), 10)
 	s := pseudotty.New(id, pty, log)
+	s.SetOnClose(func(sessionID string) {
+		m.DeletePtySession(sessionID)
+	})
 
 	m.AddPtySession(id, s)
 	return s
@@ -54,14 +57,12 @@ func (m *Service) GetPtySession(id string) (*pseudotty.Session, bool) {
 	return s, ok
 }
 
-// todo: need channel for pty sessions to notify
 func (m *Service) DeletePtySession(id string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	m.log.Info("Deleting pty session", zap.String("id", id))
-	if sess, ok := m.ptySessions[id]; ok {
-		sess.EndSession() // close the pty and its ws connections
+	if _, ok := m.ptySessions[id]; ok {
 		delete(m.ptySessions, id)
 	}
 }
@@ -88,6 +89,7 @@ func (m *Service) GetPtySessions() []pseudotty.SessionInfo {
 		session := m.ptySessions[s]
 		ptySessions = append(ptySessions, session.GetDetails())
 	}
+
 	m.log.Debug("Retrieved pty session info", zap.Any("ptySessions", ptySessions))
 	return ptySessions
 }
