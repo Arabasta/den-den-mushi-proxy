@@ -126,7 +126,9 @@ func (s *Session) removeConn(c *client.Connection) {
 		delete(s.observers, c)
 	}
 
-	s.logf("[%s] %s has left the session", c.Claims.Subject, c.Claims.Connection.UserSession.Id)
-	pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " has left")}
-	s.outboundCh <- pkt
+	if s.primary != nil && s.observers != nil {
+		s.logf("[%s] %s has left the session", c.Claims.Subject, c.Claims.Connection.UserSession.Id)
+		pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " has left")}
+		s.outboundCh <- pkt
+	}
 }

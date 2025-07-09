@@ -34,6 +34,7 @@ func (s *Session) closePty() {
 		}
 	}
 	s.Log.Info("Closed pty")
+	s.closeAllConnections()
 }
 
 func (s *Session) closeLogWriter() {
@@ -58,4 +59,19 @@ func (s *Session) closeTheWorld() func() {
 			s.closeLogWriter()
 		})
 	}
+}
+
+func (s *Session) closeAllConnections() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for c := range s.observers {
+		s.closeWs(c)
+	}
+	s.observers = make(map[*client.Connection]struct{})
+	if s.primary != nil {
+		s.closeWs(s.primary)
+		s.primary = nil
+	}
+	s.Log.Info("Closed all connections")
 }
