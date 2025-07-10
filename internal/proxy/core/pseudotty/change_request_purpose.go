@@ -14,6 +14,8 @@ func (p *ChangeRequestPurpose) HandleInput(s *Session, pkt protocol.Packet) (str
 		return "", fmt.Errorf("no handler found for packet header: %s", string(pkt.Header))
 	}
 
+	// todo: log line on enter, need to add LineEditor to this
+
 	return h.Handle(pkt, s.Pty, s.primary.Sock, s.primary.Claims)
 }
 

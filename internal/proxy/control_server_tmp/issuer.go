@@ -112,7 +112,7 @@ func mintToken(issuer *Issuer, log *zap.Logger) gin.HandlerFunc {
 			Type:    body.Type, // todo: should be set based on server details
 			Purpose: body.Purpose,
 			UserSession: dto.UserSession{
-				Id:        body.UserId + uuid.NewString(), // todo: should be set with keycloak user id
+				Id:        body.UserId + "/" + uuid.NewString(), // todo: should be set with keycloak user id
 				StartRole: startRole,
 			},
 			PtySession: dto.PtySession{
