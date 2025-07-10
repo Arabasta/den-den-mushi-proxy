@@ -73,6 +73,6 @@ func (s *Session) LogHeader() {
 }
 
 func (s *Session) logFooter() {
-	footer := "\n# Session End Time: " + time.Now().UTC().Format(time.RFC3339) + "\n"
+	footer := "\n# Session End Time: " + s.endTime
 	s.logf(footer)
 }

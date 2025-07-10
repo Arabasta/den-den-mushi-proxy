@@ -15,10 +15,16 @@ func (s *Session) readPty() {
 		if err != nil {
 			if err == io.EOF {
 				s.Log.Info("PTY session ended normally")
-				s.closePty()
+				s.EndSession()
 			} else {
 				s.Log.Error("Error reading from pty", zap.Error(err))
-				s.closePty()
+				s.logf("Error reading from pty, shutting down session: %v", err)
+				s.outboundCh <- protocol.Packet{
+					Header: protocol.Error,
+					Data:   []byte("Error reading from pty, shutting down session: " + err.Error()),
+				}
+
+				s.EndSession()
 			}
 			close(s.outboundCh)
 			return

@@ -98,7 +98,6 @@ func (s *Session) addConn(c *client.Connection) {
 		s.LogHeader()
 	} else {
 		// is joining existing pty session, notify everyone todo: notify all but the new joiner
-		s.logf("[%s] %s joined as %s", c.Claims.Subject, c.Claims.Connection.UserSession.Id, c.Claims.Connection.UserSession.StartRole)
 		pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " joined as " + string(c.Claims.Connection.UserSession.StartRole))}
 		s.outboundCh <- pkt
 
@@ -121,7 +120,6 @@ func (s *Session) removeConn(c *client.Connection) {
 	}
 
 	if s.primary != nil && s.observers != nil {
-		s.logf("[%s] %s has left the session", c.Claims.Subject, c.Claims.Connection.UserSession.Id)
 		pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " has left")}
 		s.outboundCh <- pkt
 	}

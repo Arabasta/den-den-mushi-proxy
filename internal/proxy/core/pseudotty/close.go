@@ -5,6 +5,7 @@ import (
 	"go.uber.org/zap"
 	"io"
 	"sync"
+	"time"
 )
 
 func (s *Session) EndSession() {
@@ -17,6 +18,8 @@ func (s *Session) EndSession() {
 
 	s.Log.Info("Ending pty session")
 	s.closeTheWorld()
+	s.endTime = time.Now().Format(time.RFC3339)
+	s.logFooter()
 	s.onClose(s.id)
 }
 
@@ -38,16 +41,15 @@ func (s *Session) closeWs(c *client.Connection) {
 func (s *Session) closePty() {
 	err := s.Pty.Close()
 	if err != nil {
-		if err == io.EOF {
+		if err != io.EOF {
 			s.Log.Info("PTY session ended normally")
 		} else {
 			s.Log.Warn("Failed to close pty", zap.Error(err))
 		}
 	}
 
-	s.Log.Info("Closed pty, shutting down all connections")
-	s.closeAllConnections()
-	s.onClose(s.id)
+	s.Log.Info("Closed pty")
+
 }
 
 func (s *Session) closeLogWriter() {
