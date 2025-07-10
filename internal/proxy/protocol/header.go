@@ -1,6 +1,39 @@
 package protocol
 
+import "fmt"
+
 type Header byte
+
+func (h Header) String() string {
+	switch h {
+	case Input:
+		return "Input"
+	case Output:
+		return "Output"
+	case Error:
+		return "Error"
+	case BlockedControl:
+		return "BlockedControl"
+	case BlockedCommand:
+		return "BlockedCommand"
+	case Warn:
+		return "Warn"
+	case Broadcast:
+		return "Broadcast"
+	case PtySessionEvent:
+		return "PtySessionEvent"
+	case Resize:
+		return "Resize"
+	case Sudo:
+		return "Sudo"
+	case Close:
+		return "Close"
+	case ParseError:
+		return "ParseError"
+	default:
+		return fmt.Sprintf("Unknown(0x%02x)", byte(h))
+	}
+}
 
 const (
 	// Input for normal client input from websocket to pty
@@ -36,6 +69,9 @@ const (
 
 	// Sudo is called when the client wants to switch users. Required since "su" is blocked.
 	Sudo Header = 0x11
+
+	// Close for closing the websocket connection, can be sent by either the client or the server
+	Close Header = 0x12
 
 	// ParseError indicates an error in parsing the header
 	ParseError Header = 0xff
