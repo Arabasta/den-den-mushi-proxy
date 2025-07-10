@@ -15,7 +15,7 @@ func (s *Session) initLogWriter() error {
 		return err
 	}
 
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		return err
 	}
@@ -37,8 +37,8 @@ func (s *Session) logf(format string, args ...any) {
 	}
 }
 
-func (s *Session) logLine(header protocol.Header, data string) {
-	s.logf("%s [%s] %s", time.Now().Format(time.TimeOnly), string(header), data)
+func (s *Session) logLine(h protocol.Header, data string) {
+	s.logf("\n%s [%s] %s", time.Now().Format(time.TimeOnly), h, data)
 }
 
 // LogHeader to be called only once when the session starts
