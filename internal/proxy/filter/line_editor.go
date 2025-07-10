@@ -1,12 +1,22 @@
 package filter
 
+const (
+	MaxBufferLength = 8192
+	ErrorMaxBuffer  = "???Error Max Buffer"
+)
+
 type LineEditor struct {
-	// todo: set max length, else users can cause out of memory
 	Buffer []rune
 	Cursor int
 }
 
 func (e *LineEditor) Insert(r rune) {
+	if len(e.Buffer) >= MaxBufferLength {
+		e.Buffer = []rune(ErrorMaxBuffer)
+		e.Cursor = len(e.Buffer)
+		return
+	}
+
 	if e.Cursor >= len(e.Buffer) {
 		e.Buffer = append(e.Buffer, r)
 	} else {
