@@ -20,8 +20,18 @@ func (s *Session) EndSession() {
 	s.onClose(s.id)
 }
 
+func (s *Session) closeSessionChannels() {
+	close(s.connRegisterCh)
+	close(s.connDeregisterCh)
+	close(s.outboundCh)
+	s.Log.Info("Closed session channels")
+}
+
 func (s *Session) closeWs(c *client.Connection) {
 	c.Close()
+	c.OnceCloseWriteCh.Do(func() {
+		close(c.WsWriteCh)
+	})
 }
 
 // todo: more error handling eg check if pty is arleady closed
@@ -59,10 +69,13 @@ func (s *Session) closeTheWorld() func() {
 				s.closeWs(o)
 			}
 			s.closePty()
+			s.closeSessionChannels()
 			s.closeLogWriter()
 		})
 	}
 }
+
+// todo: need to use the deregister channel
 
 func (s *Session) closeAllConnections() {
 	s.mu.Lock()

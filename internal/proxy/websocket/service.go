@@ -30,7 +30,6 @@ func NewWebsocketService(c *connect.ConnectionMethodFactory, sm *session_manager
 // initial connection flow for websocket connections
 // todo: handle ws close with pty close
 func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Claims) {
-
 	if claims.Connection.PtySession.IsNew {
 		conn := s.connectionMethodFactory.Create(claims.Connection.Type)
 		if conn == nil {
@@ -40,8 +39,7 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 			return
 		}
 
-		s.log.Info("Connected to websocket, establishing pty connection", zap.String("type", string(claims.Connection.Type)))
-
+		s.log.Info("Establishing pty connection", zap.String("type", string(claims.Connection.Type)))
 		pty, err := conn.Connect(ctx, claims)
 		if err != nil {
 			s.log.Error("Failed to connect to pseudo terminal", zap.Error(err),
@@ -50,15 +48,21 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 			// todo: close both if fail
 			return
 		}
-		s.log.Info("Connected to pty, creating pty session", zap.String("type", string(claims.Connection.Type)))
 
-		session := s.sessionManager.CreatePtySession(pty, s.log)
+		s.log.Info("Connected to pty ", zap.String("type", string(claims.Connection.Type)))
+
+		session, err := s.sessionManager.CreatePtySession(pty, s.log)
+		if err != nil {
+			s.log.Error("Failed to create pty session", zap.Error(err))
+			s.closeWs(ws)
+			return
+		}
 
 		s.log.Info("Registering websocket connection to pty session")
 		err = session.RegisterInitialConn(ws, claims)
 		if err != nil {
 			s.closeWs(ws)
-			// todo: close both if fail
+			// todo: close pty if fail
 			return
 		}
 		return
@@ -68,6 +72,7 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 		if err != nil {
 			s.closeWs(ws)
 		}
+		return
 	}
 }
 

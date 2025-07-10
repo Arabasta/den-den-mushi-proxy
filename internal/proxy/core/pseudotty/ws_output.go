@@ -28,3 +28,9 @@ func send(ch chan protocol.Packet, pkt protocol.Packet) {
 		// queue full, todo discuss drop or log or error or what
 	}
 }
+
+func sendLastPtyPackets(lastPtyPackets []protocol.Packet, c *client.Connection) {
+	for i := range lastPtyPackets {
+		sendToConn(c, lastPtyPackets[i])
+	}
+}

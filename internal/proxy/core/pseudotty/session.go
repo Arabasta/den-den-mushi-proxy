@@ -36,11 +36,11 @@ type Session struct {
 	ptyLastPackets []protocol.Packet
 
 	mu      sync.Mutex
-	closed  bool
+	closed  bool // todo: change to state and atomic
 	onClose func(string)
 }
 
-func New(id string, pty *os.File, log *zap.Logger) *Session {
+func New(id string, pty *os.File, log *zap.Logger) (*Session, error) {
 	s := &Session{
 		id:        id,
 		Pty:       pty,
@@ -59,14 +59,14 @@ func New(id string, pty *os.File, log *zap.Logger) *Session {
 
 	if err := s.initLogWriter(); err != nil {
 		s.Log.Error("Failed to create session log", zap.Error(err))
-		// close
+		return s, err
 	}
 
-	s.Log.Info("Created new pty session, initializing event loop and pty reader")
+	s.Log.Info("Initializing event loop and pty reader")
 
 	go s.eventLoop()
 	go s.readPty()
-	return s
+	return s, nil
 }
 
 func (s *Session) SetOnClose(f func(string)) {
@@ -96,7 +96,7 @@ func (s *Session) GetDetails() SessionInfo {
 	for o := range s.observers {
 		observers = append(observers, o.Claims)
 	}
-	return SessionInfo{
+	return SessionInfo{ // todo: remove redunant fields, use another DTO
 		SessionID:   s.id,
 		StartClaims: s.startClaims,
 		Primary:     primary,

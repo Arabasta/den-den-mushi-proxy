@@ -46,8 +46,8 @@ func (s *Session) RegisterConn(ws *websocket.Conn, claims *token.Claims) error {
 	s.Log.Info("Attaching websocket connection to pty session", zap.String("userSessionId",
 		claims.Connection.UserSession.Id))
 
-	// check if primary already exists
 	if claims.Connection.UserSession.StartRole == dto.Implementor {
+		// check if primary already exists
 		s.mu.Lock()
 		if s.primary != nil {
 			s.mu.Unlock()
@@ -81,6 +81,7 @@ func (s *Session) addConn(c *client.Connection) {
 		s.observers[c] = struct{}{}
 	} else {
 		s.Log.Error("Unknown role for websocket connection")
+		// todo: return err
 		return
 	}
 
@@ -91,28 +92,21 @@ func (s *Session) addConn(c *client.Connection) {
 		s.Log.Info("Is primary role, starting readClient")
 		go s.readClient(c)
 	}
+
 	if c.Claims.Connection.PtySession.IsNew {
 		s.Log.Info("Is new pty, adding log header")
 		s.LogHeader()
 	} else {
-		// is joining existing pty session, notify everyone
-		if c.Claims.Connection.UserSession.StartRole == dto.Observer {
-			s.logf("[%s] %s joined as observer", c.Claims.Subject, c.Claims.Connection.UserSession.Id)
-			pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " joined as observer")}
-			s.outboundCh <- pkt
-		} else if c.Claims.Connection.UserSession.StartRole == dto.Implementor {
-			s.logf("[%s] %s joined as implementor", c.Claims.Subject, c.Claims.Connection.UserSession.Id)
-			pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " joined as implementor")}
-			s.outboundCh <- pkt
-		}
+		// is joining existing pty session, notify everyone todo: notify all but the new joiner
+		s.logf("[%s] %s joined as %s", c.Claims.Subject, c.Claims.Connection.UserSession.Id, c.Claims.Connection.UserSession.StartRole)
+		pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " joined as " + string(c.Claims.Connection.UserSession.StartRole))}
+		s.outboundCh <- pkt
 
-		for i := range s.ptyLastPackets {
-			sendToConn(c, s.ptyLastPackets[i])
-		}
+		sendLastPtyPackets(s.ptyLastPackets, c)
 	}
 
 	// start sending messages to the client
-	go c.WriteClient()
+	go c.WriteClient(s.Log)
 }
 
 // removeConn when a new websocket connection is deregistered, called by the event loop

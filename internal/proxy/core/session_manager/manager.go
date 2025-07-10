@@ -15,7 +15,7 @@ import (
 
 type Service struct {
 	mu          sync.RWMutex
-	ptySessions map[string]*pseudotty.Session // todo use service and repo layer
+	ptySessions map[string]*pseudotty.Session // todo use service and repo layer, anyway need inmem map for retrieval
 	log         *zap.Logger
 }
 
@@ -26,26 +26,43 @@ func New(log *zap.Logger) *Service {
 	}
 }
 
-func (m *Service) CreatePtySession(pty *os.File, log *zap.Logger) *pseudotty.Session {
+func (m *Service) CreatePtySession(pty *os.File, log *zap.Logger) (*pseudotty.Session, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	m.log.Info("Creating pty session")
 
 	id := uuid.NewString() + strconv.FormatInt(time.Now().Unix(), 10)
-	s := pseudotty.New(id, pty, log)
+
+	s, err := pseudotty.New(id, pty, log)
+	if err != nil {
+		m.log.Error("Failed to create pty session", zap.Error(err), zap.String("id", id))
+		// todo: close it
+		return nil, err
+	}
+
 	s.SetOnClose(func(sessionID string) {
 		m.DeletePtySession(sessionID)
 	})
 
-	m.AddPtySession(id, s)
-	return s
+	m.log.Info("Created pty session", zap.String("id", id))
+
+	if err = m.AddPtySession(id, s); err != nil {
+		m.log.Error("Failed to add pty session to map", zap.Error(err), zap.String("id", id))
+		return nil, err
+	}
+
+	return s, nil
 }
 
-func (m *Service) AddPtySession(id string, sess *pseudotty.Session) {
+func (m *Service) AddPtySession(id string, s *pseudotty.Session) error {
 	m.log.Info("Adding pty session to map", zap.String("id", id))
 	if _, exists := m.ptySessions[id]; exists {
-		sess.Log.Error("Pty session already exists", zap.String("id", id))
+		s.Log.Error("Pty session already exists", zap.String("id", id))
+		return errors.New("pty session already exists with id: " + id)
 	}
-	m.ptySessions[id] = sess
+
+	m.ptySessions[id] = s
+	return nil
 }
 
 func (m *Service) GetPtySession(id string) (*pseudotty.Session, bool) {
@@ -63,6 +80,16 @@ func (m *Service) DeletePtySession(id string) {
 
 	m.log.Info("Deleting pty session", zap.String("id", id))
 	if _, ok := m.ptySessions[id]; ok {
+		pty, ok := m.GetPtySession(id)
+		if !ok {
+			m.log.Warn("Pty session not found for deletion", zap.String("id", id))
+			// todo: handle this case
+			return
+		}
+
+		pty.EndSession()
+
+		// delete from map
 		delete(m.ptySessions, id)
 	}
 }

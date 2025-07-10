@@ -14,20 +14,23 @@ func (s *Session) readClient(c *client.Connection) {
 	for {
 		msgType, msg, err := c.Sock.ReadMessage()
 		if err != nil {
-			// close on any error
+			// close conn on any error
 			s.handleReadError(err)
 			s.removeConn(c)
 			return
 		}
 
-		packet := protocol.Parse(msgType, msg) // todo: validate header
-		if packet.Header == protocol.ParseError {
+		pkt := protocol.Parse(msgType, msg)
+		if pkt.Header == protocol.ParseError {
 			s.Log.Error("Received invalid message from websocket", zap.Any("msg", msg))
+			s.logLine(pkt.Header, string(msg))
 			continue
 		}
-		s.Log.Debug("Received packet from client", zap.Any("packet", packet))
 
-		s.processClientMsg(packet)
+		s.Log.Debug("Received packet from client", zap.Any("packet", pkt))
+		s.logLine(pkt.Header, string(pkt.Data))
+
+		s.processClientMsg(pkt)
 	}
 }
 
@@ -43,9 +46,13 @@ func (s *Session) processClientMsg(pkt protocol.Packet) {
 	}
 
 	if err != nil {
-		// todo: more robust error handling
-		s.Log.Error("Failed writing to PTY", zap.Error(err))
+		s.Log.Error("Failed to process message", zap.Error(err))
+		sendToConn(s.primary, protocol.Packet{
+			Header: protocol.Warn,
+			Data:   []byte("Failed to process message"),
+		})
 	}
+
 	if logMsg != "" {
 		s.Log.Info("Message from handler", zap.String("header", string(pkt.Header)),
 			zap.String("message", logMsg))
