@@ -14,10 +14,10 @@ func (s *Session) readPty() {
 		n, err := s.Pty.Read(buf)
 		if err != nil {
 			if err == io.EOF {
-				s.Log.Info("PTY session ended normally")
+				s.log.Info("PTY session ended normally")
 				s.EndSession()
 			} else {
-				s.Log.Error("Error reading from pty", zap.Error(err))
+				s.log.Error("Error reading from pty", zap.Error(err))
 				s.logf("Error reading from pty, shutting down session: %v", err)
 				s.outboundCh <- protocol.Packet{
 					Header: protocol.Error,
@@ -46,6 +46,6 @@ func (s *Session) readPty() {
 		}
 		s.mu.Unlock()
 
-		s.Log.Info("Pty Output", zap.ByteString("data", data))
+		s.log.Info("Pty Output", zap.ByteString("data", data))
 	}
 }

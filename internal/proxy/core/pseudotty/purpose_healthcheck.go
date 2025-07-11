@@ -110,7 +110,7 @@ func (p *HealthcheckPurpose) HandleInput(s *Session, pkt protocol.Packet) (strin
 func (p *HealthcheckPurpose) handleEnter(s *Session, pkt protocol.Packet) (string, error) {
 	defer s.line.Reset()
 
-	s.Log.Info("Handling Enter key press. Checking command: ", zap.String("line", s.line.String()))
+	s.log.Info("Handling Enter key press. Checking command: ", zap.String("line", s.line.String()))
 
 	msg, allowed := s.filter.IsValid(s.line.String())
 	if !allowed {

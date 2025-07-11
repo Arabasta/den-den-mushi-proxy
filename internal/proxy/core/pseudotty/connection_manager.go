@@ -14,26 +14,26 @@ import (
 func (s *Session) RegisterInitialConn(ws *websocket.Conn, claims *token.Claims) error {
 	s.startClaims = claims
 
-	s.Log.Info("Registering initial websocket connection to pty session")
+	s.log.Info("Registering initial websocket connection to pty session")
 	err := s.RegisterConn(ws, claims)
 	if err != nil {
-		s.Log.Error("Failed to register initial connection", zap.Error(err))
+		s.log.Error("Failed to register initial connection", zap.Error(err))
 		return err
 	}
 
-	s.Log.Info("Setting purpose for pty session", zap.String("purpose", string(claims.Connection.Purpose)))
+	s.log.Info("Setting purpose for pty session", zap.String("purpose", string(claims.Connection.Purpose)))
 	err = setPurpose(s, claims.Connection.Purpose)
 	if err != nil {
-		s.Log.Error("Failed to register initial connection", zap.Error(err))
+		s.log.Error("Failed to register initial connection", zap.Error(err))
 		return err
 	}
 
 	if claims.Connection.Purpose == dto.Healthcheck {
-		s.Log.Info("Setting healthcheck filter")
+		s.log.Info("Setting healthcheck filter")
 		s.filter = filter.GetFilter(claims.Connection.FilterType)
 		if s.filter == nil {
 			err = errors.New("invalid filter type")
-			s.Log.Error("Failed to register initial connection", zap.Error(err))
+			s.log.Error("Failed to register initial connection", zap.Error(err))
 			return err
 		}
 	}
@@ -43,7 +43,7 @@ func (s *Session) RegisterInitialConn(ws *websocket.Conn, claims *token.Claims) 
 
 // RegisterConn to client connection on websocket connect
 func (s *Session) RegisterConn(ws *websocket.Conn, claims *token.Claims) error {
-	s.Log.Info("Attaching websocket connection to pty session", zap.String("userSessionId",
+	s.log.Info("Attaching websocket connection to pty session", zap.String("userSessionId",
 		claims.Connection.UserSession.Id))
 
 	if claims.Connection.UserSession.StartRole == dto.Implementor {
@@ -71,7 +71,7 @@ func (s *Session) RegisterConn(ws *websocket.Conn, claims *token.Claims) error {
 
 // addConn when a new websocket connection is registered, called by the event loop
 func (s *Session) addConn(c *client.Connection) {
-	s.Log.Info("Registering websocket connection to pty session",
+	s.log.Info("Registering websocket connection to pty session",
 		zap.String("userSessionId", c.Claims.Connection.UserSession.Id),
 		zap.String("role", string(c.Claims.Connection.UserSession.StartRole)))
 
@@ -80,37 +80,40 @@ func (s *Session) addConn(c *client.Connection) {
 	} else if c.Claims.Connection.UserSession.StartRole == dto.Observer {
 		s.observers[c] = struct{}{}
 	} else {
-		s.Log.Error("Unknown role for websocket connection")
+		s.log.Error("Unknown role for websocket connection")
 		// todo: return err
 		return
 	}
 
-	s.Log.Info("Websocket connection registered")
-
-	// doesn't handle swapping roles for now
-	if c.Claims.Connection.UserSession.StartRole == dto.Implementor {
-		s.Log.Info("Is primary role, starting readClient")
-		go s.readClient(c)
-	}
+	s.log.Info("Websocket connection registered")
 
 	if c.Claims.Connection.PtySession.IsNew {
-		s.Log.Info("Is new pty, adding log header")
-		s.LogHeader()
+		s.log.Info("Is new pty, adding log header")
+		s.logHeader()
 	} else {
-		// is joining existing pty session, notify everyone todo: notify all but the new joiner
-		pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " joined as " + string(c.Claims.Connection.UserSession.StartRole))}
-		s.outboundCh <- pkt
+		// is joining existing pty session
+		pkt := protocol.Packet{Header: protocol.PtySessionEvent,
+			Data: []byte(c.Claims.Subject + " joined as " + string(c.Claims.Connection.UserSession.StartRole))}
+		s.fanoutExcept(pkt, c)
 
-		sendLastPtyPackets(s.ptyLastPackets, c)
+		for i := range s.ptyLastPackets {
+			sendToConn(c, s.ptyLastPackets[i])
+		}
 	}
 
 	// start sending messages to the client
-	go c.WriteClient(s.Log)
+	go c.WriteClient(s.log)
+
+	// doesn't handle swapping roles for now
+	if c.Claims.Connection.UserSession.StartRole == dto.Implementor {
+		s.log.Info("Is implementor role, starting readClient")
+		go s.readClient(c)
+	}
 }
 
 // removeConn when a new websocket connection is deregistered, called by the event loop
 func (s *Session) removeConn(c *client.Connection) {
-	s.Log.Info("Deregistering websocket connection from pty session",
+	s.log.Info("Deregistering websocket connection from pty session",
 		zap.String("userSessionId", c.Claims.Connection.UserSession.Id))
 
 	if s.primary == c {
@@ -119,8 +122,8 @@ func (s *Session) removeConn(c *client.Connection) {
 		delete(s.observers, c)
 	}
 
-	if s.primary != nil && s.observers != nil {
+	if s.primary != nil || s.observers != nil {
 		pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " has left")}
-		s.outboundCh <- pkt
+		s.fanoutExcept(pkt, c)
 	}
 }

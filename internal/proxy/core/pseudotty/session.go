@@ -21,7 +21,7 @@ type Session struct {
 
 	purpose Purpose
 
-	Log       *zap.Logger
+	log       *zap.Logger
 	logWriter io.WriteCloser
 
 	filter filter.CommandFilter // only for health check
@@ -46,7 +46,7 @@ func New(id string, pty *os.File, log *zap.Logger) (*Session, error) {
 		id:        id,
 		Pty:       pty,
 		startTime: time.Now().Format(time.RFC3339),
-		Log:       log.With(zap.String("ptySession", id)),
+		log:       log.With(zap.String("ptySession", id)),
 
 		line: new(filter.LineEditor),
 
@@ -59,11 +59,11 @@ func New(id string, pty *os.File, log *zap.Logger) (*Session, error) {
 	}
 
 	if err := s.initLogWriter(); err != nil {
-		s.Log.Error("Failed to create session log", zap.Error(err))
+		s.log.Error("Failed to create session log", zap.Error(err))
 		return s, err
 	}
 
-	s.Log.Info("Initializing event loop and pty reader")
+	s.log.Info("Initializing event loop and pty reader")
 
 	go s.eventLoop()
 	go s.readPty()
@@ -97,6 +97,7 @@ func (s *Session) GetDetails() SessionInfo {
 	for o := range s.observers {
 		observers = append(observers, o.Claims)
 	}
+
 	return SessionInfo{ // todo: remove redunant fields, use another DTO
 		SessionID:   s.id,
 		StartClaims: s.startClaims,

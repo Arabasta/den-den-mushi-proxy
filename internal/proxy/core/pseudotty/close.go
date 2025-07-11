@@ -16,7 +16,7 @@ func (s *Session) EndSession() {
 	}
 	defer func() { s.closed = true }()
 
-	s.Log.Info("Ending pty session")
+	s.log.Info("Ending pty session")
 	s.closeTheWorld()
 	s.endTime = time.Now().Format(time.RFC3339)
 	s.logFooter()
@@ -27,7 +27,7 @@ func (s *Session) closeSessionChannels() {
 	close(s.connRegisterCh)
 	close(s.connDeregisterCh)
 	close(s.outboundCh)
-	s.Log.Info("Closed session channels")
+	s.log.Info("Closed session channels")
 }
 
 func (s *Session) closeWs(c *client.Connection) {
@@ -42,22 +42,22 @@ func (s *Session) closePty() {
 	err := s.Pty.Close()
 	if err != nil {
 		if err != io.EOF {
-			s.Log.Info("PTY session ended normally")
+			s.log.Info("PTY session ended normally")
 		} else {
-			s.Log.Warn("Failed to close pty", zap.Error(err))
+			s.log.Warn("Failed to close pty", zap.Error(err))
 		}
 	}
 
-	s.Log.Info("Closed pty")
+	s.log.Info("Closed pty")
 
 }
 
 func (s *Session) closeLogWriter() {
 	if s.logWriter != nil {
 		if err := s.logWriter.Close(); err != nil {
-			s.Log.Warn("Failed to close log writer", zap.Error(err))
+			s.log.Warn("Failed to close log writer", zap.Error(err))
 		} else {
-			s.Log.Info("Closed log writer")
+			s.log.Info("Closed log writer")
 		}
 	}
 }
@@ -91,5 +91,5 @@ func (s *Session) closeAllConnections() {
 		s.closeWs(s.primary)
 		s.primary = nil
 	}
-	s.Log.Info("Closed all connections")
+	s.log.Info("Closed all connections")
 }

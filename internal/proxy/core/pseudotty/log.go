@@ -10,7 +10,7 @@ import (
 )
 
 func (s *Session) initLogWriter() error {
-	path := fmt.Sprintf("./log/pty_sessions/%s.log", s.id)
+	path := fmt.Sprintf("./log/pty_sessions/%s.log", s.id) // todo: add a config option for log path
 	if err := os.MkdirAll("./log/pty_sessions", 0755); err != nil {
 		return err
 	}
@@ -21,7 +21,7 @@ func (s *Session) initLogWriter() error {
 	}
 
 	s.logWriter = file
-	s.Log.Info("Log writer initialized", zap.String("path", path))
+	s.log.Info("Log writer initialized", zap.String("path", path))
 	return nil
 }
 
@@ -33,7 +33,7 @@ func (s *Session) logf(format string, args ...any) {
 
 	_, err := s.logWriter.Write([]byte(line))
 	if err != nil {
-		s.Log.Warn("Failed writing to session log", zap.Error(err), zap.String("line", line))
+		s.log.Warn("Failed writing to session log", zap.Error(err), zap.String("line", line))
 	}
 }
 
@@ -44,8 +44,8 @@ func (s *Session) logLine(h protocol.Header, data string) {
 	}
 }
 
-// LogHeader to be called only once when the session starts
-func (s *Session) LogHeader() {
+// logHeader to be called only once when the session starts
+func (s *Session) logHeader() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -54,6 +54,8 @@ func (s *Session) LogHeader() {
 	header :=
 		"# Session Start Time: " + time.Now().UTC().Format(time.RFC3339) + "\n" +
 			"# Created By: " + claims.Subject + "\n\n"
+
+	// todo: add ou group
 
 	header += "# Connection Details:\n" +
 		"#\t- Server IP: " + claims.Connection.Server.IP + "\n" +
@@ -68,6 +70,13 @@ func (s *Session) LogHeader() {
 				"#\t- Change Request ID: " + claims.Connection.ChangeRequest.Id + "\n" +
 				"#\t- Implementor Group: " + claims.Connection.ChangeRequest.ImplementorGroup + "\n" +
 				"#\t- End Time: " + claims.Connection.ChangeRequest.EndTime
+	} else if claims.Connection.Purpose == dto.Healthcheck {
+		header +=
+			"# Health Check Details:\n" +
+				"#\t- Filter: " + string(claims.Connection.FilterType)
+		// todo: add more stuff
+	} else {
+		header += "# No additional details for this session purpose\n"
 	}
 
 	header += "\n\n\n"
@@ -77,5 +86,6 @@ func (s *Session) LogHeader() {
 
 func (s *Session) logFooter() {
 	footer := "\n# Session End Time: " + s.endTime
+	// todo: add list of all users
 	s.logf(footer)
 }

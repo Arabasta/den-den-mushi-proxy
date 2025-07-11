@@ -11,12 +11,26 @@ func (s *Session) fanout(pkt protocol.Packet) {
 		sendToConn(s.primary, pkt)
 	}
 	for o := range s.observers {
-		send(o.WsWriteCh, pkt)
+		sendToConn(o, pkt)
+	}
+}
+
+func (s *Session) fanoutExcept(pkt protocol.Packet, except *client.Connection) {
+	if s.primary != nil && s.primary != except {
+		sendToConn(s.primary, pkt)
+	}
+	for o := range s.observers {
+		if o != except {
+			sendToConn(o, pkt)
+		}
 	}
 }
 
 // sendToConn sends packet to a specific connection, used for targeted messages
 func sendToConn(c *client.Connection, pkt protocol.Packet) {
+	if c == nil {
+		return
+	}
 	send(c.WsWriteCh, pkt)
 }
 
@@ -26,11 +40,5 @@ func send(ch chan protocol.Packet, pkt protocol.Packet) {
 	case ch <- pkt:
 	default:
 		// queue full, todo discuss drop or log or error or what
-	}
-}
-
-func sendLastPtyPackets(lastPtyPackets []protocol.Packet, c *client.Connection) {
-	for i := range lastPtyPackets {
-		sendToConn(c, lastPtyPackets[i])
 	}
 }

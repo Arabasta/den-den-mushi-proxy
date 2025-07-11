@@ -57,7 +57,7 @@ func (m *Service) CreatePtySession(pty *os.File, log *zap.Logger) (*pseudotty.Se
 func (m *Service) AddPtySession(id string, s *pseudotty.Session) error {
 	m.log.Info("Adding pty session to map", zap.String("id", id))
 	if _, exists := m.ptySessions[id]; exists {
-		s.Log.Error("Pty session already exists", zap.String("id", id))
+		m.log.Error("Pty session already exists", zap.String("id", id))
 		return errors.New("pty session already exists with id: " + id)
 	}
 
