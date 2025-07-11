@@ -12,11 +12,13 @@ import (
 func (s *Session) initLogWriter() error {
 	path := fmt.Sprintf("./log/pty_sessions/%s.log", s.id) // todo: add a config option for log path
 	if err := os.MkdirAll("./log/pty_sessions", 0755); err != nil {
+		s.log.Error("Failed to create log directory", zap.Error(err))
 		return err
 	}
 
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
+		s.log.Error("Failed to create log file", zap.Error(err), zap.String("path", path))
 		return err
 	}
 
@@ -25,32 +27,33 @@ func (s *Session) initLogWriter() error {
 	return nil
 }
 
-func (s *Session) logf(format string, args ...any) {
+func (s *Session) logL(line string) {
 	if s.logWriter == nil {
+		s.log.Error("Log writer is not initialized, cannot log")
 		return
 	}
-	line := fmt.Sprintf(format, args...)
 
-	_, err := s.logWriter.Write([]byte(line))
+	_, err := s.logWriter.Write([]byte(line + "\n"))
 	if err != nil {
 		s.log.Warn("Failed writing to session log", zap.Error(err), zap.String("line", line))
+		return
 	}
+	s.log.Debug("Logging to session log", zap.String("line", line))
 }
 
 func (s *Session) logPacket(pkt protocol.Packet) {
-	if pkt.Header != protocol.Resize {
+	if pkt.Header == protocol.Resize {
 		// don't log resize events
 		return
 	}
-	s.logLine(pkt.Header, string(pkt.Data))
+	s.logL(formatLogLine(pkt.Header.String(), string(pkt.Data)))
 }
 
-func (s *Session) logLine(h protocol.Header, data string) {
-	s.logf("\n%s [%s] %s", time.Now().Format(time.TimeOnly), h, data)
+func formatLogLine(header, data string) string {
+	return fmt.Sprintf("%s [%s] %s", time.Now().Format(time.TimeOnly), header, data)
 }
 
-// logHeader to be called only once when the session starts
-func (s *Session) logHeader() {
+func getLogHeader(s *Session) string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -86,11 +89,11 @@ func (s *Session) logHeader() {
 
 	header += "\n\n\n"
 
-	s.logf(header)
+	return header
 }
 
-func (s *Session) logFooter() {
+func getLogFooter(s *Session) string {
 	footer := "\n# Session End Time: " + s.endTime
 	// todo: add list of all users
-	s.logf(footer)
+	return footer
 }

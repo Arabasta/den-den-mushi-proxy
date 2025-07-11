@@ -21,12 +21,12 @@ func (s *Session) readClient(c *client.Connection) {
 		pkt := protocol.Parse(msgType, msg)
 		if pkt.Header == protocol.ParseError {
 			s.log.Error("Received invalid message from websocket", zap.Any("msg", msg))
-			s.logLine(pkt.Header, string(msg))
+			s.logPacket(pkt)
 			continue
 		}
 
 		s.log.Debug("Received packet from client", zap.Any("packet", pkt))
-		s.logLine(pkt.Header, string(pkt.Data))
+		s.logPacket(pkt)
 
 		s.processClientMsg(pkt)
 	}
@@ -53,7 +53,7 @@ func (s *Session) processClientMsg(pkt protocol.Packet) {
 	if logMsg != "" {
 		s.log.Info("Message from handler", zap.String("header", string(pkt.Header)),
 			zap.String("message", logMsg))
-		s.logLine(pkt.Header, logMsg)
+		s.logL(formatLogLine(string(pkt.Header), logMsg))
 	}
 }
 

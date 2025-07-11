@@ -18,7 +18,7 @@ func (s *Session) readPty() {
 				s.EndSession()
 			} else {
 				s.log.Error("Error reading from pty", zap.Error(err))
-				s.logf("Error reading from pty, shutting down session: %v", err)
+				s.logL("Error reading from pty, shutting down session")
 				s.outboundCh <- protocol.Packet{
 					Header: protocol.Error,
 					Data:   []byte("Error reading from pty, shutting down session: " + err.Error()),
@@ -48,4 +48,16 @@ func (s *Session) readPty() {
 
 		s.log.Info("Pty Output", zap.ByteString("data", data))
 	}
+}
+
+func (s *Session) addPtyLastPacket(pkt protocol.Packet) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.ptyLastPackets = append(s.ptyLastPackets, pkt)
+	maxLastPackets := 100 // todo: make configurable and maybe track line or something
+	if len(s.ptyLastPackets) >= maxLastPackets {
+		s.ptyLastPackets = s.ptyLastPackets[1:]
+	}
+	s.log.Info("Added pty last packet", zap.Any("packet", pkt))
 }

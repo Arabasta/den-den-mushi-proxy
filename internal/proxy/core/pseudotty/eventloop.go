@@ -8,7 +8,7 @@ func (s *Session) eventLoop() {
 			if !ok {
 				return
 			}
-			s.logLine(pkt.Header, string(pkt.Data))
+			s.logPacket(pkt)
 			s.fanout(pkt)
 		case c := <-s.connRegisterCh:
 			s.addConn(c)

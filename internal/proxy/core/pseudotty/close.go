@@ -19,7 +19,7 @@ func (s *Session) EndSession() {
 	s.log.Info("Ending pty session")
 	s.closeTheWorld()
 	s.endTime = time.Now().Format(time.RFC3339)
-	s.logFooter()
+	s.logL(getLogFooter(s))
 	s.onClose(s.id)
 }
 

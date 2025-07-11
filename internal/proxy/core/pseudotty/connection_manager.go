@@ -89,7 +89,7 @@ func (s *Session) addConn(c *client.Connection) {
 
 	if c.Claims.Connection.PtySession.IsNew {
 		s.log.Info("Is new pty, adding log header")
-		s.logHeader()
+		s.logL(getLogHeader(s))
 	} else {
 		// is joining existing pty session
 		pkt := protocol.Packet{Header: protocol.PtySessionEvent,
