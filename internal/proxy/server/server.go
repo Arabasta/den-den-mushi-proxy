@@ -26,7 +26,7 @@ func New(staticFiles embed.FS, cfg *config.Config, log *zap.Logger) *Server {
 	r := gin.New()
 	r.Use(
 		middleware2.RequestLogger(log),
-		middleware.Cors(log),
+		middleware.Cors(cfg, log),
 		gin.Recovery())
 
 	registerUnprotectedRoutes(r, deps, cfg, log)

@@ -1,13 +1,14 @@
 package middleware
 
 import (
+	"den-den-mushi-Go/internal/proxy/config"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
 )
 
-// todo: secure
-func Cors(log *zap.Logger) gin.HandlerFunc {
+// todo: secure and make configurable, move to pkg
+func Cors(cfg *config.Config, log *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.GetHeader("Origin")
 		method := c.Request.Method
