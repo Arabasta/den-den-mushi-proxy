@@ -15,6 +15,9 @@ func main() {
 	cfg := config.Load(configPath())
 
 	log := logger.Init(cfg)
+	if log == nil {
+		panic("failed to initialize logger")
+	}
 	defer func() {
 		_ = log.Sync()
 	}()

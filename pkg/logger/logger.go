@@ -44,13 +44,22 @@ func Init(cfg *config.Config) *zap.Logger {
 		))
 	}
 
-	logger := zap.New(zapcore.NewTee(cores...), zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+	// todo: addSync() to graylog
 
-	if cfg.App.Environment == "development" {
-		logger = logger.WithOptions(zap.Development())
+	if cfg.App.Environment == "prod" {
+		return zap.New(
+			zapcore.NewTee(cores...),
+			zap.AddCaller(),
+			zap.AddStacktrace(zapcore.ErrorLevel))
+	} else if cfg.App.Environment == "dev" {
+		return zap.New(
+			zapcore.NewTee(cores...),
+			zap.AddCaller(),
+			zap.AddStacktrace(zapcore.ErrorLevel),
+			zap.Development())
+	} else {
+		return nil
 	}
-
-	return logger
 }
 
 func getLogLevel(cfg *config.Config) zapcore.Level {
