@@ -92,13 +92,14 @@ func (s *Session) addConn(c *client.Connection) {
 		s.logL(getLogHeader(s))
 	} else {
 		// is joining existing pty session
+		ptyLastPackets := s.ptyLastPackets.GetAll()
+		for i := range ptyLastPackets {
+			sendToConn(c, ptyLastPackets[i])
+		}
+
 		pkt := protocol.Packet{Header: protocol.PtySessionEvent,
 			Data: []byte(c.Claims.Subject + " joined as " + string(c.Claims.Connection.UserSession.StartRole))}
 		s.logPacket(pkt)
-
-		for i := range s.ptyLastPackets {
-			sendToConn(c, s.ptyLastPackets[i])
-		}
 		s.fanoutExcept(pkt, c)
 	}
 
@@ -127,3 +128,11 @@ func (s *Session) removeConn(c *client.Connection) {
 	s.logPacket(pkt)
 	s.fanoutExcept(pkt, c)
 }
+
+//func removeConnFromSeverSide() {
+//	// send close packet to client, for cases where client doesn't send close
+//	err := c.Sock.CloseHandler()
+//	if err != nil {
+//		return
+//	}
+//}

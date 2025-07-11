@@ -5,6 +5,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/filter"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"den-den-mushi-Go/pkg/token"
+	"den-den-mushi-Go/pkg/types"
 	"go.uber.org/zap"
 	"io"
 	"os"
@@ -56,6 +57,8 @@ func New(id string, pty *os.File, log *zap.Logger) (*Session, error) {
 
 		connRegisterCh:   make(chan *client.Connection),
 		connDeregisterCh: make(chan *client.Connection),
+
+		ptyLastPackets: types.NewCircularArray[protocol.Packet](100), // todo: make configurable capa and maybe track line or something
 	}
 
 	if err := s.initLogWriter(); err != nil {
