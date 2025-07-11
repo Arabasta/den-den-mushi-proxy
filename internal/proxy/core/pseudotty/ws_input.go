@@ -13,6 +13,7 @@ func (s *Session) readClient(c *client.Connection) {
 		msgType, msg, err := c.Sock.ReadMessage()
 		if err != nil {
 			s.handleReadError(err)
+			// log to session log
 			// close conn on any error
 			s.connDeregisterCh <- c
 			return
@@ -63,8 +64,8 @@ func (s *Session) handleReadError(err error) {
 		s.log.Info("WebSocket closed normally")
 	case websocket.IsCloseError(err, websocket.CloseGoingAway):
 		s.log.Info("WebSocket closed. Probably tab closed")
-	case websocket.IsUnexpectedCloseError(err, websocket.CloseAbnormalClosure):
-		s.log.Warn("WebSocket closed unexpectedly", zap.Error(err))
+	case websocket.IsCloseError(err, websocket.CloseAbnormalClosure):
+		s.log.Warn("WebSocket abnormal closure", zap.Error(err))
 	default:
 		s.log.Error("Error reading from websocket", zap.Error(err))
 	}

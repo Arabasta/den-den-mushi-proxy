@@ -18,10 +18,10 @@ func setPurpose(s *Session, purpose dto.ConnectionPurpose) error {
 
 	switch purpose {
 	case dto.Change:
-		s.log.Info("Setting session purpose to Change")
+		s.log.Debug("Setting session purpose to Change")
 		s.purpose = &ChangeRequestPurpose{}
 	case dto.Healthcheck:
-		s.log.Info("Setting session purpose to Healthcheck")
+		s.log.Debug("Setting session purpose to Healthcheck")
 		s.purpose = &HealthcheckPurpose{}
 	default:
 		s.log.Error("Unknown purpose for new connection", zap.String("purpose", string(purpose)))

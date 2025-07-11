@@ -31,9 +31,9 @@ func (s *Session) closeSessionChannels() {
 }
 
 func (s *Session) closeWs(c *client.Connection) {
-	c.Close()
 	c.OnceCloseWriteCh.Do(func() {
 		close(c.WsWriteCh)
+		c.Close()
 	})
 }
 
