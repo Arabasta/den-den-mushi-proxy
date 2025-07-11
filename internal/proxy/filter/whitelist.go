@@ -1,6 +1,9 @@
 package filter
 
-import "sync"
+import (
+	"strings"
+	"sync"
+)
 
 type WhitelistFilter struct {
 	mu               sync.RWMutex
@@ -11,7 +14,7 @@ func (w *WhitelistFilter) IsValid(cmd string) (string, bool) {
 	w.mu.RLock()
 	defer w.mu.RUnlock()
 
-	_, blocked := w.filteredCommands[cmd]
+	_, blocked := w.filteredCommands[strings.TrimSpace(cmd)]
 	return cmd, blocked
 }
 
