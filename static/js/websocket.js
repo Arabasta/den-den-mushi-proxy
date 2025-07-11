@@ -16,7 +16,7 @@ const socketManager = {
         // connect to proxy
         let websocketUrl = `ws://${window.location.hostname}:45007/v1/ws`;
         console.log(websocketUrl);
-        this.socket = new WebSocket(websocketUrl, ['jwt', jwt]);
+        this.socket = new WebSocket(websocketUrl, ['X-Proxy-Session-Token', jwt]);
 
         this.socket.onmessage = (event) => {
             const buffer = new Uint8Array(event.data);

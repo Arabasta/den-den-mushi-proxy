@@ -9,5 +9,5 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin:     func(r *http.Request) bool { return true }, // todo:
-	Subprotocols:    []string{"jwt"},
+	Subprotocols:    []string{"X-Proxy-Session-Token"},
 }

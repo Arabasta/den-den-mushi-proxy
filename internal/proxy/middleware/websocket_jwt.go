@@ -9,7 +9,7 @@ import (
 func WsJwtMiddleware(v *jwt_service.Validator, log *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h := c.GetHeader("Sec-WebSocket-Protocol")
-		rawToken, err := v.ExtractTokenFromHeader(h)
+		rawToken, err := v.ExtractProxyTokenFromHeader(h)
 		if err != nil {
 			log.Error("Failed to extract JWT from WebSocket header", zap.String("header", h), zap.Error(err))
 			c.AbortWithStatusJSON(400, gin.H{"error": "JWT validation failed"}) // don't return error details to client
