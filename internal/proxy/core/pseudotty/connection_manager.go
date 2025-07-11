@@ -94,11 +94,12 @@ func (s *Session) addConn(c *client.Connection) {
 		// is joining existing pty session
 		pkt := protocol.Packet{Header: protocol.PtySessionEvent,
 			Data: []byte(c.Claims.Subject + " joined as " + string(c.Claims.Connection.UserSession.StartRole))}
-		s.fanoutExcept(pkt, c)
+		s.logPacket(pkt)
 
 		for i := range s.ptyLastPackets {
 			sendToConn(c, s.ptyLastPackets[i])
 		}
+		s.fanoutExcept(pkt, c)
 	}
 
 	// start sending messages to the client
@@ -122,8 +123,7 @@ func (s *Session) removeConn(c *client.Connection) {
 		delete(s.observers, c)
 	}
 
-	if s.primary != nil || s.observers != nil {
-		pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " has left")}
-		s.fanoutExcept(pkt, c)
-	}
+	pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " has left")}
+	s.logPacket(pkt)
+	s.fanoutExcept(pkt, c)
 }

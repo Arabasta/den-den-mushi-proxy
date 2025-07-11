@@ -37,11 +37,16 @@ func (s *Session) logf(format string, args ...any) {
 	}
 }
 
-func (s *Session) logLine(h protocol.Header, data string) {
-	// don't log resize events
-	if h != protocol.Resize {
-		s.logf("\n%s [%s] %s", time.Now().Format(time.TimeOnly), h, data)
+func (s *Session) logPacket(pkt protocol.Packet) {
+	if pkt.Header != protocol.Resize {
+		// don't log resize events
+		return
 	}
+	s.logLine(pkt.Header, string(pkt.Data))
+}
+
+func (s *Session) logLine(h protocol.Header, data string) {
+	s.logf("\n%s [%s] %s", time.Now().Format(time.TimeOnly), h, data)
 }
 
 // logHeader to be called only once when the session starts

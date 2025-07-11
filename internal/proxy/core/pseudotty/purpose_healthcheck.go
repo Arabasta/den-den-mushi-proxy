@@ -86,7 +86,7 @@ func (p *HealthcheckPurpose) HandleInput(s *Session, pkt protocol.Packet) (strin
 	// for now block pasting
 	if bytes.Equal(data, PasteStart) || bytes.Equal(data, PasteEnd) {
 		// todo: handle paste
-		return handler.Get[protocol.BlockedControl].Handle(pkt, s.Pty, s.primary.Sock, s.primary.Claims)
+		return handler.Get[protocol.BlockedControl].Handle(pkt, s.Pty)
 	}
 
 	// check for control char
@@ -101,7 +101,7 @@ func (p *HealthcheckPurpose) HandleInput(s *Session, pkt protocol.Packet) (strin
 	// check for normal text
 	if len(data) == 1 && isAllowedNormalRune(rune(data[0])) {
 		s.line.Insert(rune(data[0]))
-		return handler.Get[protocol.Input].Handle(pkt, s.Pty, s.primary.Sock, s.primary.Claims)
+		return handler.Get[protocol.Input].Handle(pkt, s.Pty)
 	}
 
 	return "Unhandled input", nil
@@ -119,33 +119,36 @@ func (p *HealthcheckPurpose) handleEnter(s *Session, pkt protocol.Packet) (strin
 
 		// send Ctrl +C to clear pty
 		ctrlCPkt := protocol.Packet{Header: protocol.Input, Data: CtrlC}
-		handler.Get[protocol.Input].Handle(ctrlCPkt, s.Pty, s.primary.Sock, s.primary.Claims)
+		_, err := handler.Get[protocol.Input].Handle(ctrlCPkt, s.Pty)
+		if err != nil {
+			return "", err
+		}
 
 		return fmt.Sprintf("\n[Command Blocked] %s", msg), nil
 	}
 
-	return handler.Get[protocol.Input].Handle(pkt, s.Pty, s.primary.Sock, s.primary.Claims)
+	return handler.Get[protocol.Input].Handle(pkt, s.Pty)
 }
 
 func (p *HealthcheckPurpose) handleBackspace(s *Session, pkt protocol.Packet) (string, error) {
 	s.line.Backspace()
-	return handler.Get[protocol.Input].Handle(pkt, s.Pty, s.primary.Sock, s.primary.Claims)
+	return handler.Get[protocol.Input].Handle(pkt, s.Pty)
 }
 
 func (p *HealthcheckPurpose) HandleLeft(s *Session, pkt protocol.Packet) (string, error) {
 	s.line.MoveLeft()
-	return handler.Get[protocol.Input].Handle(pkt, s.Pty, s.primary.Sock, s.primary.Claims)
+	return handler.Get[protocol.Input].Handle(pkt, s.Pty)
 }
 
 func (p *HealthcheckPurpose) HandleRight(s *Session, pkt protocol.Packet) (string, error) {
 	s.line.MoveRight()
-	return handler.Get[protocol.Input].Handle(pkt, s.Pty, s.primary.Sock, s.primary.Claims)
+	return handler.Get[protocol.Input].Handle(pkt, s.Pty)
 }
 
 // handleTerminatingControlChar for CtrlC etc that are allowed and terminating
 func (p *HealthcheckPurpose) handleTerminatingControlChar(s *Session, pkt protocol.Packet) (string, error) {
 	defer s.line.Reset()
-	return handler.Get[protocol.Input].Handle(pkt, s.Pty, s.primary.Sock, s.primary.Claims)
+	return handler.Get[protocol.Input].Handle(pkt, s.Pty)
 }
 
 // ctrl r, up down etc that wants to be blocked
@@ -163,7 +166,7 @@ func (p *HealthcheckPurpose) HandleOther(s *Session, pkt protocol.Packet) (strin
 		return "", fmt.Errorf("no handler found for packet header: %s", string(pkt.Header))
 	}
 
-	return h.Handle(pkt, s.Pty, s.primary.Sock, s.primary.Claims)
+	return h.Handle(pkt, s.Pty)
 }
 
 var (

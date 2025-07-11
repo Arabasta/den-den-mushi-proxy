@@ -5,18 +5,17 @@ import (
 	"den-den-mushi-Go/internal/proxy/protocol"
 )
 
-// fanout sends packet to primary and all observers' channels, called by event loop
+// fanout to primary and all observers' channels, called in event loop
 func (s *Session) fanout(pkt protocol.Packet) {
-	if s.primary != nil {
-		sendToConn(s.primary, pkt)
-	}
+	sendToConn(s.primary, pkt)
+
 	for o := range s.observers {
 		sendToConn(o, pkt)
 	}
 }
 
 func (s *Session) fanoutExcept(pkt protocol.Packet, except *client.Connection) {
-	if s.primary != nil && s.primary != except {
+	if s.primary != except {
 		sendToConn(s.primary, pkt)
 	}
 	for o := range s.observers {

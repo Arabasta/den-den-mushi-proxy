@@ -2,14 +2,12 @@ package handler
 
 import (
 	"den-den-mushi-Go/internal/proxy/protocol"
-	"den-den-mushi-Go/pkg/token"
-	"github.com/gorilla/websocket"
 	"io"
 )
 
 // Handler should not have any websocket writes
 type Handler interface {
-	Handle(pkt protocol.Packet, pty io.Writer, ws *websocket.Conn, claims *token.Claims) (string, error)
+	Handle(pkt protocol.Packet, pty io.Writer) (string, error)
 }
 
 var (
