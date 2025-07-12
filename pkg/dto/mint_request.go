@@ -1,16 +1,19 @@
 package dto
 
-import "time"
+import (
+	"den-den-mushi-Go/pkg/types"
+	"time"
+)
 
 type MintRequest struct {
-	Purpose      ConnectionPurpose `json:"purpose" binding:"required,oneof=change_request health_check"`
-	ChangeID     string            `json:"change_id,omitempty"`
-	PtySessionId string            `json:"pty_session_id,omitempty"`           // if not provided, a new session will be created
-	StartRole    StartRole         `json:"start_role,omitempty"`               // required if PtySessionId is provided
-	Type         ConnectionType    `json:"connection_type" binding:"required"` // temporarily from client, should be set based on server details
-	Server       ServerInfo        `json:"server" binding:"required"`
-	FilterType   FilterType        `json:"filter_type"` // should be set based on server details
-	UserId       string            `json:"user_id"`     // temp, should be set with keycloak user id
+	Purpose      types.ConnectionPurpose `json:"purpose" binding:"required,oneof=change_request health_check"`
+	ChangeID     string                  `json:"change_id,omitempty"`
+	PtySessionId string                  `json:"pty_session_id,omitempty"`           // if not provided, a new session will be created
+	StartRole    types.StartRole         `json:"start_role,omitempty"`               // required if PtySessionId is provided
+	Type         types.ConnectionMethod  `json:"connection_type" binding:"required"` // temporarily from client, should be set based on server details
+	Server       ServerInfo              `json:"server" binding:"required"`
+	FilterType   types.Filter            `json:"filter_type"` // should be set based on server details
+	UserId       string                  `json:"user_id"`     // temp, should be set with keycloak user id
 }
 
 type ServerInfo struct {
@@ -20,26 +23,19 @@ type ServerInfo struct {
 }
 
 type Connection struct {
-	Server        ServerInfo        `json:"server" binding:"required"`
-	Type          ConnectionType    `json:"type" binding:"required"` // todo: should be set based on server details
-	Purpose       ConnectionPurpose `json:"purpose" binding:"required"`
-	UserSession   UserSession       `json:"user_session"`
-	PtySession    PtySession        `json:"pty_session"`
-	ChangeRequest ChangeRequest     `json:"change_request,omitempty"`
-	FilterType    FilterType        `json:"filter_type" binding:"required"` // should be set based on server details
+	Server        ServerInfo              `json:"server" binding:"required"`
+	Type          types.ConnectionMethod  `json:"type" binding:"required"` // todo: should be set based on server details
+	Purpose       types.ConnectionPurpose `json:"purpose" binding:"required"`
+	UserSession   UserSession             `json:"user_session"`
+	PtySession    PtySession              `json:"pty_session"`
+	ChangeRequest ChangeRequest           `json:"change_request,omitempty"`
+	FilterType    types.Filter            `json:"filter_type" binding:"required"` // should be set based on server details
 }
 
 type UserSession struct {
-	Id        string    `json:"id" binding:"required"`
-	StartRole StartRole `json:"start_role,required"`
+	Id        string          `json:"id" binding:"required"`
+	StartRole types.StartRole `json:"start_role,required"`
 }
-
-type StartRole string
-
-const (
-	Implementor StartRole = "implementor"
-	Observer    StartRole = "observer"
-)
 
 type PtySession struct {
 	Id                string `json:"id,omitempty"`
@@ -56,30 +52,3 @@ type ChangeRequest struct {
 	EndTime                  string        `json:"end_time" binding:"required"` // ISO 8601 format
 	ChangeGracePeriodMinutes time.Duration `json:"change_grace_period_minutes" binding:"required"`
 }
-
-type ConnectionPurpose string
-
-const (
-	Change      ConnectionPurpose = "change_request"
-	Healthcheck ConnectionPurpose = "health_check"
-)
-
-type ConnectionType string
-
-const (
-	/* For development purposes only */
-	LocalShell ConnectionType = "local_shell"
-	SshTestKey ConnectionType = "ssh_test_key"
-	/* For development purposes only End*/
-
-	/* New Connection */
-	SshOrchestratorKey ConnectionType = "ssh_orchestrator_key"
-	SshPassword        ConnectionType = "ssh_password"
-)
-
-type FilterType string
-
-const (
-	Blacklist FilterType = "blacklist"
-	Whitelist FilterType = "whitelist"
-)

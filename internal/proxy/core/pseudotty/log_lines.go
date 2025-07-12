@@ -1,7 +1,7 @@
 package pseudotty
 
 import (
-	"den-den-mushi-Go/pkg/dto"
+	"den-den-mushi-Go/pkg/types"
 	"time"
 )
 
@@ -24,13 +24,13 @@ func getLogHeader(s *Session) string {
 
 	header += "# Purpose: " + string(claims.Connection.Purpose) + "\n\n"
 
-	if claims.Connection.Purpose == dto.Change {
+	if claims.Connection.Purpose == types.Change {
 		header +=
 			"# Change Request Details:\n" +
 				"#\t- Change Request ID: " + claims.Connection.ChangeRequest.Id + "\n" +
 				"#\t- Implementor Group: " + claims.Connection.ChangeRequest.ImplementorGroup + "\n" +
 				"#\t- End Time: " + claims.Connection.ChangeRequest.EndTime
-	} else if claims.Connection.Purpose == dto.Healthcheck {
+	} else if claims.Connection.Purpose == types.Healthcheck {
 		header +=
 			"# Health Check Details:\n" +
 				"#\t- Filter: " + string(claims.Connection.FilterType)

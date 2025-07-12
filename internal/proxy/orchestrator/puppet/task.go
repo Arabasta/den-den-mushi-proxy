@@ -2,18 +2,19 @@ package puppet
 
 import (
 	"den-den-mushi-Go/pkg/dto"
+	"den-den-mushi-Go/pkg/types"
 	"errors"
 	"fmt"
 )
 
-type PuppetTask string
+type puppetTask string
 
 const (
-	PuppetTaskInjectPublicKey PuppetTask = "inject_public_key"
-	PuppetTaskRemovePublicKey PuppetTask = "remove_public_key"
+	PuppetTaskInjectPublicKey puppetTask = "inject_public_key"
+	PuppetTaskRemovePublicKey puppetTask = "remove_public_key"
 )
 
-func (pc *Client) callPuppetTask(task PuppetTask, payload interface{}) (interface{}, error) {
+func (pc *Client) callPuppetTask(task puppetTask, payload interface{}) (interface{}, error) {
 	switch task {
 	case PuppetTaskInjectPublicKey:
 		p := payload.(injectKeyParams)
@@ -34,8 +35,8 @@ type injectKeyParams struct {
 	PublicKey   string
 	ServerIP    string
 	OSUser      string
-	ConnPurpose dto.ConnectionPurpose
-	ConnType    dto.ConnectionType
+	ConnPurpose types.ConnectionPurpose
+	ConnType    types.ConnectionMethod
 }
 
 func (pc *Client) PuppetKeyInject(publicKey string, conn dto.Connection) error {

@@ -4,6 +4,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/pkg/dto"
 	"den-den-mushi-Go/pkg/token"
+	"den-den-mushi-Go/pkg/types"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -83,17 +84,17 @@ func mintToken(issuer *Issuer, log *zap.Logger) gin.HandlerFunc {
 		log.Info("Mint request received", zap.Any("request", body))
 
 		// todo: implement proper validation, this is just a placeholder demo simple junk thing
-		var startRole dto.StartRole
+		var startRole types.StartRole
 
 		if body.PtySessionId == "" {
-			startRole = dto.Implementor // only implementor can start
+			startRole = types.Implementor // only implementor can start
 		} else {
 			fmt.Println(body.StartRole)
 			if body.StartRole == "" {
 				c.JSON(400, gin.H{"error": "start_role is required when joining existing session"})
 				return
-			} else if body.StartRole == dto.Implementor {
-			} else if body.StartRole == dto.Observer {
+			} else if body.StartRole == types.Implementor {
+			} else if body.StartRole == types.Observer {
 				// ok, observer can join existing session
 			} else {
 				c.JSON(400, gin.H{"error": "invalid start_role"})

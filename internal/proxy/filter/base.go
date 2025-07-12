@@ -1,6 +1,8 @@
 package filter
 
-import "den-den-mushi-Go/pkg/dto"
+import (
+	"den-den-mushi-Go/pkg/types"
+)
 
 type CommandFilter interface {
 	IsValid(str string) (string, bool)
@@ -45,11 +47,11 @@ func init() {
 	blacklistFilter.UpdateCommands(blacklist)
 }
 
-func GetFilter(filterType dto.FilterType) CommandFilter {
+func GetFilter(filterType types.Filter) CommandFilter {
 	switch filterType {
-	case dto.Whitelist:
+	case types.Whitelist:
 		return whitelistFilter
-	case dto.Blacklist:
+	case types.Blacklist:
 		return blacklistFilter
 	default:
 		return nil

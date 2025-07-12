@@ -2,7 +2,7 @@ package pseudotty
 
 import (
 	"den-den-mushi-Go/internal/proxy/protocol"
-	"den-den-mushi-Go/pkg/dto"
+	"den-den-mushi-Go/pkg/types"
 	"errors"
 	"go.uber.org/zap"
 )
@@ -12,15 +12,15 @@ type Purpose interface {
 	HandleOther(s *Session, pkt protocol.Packet) (string, error)
 }
 
-func setPurpose(s *Session, purpose dto.ConnectionPurpose) error {
+func setPurpose(s *Session, purpose types.ConnectionPurpose) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	switch purpose {
-	case dto.Change:
+	case types.Change:
 		s.log.Debug("Setting session purpose to Change")
 		s.purpose = &ChangeRequestPurpose{}
-	case dto.Healthcheck:
+	case types.Healthcheck:
 		s.log.Debug("Setting session purpose to Healthcheck")
 		s.purpose = &HealthcheckPurpose{}
 	default:

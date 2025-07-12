@@ -5,8 +5,8 @@ import (
 	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/internal/proxy/orchestrator/puppet"
 	"den-den-mushi-Go/internal/proxy/pty_util"
-	"den-den-mushi-Go/pkg/dto"
 	"den-den-mushi-Go/pkg/token"
+	"den-den-mushi-Go/pkg/types"
 	"go.uber.org/zap"
 	"os"
 )
@@ -40,23 +40,23 @@ type ConnectionMethod interface {
 }
 
 // Create returns the correct ConnectionMethod for the requested type
-func (f *ConnectionMethodFactory) Create(t dto.ConnectionType) ConnectionMethod {
+func (f *ConnectionMethodFactory) Create(t types.ConnectionMethod) ConnectionMethod {
 	switch t {
-	case dto.LocalShell:
+	case types.LocalShell:
 		return &LocalShellConnection{
 			log:            f.deps.log,
 			cfg:            f.deps.cfg,
 			commandBuilder: f.deps.commandBuilder,
 		}
 
-	case dto.SshTestKey:
+	case types.SshTestKey:
 		return &SshTestKeyConnection{
 			log:            f.deps.log,
 			cfg:            f.deps.cfg,
 			commandBuilder: f.deps.commandBuilder,
 		}
 
-	case dto.SshOrchestratorKey:
+	case types.SshOrchestratorKey:
 		return &SshOrchestratorKeyConnection{
 			puppet:         f.deps.puppet,
 			cfg:            f.deps.cfg,

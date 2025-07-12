@@ -28,6 +28,7 @@ func main() {
 	}
 }
 
+// configPath usage: go run main.go -config /path/to/config.json
 func configPath() string {
 	configPath := flag.String("config", "", "path to config file (optional)")
 	flag.Parse()

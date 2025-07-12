@@ -4,8 +4,8 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/client"
 	"den-den-mushi-Go/internal/proxy/filter"
 	"den-den-mushi-Go/internal/proxy/protocol"
-	"den-den-mushi-Go/pkg/dto"
 	"den-den-mushi-Go/pkg/token"
+	"den-den-mushi-Go/pkg/types"
 	"errors"
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
@@ -28,7 +28,7 @@ func (s *Session) RegisterInitialConn(ws *websocket.Conn, claims *token.Claims) 
 		return err
 	}
 
-	if claims.Connection.Purpose == dto.Healthcheck {
+	if claims.Connection.Purpose == types.Healthcheck {
 		s.log.Info("Setting healthcheck filter")
 		s.filter = filter.GetFilter(claims.Connection.FilterType)
 		if s.filter == nil {
@@ -46,7 +46,7 @@ func (s *Session) RegisterConn(ws *websocket.Conn, claims *token.Claims) error {
 	s.log.Info("Attaching websocket connection to pty session", zap.String("userSessionId",
 		claims.Connection.UserSession.Id))
 
-	if claims.Connection.UserSession.StartRole == dto.Implementor {
+	if claims.Connection.UserSession.StartRole == types.Implementor {
 		// check if primary already exists
 		s.mu.Lock()
 		if s.primary != nil {
@@ -75,9 +75,9 @@ func (s *Session) addConn(c *client.Connection) {
 		zap.String("userSessionId", c.Claims.Connection.UserSession.Id),
 		zap.String("role", string(c.Claims.Connection.UserSession.StartRole)))
 
-	if c.Claims.Connection.UserSession.StartRole == dto.Implementor {
+	if c.Claims.Connection.UserSession.StartRole == types.Implementor {
 		s.primary = c
-	} else if c.Claims.Connection.UserSession.StartRole == dto.Observer {
+	} else if c.Claims.Connection.UserSession.StartRole == types.Observer {
 		s.observers[c] = struct{}{}
 	} else {
 		s.log.Error("Unknown role for websocket connection")
@@ -107,7 +107,7 @@ func (s *Session) addConn(c *client.Connection) {
 	go c.WriteClient(s.log)
 
 	// doesn't handle swapping roles for now
-	if c.Claims.Connection.UserSession.StartRole == dto.Implementor {
+	if c.Claims.Connection.UserSession.StartRole == types.Implementor {
 		s.log.Info("Is implementor role, starting readClient")
 		go s.readClient(c)
 	}

@@ -5,6 +5,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/client"
 	"den-den-mushi-Go/internal/proxy/filter"
 	"den-den-mushi-Go/internal/proxy/protocol"
+	"den-den-mushi-Go/pkg/ds"
 	"den-den-mushi-Go/pkg/dto"
 	"den-den-mushi-Go/pkg/token"
 	"den-den-mushi-Go/pkg/types"
@@ -37,7 +38,7 @@ type Session struct {
 	connDeregisterCh chan *client.Connection
 
 	outboundCh     chan protocol.Packet
-	ptyLastPackets *types.CircularArray[protocol.Packet]
+	ptyLastPackets *ds.CircularArray[protocol.Packet]
 
 	mu      sync.Mutex
 	closed  bool // todo: change to state and atomic
@@ -63,7 +64,7 @@ func New(id string, pty *os.File, log *zap.Logger, cfg *config.Config) (*Session
 		connRegisterCh:   make(chan *client.Connection),
 		connDeregisterCh: make(chan *client.Connection),
 
-		ptyLastPackets: types.NewCircularArray[protocol.Packet](100), // todo: make configurable capa and maybe track line or something
+		ptyLastPackets: ds.NewCircularArray[protocol.Packet](100), // todo: make configurable capa and maybe track line or something
 	}
 
 	if err := s.initLogWriter(); err != nil {
@@ -120,9 +121,9 @@ type Participants struct {
 }
 
 type ParticipantInfo struct {
-	UserSessionID string        `json:"user_session_id"`
-	UserID        string        `json:"user_id"`
-	StartRole     dto.StartRole `json:"start_role,required"`
+	UserSessionID string          `json:"user_session_id"`
+	UserID        string          `json:"user_id"`
+	StartRole     types.StartRole `json:"start_role,required"`
 }
 
 func participantInfoFromClaims(claims *token.Claims) ParticipantInfo {
