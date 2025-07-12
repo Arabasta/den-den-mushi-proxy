@@ -23,6 +23,32 @@ func (s *Session) EndSession() {
 	s.onClose(s.id)
 }
 
+func (s *Session) closeTheWorld() func() {
+	var once sync.Once
+	return func() {
+		once.Do(func() {
+			s.log.Debug("Closing the world")
+			s.deregisterAllWsConnections()
+			s.closePty()
+			s.closeSessionChannels()
+			s.closeLogWriter()
+		})
+	}
+}
+
+func (s *Session) deregisterAllWsConnections() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.connDeregisterCh <- s.primary
+
+	for o := range s.observers {
+		s.connDeregisterCh <- o
+	}
+
+	s.log.Info("Closed all websocket connections")
+}
+
 func (s *Session) closeSessionChannels() {
 	close(s.connRegisterCh)
 	close(s.connDeregisterCh)
@@ -33,7 +59,15 @@ func (s *Session) closeSessionChannels() {
 func (s *Session) closeWs(c *client.Connection) {
 	c.OnceCloseWriteCh.Do(func() {
 		close(c.WsWriteCh)
-		c.Close()
+
+		if c.Sock != nil {
+			s.log.Debug("Closing websocket connection", zap.String("userSessionId", c.Claims.Connection.UserSession.Id))
+			err := c.Sock.Close()
+			if err != nil {
+				s.log.Error("Failed to close websocket connection", zap.Error(err))
+				return
+			}
+		}
 	})
 }
 
@@ -60,36 +94,4 @@ func (s *Session) closeLogWriter() {
 			s.log.Info("Closed log writer")
 		}
 	}
-}
-
-func (s *Session) closeTheWorld() func() {
-	var once sync.Once
-	return func() {
-		once.Do(func() {
-			s.closeWs(s.primary)
-			for o := range s.observers {
-				s.closeWs(o)
-			}
-			s.closePty()
-			s.closeSessionChannels()
-			s.closeLogWriter()
-		})
-	}
-}
-
-// todo: need to use the deregister channel
-
-func (s *Session) closeAllConnections() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	for c := range s.observers {
-		s.closeWs(c)
-	}
-	s.observers = make(map[*client.Connection]struct{})
-	if s.primary != nil {
-		s.closeWs(s.primary)
-		s.primary = nil
-	}
-	s.log.Info("Closed all connections")
 }
