@@ -8,11 +8,6 @@ import (
 )
 
 // readClient should only be accessible by the primary connection
-/**
-todo:
-problem: if non-primary connection closes, we won't get ws close message from client. conn will only
-be removed when ws.WriteMessage fails
-*/
 func (s *Session) readClient(c *client.Connection) {
 	for {
 		msgType, msg, err := c.Sock.ReadMessage()
@@ -50,7 +45,7 @@ func (s *Session) processClientMsg(pkt protocol.Packet) {
 
 	if err != nil {
 		s.log.Error("Failed to process message", zap.Error(err))
-		sendToConn(s.primary, protocol.Packet{
+		client.SendToConn(s.primary, protocol.Packet{
 			Header: protocol.Warn,
 			Data:   []byte("Failed to process message"),
 		})

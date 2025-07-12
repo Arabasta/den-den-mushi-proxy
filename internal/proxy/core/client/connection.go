@@ -17,6 +17,17 @@ type Connection struct {
 	Close            func()
 }
 
+// ObserverReadLoop is for reading close messages from Observers ONLY
+func (c *Connection) ObserverReadLoop() {
+	for {
+		_, _, err := c.Sock.ReadMessage()
+		if err != nil {
+			c.Close()
+			return
+		}
+	}
+}
+
 func (c *Connection) WriteClient(log *zap.Logger) {
 	for pkt := range c.WsWriteCh {
 		b := protocol.PacketToByte(pkt)

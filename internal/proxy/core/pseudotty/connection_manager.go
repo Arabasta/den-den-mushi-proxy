@@ -92,9 +92,9 @@ func (s *Session) addConn(c *client.Connection) {
 		s.logL(getLogHeader(s))
 	} else {
 		// is joining existing pty session
-		ptyLastPackets := s.ptyLastPackets.GetAll()
+		ptyLastPackets := s.ptyOutput.GetAll()
 		for i := range ptyLastPackets {
-			sendToConn(c, ptyLastPackets[i])
+			client.SendToConn(c, ptyLastPackets[i])
 		}
 
 		pkt := protocol.Packet{Header: protocol.PtySessionEvent,
@@ -110,6 +110,9 @@ func (s *Session) addConn(c *client.Connection) {
 	if c.Claims.Connection.UserSession.StartRole == types.Implementor {
 		s.log.Info("Is implementor role, starting readClient")
 		go s.readClient(c)
+	} else {
+		s.log.Info("Is observer role, starting ObserverReadLoop")
+		go c.ObserverReadLoop()
 	}
 }
 

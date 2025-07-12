@@ -8,6 +8,7 @@ import (
 
 // readPty and add data to outbound channel
 func (s *Session) readPty() {
+	//maxBufSize := s.cfg.Proxy.Pty.MaxBufferSize
 	buf := make([]byte, 4096)
 	for {
 		n, err := s.Pty.Read(buf)
@@ -17,12 +18,12 @@ func (s *Session) readPty() {
 			} else {
 				s.log.Error("Error reading from pty", zap.Error(err))
 				s.logL("Error reading from pty, shutting down session")
-				s.outboundCh <- protocol.Packet{
+				pkt := protocol.Packet{
 					Header: protocol.Error,
 					Data:   []byte("Error reading from pty, shutting down session: " + err.Error()),
 				}
+				s.ptyOutput.Add(pkt)
 			}
-			close(s.outboundCh)
 			s.EndSession()
 			return
 		}
@@ -33,9 +34,9 @@ func (s *Session) readPty() {
 			Data:   data,
 		}
 
-		s.outboundCh <- pkt
-		s.ptyLastPackets.Add(pkt)
+		s.ptyOutput.Add(pkt)
+		s.fanout(pkt)
 
-		s.log.Info("Pty Output", zap.ByteString("data", data))
+		s.log.Debug("Pty Output", zap.ByteString("data", data))
 	}
 }

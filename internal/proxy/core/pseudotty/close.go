@@ -52,7 +52,6 @@ func (s *Session) deregisterAllWsConnections() {
 func (s *Session) closeSessionChannels() {
 	close(s.connRegisterCh)
 	close(s.connDeregisterCh)
-	close(s.outboundCh)
 	s.log.Info("Closed session channels")
 }
 

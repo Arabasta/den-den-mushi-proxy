@@ -7,37 +7,25 @@ import (
 
 // fanout to primary and all observers' channels, called in event loop
 func (s *Session) fanout(pkt protocol.Packet) {
-	sendToConn(s.primary, pkt)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.primary != nil {
+		client.Send(s.primary.WsWriteCh, pkt)
+	}
 
 	for o := range s.observers {
-		sendToConn(o, pkt)
+		client.Send(o.WsWriteCh, pkt)
 	}
 }
 
 func (s *Session) fanoutExcept(pkt protocol.Packet, except *client.Connection) {
 	if s.primary != except {
-		sendToConn(s.primary, pkt)
+		client.SendToConn(s.primary, pkt)
 	}
 	for o := range s.observers {
 		if o != except {
-			sendToConn(o, pkt)
+			client.SendToConn(o, pkt)
 		}
-	}
-}
-
-// sendToConn sends packet to a specific connection, used for targeted messages
-func sendToConn(c *client.Connection, pkt protocol.Packet) {
-	if c == nil {
-		return
-	}
-	send(c.WsWriteCh, pkt)
-}
-
-// send just sends a packet to a channel
-func send(ch chan protocol.Packet, pkt protocol.Packet) {
-	select {
-	case ch <- pkt:
-	default:
-		// queue full, todo discuss drop or log or error or what
 	}
 }

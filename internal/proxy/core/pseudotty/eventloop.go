@@ -1,15 +1,9 @@
 package pseudotty
 
-// eventLoop should be the only goroutine mutating primary and observers, other code needs to lock if reading
-func (s *Session) eventLoop() {
+// connEventLoop should be the only goroutine mutating primary and observers, other code needs to lock if reading
+func (s *Session) connEventLoop() {
 	for {
 		select {
-		case pkt, ok := <-s.outboundCh:
-			if !ok {
-				return
-			}
-			s.logPacket(pkt)
-			s.fanout(pkt)
 		case c := <-s.connRegisterCh:
 			s.addConn(c)
 		case c := <-s.connDeregisterCh:

@@ -37,8 +37,7 @@ type Session struct {
 	connRegisterCh   chan *client.Connection
 	connDeregisterCh chan *client.Connection
 
-	outboundCh     chan protocol.Packet
-	ptyLastPackets *ds.CircularArray[protocol.Packet]
+	ptyOutput *ds.CircularArray[protocol.Packet]
 
 	mu      sync.Mutex
 	closed  bool // todo: change to state and atomic
@@ -59,12 +58,10 @@ func New(id string, pty *os.File, log *zap.Logger, cfg *config.Config) (*Session
 
 		observers: make(map[*client.Connection]struct{}),
 
-		outboundCh: make(chan protocol.Packet, 100), // todo: make configurable
-
 		connRegisterCh:   make(chan *client.Connection),
 		connDeregisterCh: make(chan *client.Connection),
 
-		ptyLastPackets: ds.NewCircularArray[protocol.Packet](100), // todo: make configurable capa and maybe track line or something
+		ptyOutput: ds.NewCircularArray[protocol.Packet](500), // todo: make configurable capa and maybe track line or something
 	}
 
 	if err := s.initLogWriter(); err != nil {
@@ -74,7 +71,7 @@ func New(id string, pty *os.File, log *zap.Logger, cfg *config.Config) (*Session
 
 	s.log.Info("Initializing event loop and pty reader")
 
-	go s.eventLoop()
+	go s.connEventLoop()
 	go s.readPty()
 	return s, nil
 }
