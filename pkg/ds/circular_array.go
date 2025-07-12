@@ -11,7 +11,7 @@ type CircularArray[T any] struct {
 	size     int
 	capacity int
 
-	mu sync.Mutex
+	mu sync.RWMutex
 }
 
 func NewCircularArray[T any](capacity int) *CircularArray[T] {
@@ -37,8 +37,8 @@ func (c *CircularArray[T]) Add(item T) {
 
 // GetAll returns all items in order from oldest to newest
 func (c *CircularArray[T]) GetAll() []T {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 
 	out := make([]T, c.size)
 	for i := 0; i < c.size; i++ {
@@ -49,7 +49,7 @@ func (c *CircularArray[T]) GetAll() []T {
 }
 
 func (c *CircularArray[T]) Len() int {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	return c.size
 }
