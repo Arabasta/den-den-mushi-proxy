@@ -124,6 +124,15 @@ func (s *Session) removeConn(c *client.Connection) {
 		delete(s.observers, c)
 	}
 
+	if c.Sock != nil {
+		s.log.Debug("Closing websocket connection", zap.String("userSessionId", c.Claims.Connection.UserSession.Id))
+		err := c.Sock.Close()
+		if err != nil {
+			s.log.Error("Failed to close websocket connection", zap.Error(err))
+			return
+		}
+	}
+
 	pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " has left")}
 	s.logPacket(pkt)
 	s.fanoutExcept(pkt, c)

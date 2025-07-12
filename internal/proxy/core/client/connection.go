@@ -27,7 +27,7 @@ func (c *Connection) WriteClient(log *zap.Logger) {
 			if err == io.EOF {
 				log.Info("PTY session ended normally")
 			} else if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-				log.Info("WebSocket closed normally") // client sends close, currently not implemented in frontend
+				log.Info("WebSocket closed normally") // client sends close, currently not implemented on frontend
 			} else if websocket.IsCloseError(err, websocket.CloseGoingAway) {
 				log.Info("WebSocket closed. Probably tab closed") // most closures are this
 			} else if websocket.IsUnexpectedCloseError(err, websocket.CloseAbnormalClosure) {
@@ -35,6 +35,7 @@ func (c *Connection) WriteClient(log *zap.Logger) {
 			} else {
 				log.Error("Error handling output packet", zap.Error(err))
 			}
+
 			c.Close()
 			return
 		}
