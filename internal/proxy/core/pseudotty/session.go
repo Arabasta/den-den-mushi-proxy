@@ -1,9 +1,11 @@
 package pseudotty
 
 import (
+	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/internal/proxy/core/client"
 	"den-den-mushi-Go/internal/proxy/filter"
 	"den-den-mushi-Go/internal/proxy/protocol"
+	"den-den-mushi-Go/pkg/dto"
 	"den-den-mushi-Go/pkg/token"
 	"den-den-mushi-Go/pkg/types"
 	"go.uber.org/zap"
@@ -35,19 +37,22 @@ type Session struct {
 	connDeregisterCh chan *client.Connection
 
 	outboundCh     chan protocol.Packet
-	ptyLastPackets []protocol.Packet
+	ptyLastPackets *types.CircularArray[protocol.Packet]
 
 	mu      sync.Mutex
 	closed  bool // todo: change to state and atomic
 	onClose func(string)
+
+	cfg *config.Config
 }
 
-func New(id string, pty *os.File, log *zap.Logger) (*Session, error) {
+func New(id string, pty *os.File, log *zap.Logger, cfg *config.Config) (*Session, error) {
 	s := &Session{
 		id:        id,
 		Pty:       pty,
 		startTime: time.Now().Format(time.RFC3339),
 		log:       log.With(zap.String("ptySession", id)),
+		cfg:       cfg,
 
 		line: new(filter.LineEditor),
 
@@ -107,4 +112,43 @@ func (s *Session) GetDetails() SessionInfo {
 		Primary:     primary,
 		Observers:   observers,
 	}
+}
+
+type Participants struct {
+	Primary   *token.Claims  `json:"primary"`
+	Observers []token.Claims `json:"observers"`
+}
+
+type ParticipantInfo struct {
+	UserSessionID string        `json:"user_session_id"`
+	UserID        string        `json:"user_id"`
+	StartRole     dto.StartRole `json:"start_role,required"`
+}
+
+func participantInfoFromClaims(claims *token.Claims) ParticipantInfo {
+	return ParticipantInfo{
+		UserSessionID: claims.Connection.UserSession.Id,
+		UserID:        claims.Subject,
+		StartRole:     claims.Connection.UserSession.StartRole,
+		// todo: add join time
+	}
+}
+
+type SessionInfo2 struct {
+	SessionID              string            `json:"session_id"`
+	ProxyDetails           ProxyDetails      `json:"proxy_details"`
+	StartConnectionDetails dto.Connection    `json:"start_connection_details"`
+	StartTime              string            `json:"start_time"`
+	EndTime                string            `json:"end_time,omitempty"`
+	State                  string            `json:"state,omitempty"`         // todo: use enum
+	LastActivity           string            `json:"last_activity,omitempty"` // ISO 8601 format
+	Participants           []ParticipantInfo `json:"participants"`
+}
+
+type ProxyDetails struct {
+	Hostname    string `json:"hostname"`
+	IP          string `json:"ip"`
+	Type        string `json:"type"`
+	Region      string `json:"region"`
+	Environment string `json:"environment"`
 }

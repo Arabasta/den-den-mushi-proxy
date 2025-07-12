@@ -1,6 +1,7 @@
 package session_manager
 
 import (
+	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/internal/proxy/core/pseudotty"
 	"den-den-mushi-Go/pkg/token"
 	"errors"
@@ -17,12 +18,14 @@ type Service struct {
 	mu          sync.RWMutex
 	ptySessions map[string]*pseudotty.Session // todo use service and repo layer, anyway need inmem map for retrieval
 	log         *zap.Logger
+	cfg         *config.Config
 }
 
-func New(log *zap.Logger) *Service {
+func New(log *zap.Logger, cfg *config.Config) *Service {
 	return &Service{
 		ptySessions: make(map[string]*pseudotty.Session),
 		log:         log,
+		cfg:         cfg,
 	}
 }
 
@@ -33,7 +36,7 @@ func (m *Service) CreatePtySession(pty *os.File, log *zap.Logger) (*pseudotty.Se
 
 	id := uuid.NewString() + strconv.FormatInt(time.Now().Unix(), 10)
 
-	s, err := pseudotty.New(id, pty, log)
+	s, err := pseudotty.New(id, pty, log, m.cfg)
 	if err != nil {
 		m.log.Error("Failed to create pty session", zap.Error(err), zap.String("id", id))
 		// todo: close it
