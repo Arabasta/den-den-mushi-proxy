@@ -7,8 +7,8 @@ import (
 
 // fanout to primary and all observers' channels, called in event loop
 func (s *Session) fanout(pkt protocol.Packet) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	if s.primary != nil {
 		client.Send(s.primary.WsWriteCh, pkt)
@@ -20,6 +20,9 @@ func (s *Session) fanout(pkt protocol.Packet) {
 }
 
 func (s *Session) fanoutExcept(pkt protocol.Packet, except *client.Connection) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	if s.primary != except {
 		client.SendToConn(s.primary, pkt)
 	}
