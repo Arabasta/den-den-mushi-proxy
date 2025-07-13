@@ -6,8 +6,8 @@ import (
 	"io"
 )
 
-// readPty and add data to outbound channel
-func (s *Session) readPty() {
+// readPtyLoop and add data to outbound channel
+func (s *Session) readPtyLoop() {
 	//maxBufSize := s.cfg.Proxy.Pty.MaxBufferSize
 	buf := make([]byte, 512)
 	for {

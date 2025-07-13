@@ -104,7 +104,7 @@ func (s *Session) Run(claims *token.Claims) error {
 
 	s.log.Info("Initializing conn loop and pty reader")
 	go s.connLoop()
-	go s.readPty()
+	go s.readPtyLoop()
 
 	return nil
 }
