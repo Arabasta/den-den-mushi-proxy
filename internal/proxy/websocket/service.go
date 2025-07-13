@@ -61,7 +61,7 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 			return
 		}
 
-		err = session.SetupSession(claims)
+		err = session.Run(claims)
 		if err != nil {
 			s.log.Error("Failed to setup session", zap.Error(err))
 			return
