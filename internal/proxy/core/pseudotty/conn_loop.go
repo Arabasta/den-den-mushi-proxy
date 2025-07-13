@@ -7,6 +7,9 @@ func (s *Session) connLoop() {
 			s.addConn(c)
 		case c := <-s.connDeregisterCh:
 			s.removeConn(c)
+		case <-s.ctx.Done():
+			s.log.Info("connLoop: context done")
+			return
 		}
 	}
 }

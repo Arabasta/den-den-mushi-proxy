@@ -17,9 +17,9 @@ func (s *Session) EndSession() {
 		defer func() { s.closed = true }()
 
 		s.log.Info("Ending pty session")
-		s.closeTheWorld()
 		s.EndTime = time.Now().Format(time.RFC3339)
 		s.logL(logging.FormatFooter(s.EndTime))
+		s.closeTheWorld()
 		if s.onClose != nil {
 			s.onClose(s.id)
 		}

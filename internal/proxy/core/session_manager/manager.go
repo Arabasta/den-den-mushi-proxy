@@ -44,6 +44,7 @@ func (m *Service) CreatePtySession(pty *os.File, claims *token.Claims, log *zap.
 	}
 
 	s.SetOnClose(func(sessionID string) {
+		// remove from map todo: update state on redis
 		m.DeletePtySession(sessionID)
 	})
 
@@ -88,19 +89,9 @@ func (m *Service) DeletePtySession(id string) {
 	defer m.mu.Unlock()
 
 	m.log.Info("Deleting pty session", zap.String("id", id))
-	if _, ok := m.ptySessions[id]; ok {
-		pty, ok := m.GetPtySession(id)
-		if !ok {
-			m.log.Warn("Pty session not found for deletion", zap.String("id", id))
-			// todo: handle this case
-			return
-		}
+	// delete from map
+	delete(m.ptySessions, id)
 
-		pty.EndSession()
-
-		// delete from map
-		delete(m.ptySessions, id)
-	}
 }
 
 // AttachConn if pty session already exists
