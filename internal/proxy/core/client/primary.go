@@ -4,9 +4,10 @@ import (
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
+	"strings"
 )
 
-// PrimaryReadLoop primaryReadLoop should only be accessible by the primary connection
+// PrimaryReadLoop should only be accessible by the primary connection
 func (c *Connection) PrimaryReadLoop(onPacket func(protocol.Packet)) {
 	for {
 		if c.Ctx.Err() != nil {
@@ -38,7 +39,7 @@ func (c *Connection) PrimaryReadLoop(onPacket func(protocol.Packet)) {
 
 func (c *Connection) logWsError(err error) {
 	switch {
-	case websocket.IsCloseError(err, websocket.CloseNormalClosure):
+	case websocket.IsCloseError(err, websocket.CloseNormalClosure) || isUseOfClosedConn(err):
 		c.Log.Info("WebSocket closed normally")
 	case websocket.IsCloseError(err, websocket.CloseGoingAway):
 		c.Log.Info("WebSocket closed. Probably tab closed")
@@ -47,4 +48,8 @@ func (c *Connection) logWsError(err error) {
 	default:
 		c.Log.Error("Error reading from websocket", zap.Error(err))
 	}
+}
+
+func isUseOfClosedConn(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "use of closed network connection")
 }
