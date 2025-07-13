@@ -53,7 +53,7 @@ func (s *Session) addConn(c *client.Connection) {
 	// doesn't handle swapping roles for now
 	if c.Claims.Connection.UserSession.StartRole == types.Implementor {
 		s.log.Info("Is implementor role, starting primaryReadLoop")
-		go s.primaryReadLoop(c)
+		go c.PrimaryReadLoop(s.handleConnPacket)
 	} else {
 		s.log.Info("Is observer role, starting ObserverReadLoop")
 		go c.ObserverReadLoop()

@@ -14,7 +14,7 @@ func (c *Connection) ObserverReadLoop() {
 
 		_, _, err := c.Sock.ReadMessage()
 		if err != nil {
-			// todo: check type of error
+			c.logWsError(err)
 			if c.Close != nil {
 				c.Close()
 			} else {
