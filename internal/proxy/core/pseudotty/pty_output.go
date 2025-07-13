@@ -9,7 +9,7 @@ import (
 // readPty and add data to outbound channel
 func (s *Session) readPty() {
 	//maxBufSize := s.cfg.Proxy.Pty.MaxBufferSize
-	buf := make([]byte, 4096)
+	buf := make([]byte, 512)
 	for {
 		n, err := s.Pty.Read(buf)
 		if err != nil {
@@ -35,7 +35,7 @@ func (s *Session) readPty() {
 		}
 
 		s.ptyOutput.Add(pkt)
-		s.fanout(pkt)
+		s.fanout(pkt, nil)
 
 		s.log.Debug("Pty Output", zap.ByteString("data", data))
 	}

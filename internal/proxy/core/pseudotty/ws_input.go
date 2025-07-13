@@ -2,20 +2,29 @@ package pseudotty
 
 import (
 	"den-den-mushi-Go/internal/proxy/core/client"
+	"den-den-mushi-Go/internal/proxy/core/core_helpers"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 )
 
-// readClient should only be accessible by the primary connection
-func (s *Session) readClient(c *client.Connection) {
+// todo: move to client package
+
+// primaryReadLoop should only be accessible by the primary connection
+func (s *Session) primaryReadLoop(c *client.Connection) {
 	for {
+		if c.Ctx.Err() != nil {
+			s.log.Info("primaryReadLoop: context done")
+			return
+		}
+
 		msgType, msg, err := c.Sock.ReadMessage()
 		if err != nil {
-			s.handleReadError(err)
-			// log to session log
+			s.logReadError(err)
 			// close conn on any error
-			s.connDeregisterCh <- c
+			if c.Close != nil {
+				c.Close()
+			}
 			return
 		}
 
@@ -34,6 +43,9 @@ func (s *Session) readClient(c *client.Connection) {
 }
 
 func (s *Session) processClientMsg(pkt protocol.Packet) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	var logMsg string
 	var err error
 
@@ -45,7 +57,7 @@ func (s *Session) processClientMsg(pkt protocol.Packet) {
 
 	if err != nil {
 		s.log.Error("Failed to process message", zap.Error(err))
-		client.SendToConn(s.primary, protocol.Packet{
+		core_helpers.SendToConn(s.primary, protocol.Packet{
 			Header: protocol.Warn,
 			Data:   []byte("Failed to process message"),
 		})
@@ -58,7 +70,7 @@ func (s *Session) processClientMsg(pkt protocol.Packet) {
 	}
 }
 
-func (s *Session) handleReadError(err error) {
+func (s *Session) logReadError(err error) {
 	switch {
 	case websocket.IsCloseError(err, websocket.CloseNormalClosure):
 		s.log.Info("WebSocket closed normally")

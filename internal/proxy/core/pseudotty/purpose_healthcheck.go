@@ -2,12 +2,14 @@ package pseudotty
 
 import (
 	"bytes"
-	"den-den-mushi-Go/internal/proxy/core/client"
+	"den-den-mushi-Go/internal/proxy/core/core_helpers"
 	"den-den-mushi-Go/internal/proxy/handler"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"fmt"
 	"go.uber.org/zap"
 )
+
+// todo: move to purpose package
 
 type HealthcheckPurpose struct{}
 
@@ -117,7 +119,7 @@ func (p *HealthcheckPurpose) handleEnter(s *Session, pkt protocol.Packet) (strin
 	if !allowed {
 		errPkt := protocol.Packet{Header: protocol.BlockedCommand, Data: []byte(s.line.String())}
 		s.ptyOutput.Add(errPkt)
-		s.fanout(errPkt)
+		s.fanout(errPkt, nil)
 
 		// send Ctrl +C to clear pty
 		ctrlCPkt := protocol.Packet{Header: protocol.Input, Data: CtrlC}
@@ -157,7 +159,7 @@ func (p *HealthcheckPurpose) handleTerminatingControlChar(s *Session, pkt protoc
 func (p *HealthcheckPurpose) handleBlockedControlChar(s *Session, pkt protocol.Packet) (string, error) {
 	// change header and queue it
 	pkt.Header = protocol.BlockedControl
-	client.SendToConn(s.primary, pkt)
+	core_helpers.SendToConn(s.primary, pkt)
 	return "\n[Blocked Control Character]: " + string(pkt.Data), nil
 }
 

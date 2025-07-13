@@ -1,6 +1,7 @@
 package pseudotty
 
 import (
+	"context"
 	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/internal/proxy/core/client"
 	"den-den-mushi-Go/internal/proxy/filter"
@@ -9,6 +10,7 @@ import (
 	"den-den-mushi-Go/pkg/dto"
 	"den-den-mushi-Go/pkg/token"
 	"den-den-mushi-Go/pkg/types"
+	"errors"
 	"go.uber.org/zap"
 	"io"
 	"os"
@@ -39,9 +41,13 @@ type Session struct {
 
 	ptyOutput *ds.CircularArray[protocol.Packet]
 
+	ctx    context.Context
+	cancel context.CancelFunc
+
 	mu      sync.RWMutex
-	closed  bool // todo: change to state and atomic
+	closed  bool // todo: change to state
 	onClose func(string)
+	once    sync.Once
 
 	cfg *config.Config
 }
@@ -64,16 +70,43 @@ func New(id string, pty *os.File, log *zap.Logger, cfg *config.Config) (*Session
 		ptyOutput: ds.NewCircularArray[protocol.Packet](500), // todo: make configurable capa and maybe track line or something
 	}
 
+	s.ctx, s.cancel = context.WithCancel(context.Background())
+
 	if err := s.initLogWriter(); err != nil {
 		s.log.Error("Failed to create session log", zap.Error(err))
 		return s, err
 	}
 
-	s.log.Info("Initializing event loop and pty reader")
+	return s, nil
+}
 
+func (s *Session) SetupSession(claims *token.Claims) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.log.Debug("Setting up session", zap.String("id", s.id))
+	s.startClaims = claims
+
+	err := setPurpose(s, s.startClaims.Connection.Purpose)
+	if err != nil {
+		return err
+	}
+
+	if s.startClaims.Connection.Purpose == types.Healthcheck {
+		s.log.Info("Setting healthcheck filter")
+		s.filter = filter.GetFilter(s.startClaims.Connection.FilterType)
+		if s.filter == nil {
+			err = errors.New("invalid filter type")
+			s.log.Error("Failed to register initial connection", zap.Error(err))
+			return err
+		}
+	}
+
+	s.log.Info("Initializing conn loop and pty reader")
 	go s.connLoop()
 	go s.readPty()
-	return s, nil
+
+	return nil
 }
 
 func (s *Session) SetOnClose(f func(string)) {

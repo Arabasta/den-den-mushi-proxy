@@ -7,14 +7,15 @@ import (
 	"go.uber.org/zap"
 )
 
+// todo: move to purpose package
+
 type Purpose interface {
 	HandleInput(s *Session, pkt protocol.Packet) (string, error)
 	HandleOther(s *Session, pkt protocol.Packet) (string, error)
 }
 
 func setPurpose(s *Session, purpose types.ConnectionPurpose) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.log.Info("Setting purpose for connection", zap.String("purpose", string(purpose)))
 
 	switch purpose {
 	case types.Change:

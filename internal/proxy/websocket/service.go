@@ -4,6 +4,7 @@ import (
 	"context"
 	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/internal/proxy/connect"
+	"den-den-mushi-Go/internal/proxy/core/client"
 	"den-den-mushi-Go/internal/proxy/core/session_manager"
 	"den-den-mushi-Go/pkg/token"
 	"github.com/gorilla/websocket"
@@ -30,9 +31,11 @@ func NewWebsocketService(c *connect.ConnectionMethodFactory, sm *session_manager
 // initial connection flow for websocket connections
 // todo: handle ws close with pty close
 func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Claims) {
+	conn := client.New(ws, claims, s.cfg)
+
 	if claims.Connection.PtySession.IsNew {
-		conn := s.connectionMethodFactory.Create(claims.Connection.Type)
-		if conn == nil {
+		connMethod := s.connectionMethodFactory.Create(claims.Connection.Type)
+		if connMethod == nil {
 			s.log.Error("Unsupported connection type", zap.String("type", string(claims.Connection.Type)))
 			s.closeWs(ws)
 			// todo: handle close properly
@@ -40,7 +43,7 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 		}
 
 		s.log.Info("Establishing pty connection", zap.String("type", string(claims.Connection.Type)))
-		pty, err := conn.Connect(ctx, claims)
+		pty, err := connMethod.Connect(ctx, claims)
 		if err != nil {
 			s.log.Error("Failed to connect to pseudo terminal", zap.Error(err),
 				zap.String("type", string(claims.Connection.Type)))
@@ -58,8 +61,14 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 			return
 		}
 
+		err = session.SetupSession(claims)
+		if err != nil {
+			s.log.Error("Failed to setup session", zap.Error(err))
+			return
+		}
+
 		s.log.Info("Registering websocket connection to pty session")
-		err = session.RegisterInitialConn(ws, claims)
+		err = session.RegisterConn(conn)
 		if err != nil {
 			s.closeWs(ws)
 			// todo: close pty if fail
@@ -68,7 +77,7 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 		return
 	} else {
 		// join existing session
-		err := s.sessionManager.AttachWebsocket(ws, claims)
+		err := s.sessionManager.AttachConnToExisting(conn)
 		if err != nil {
 			s.closeWs(ws)
 		}

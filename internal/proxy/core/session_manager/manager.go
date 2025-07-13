@@ -2,11 +2,10 @@ package session_manager
 
 import (
 	"den-den-mushi-Go/internal/proxy/config"
+	"den-den-mushi-Go/internal/proxy/core/client"
 	"den-den-mushi-Go/internal/proxy/core/pseudotty"
-	"den-den-mushi-Go/pkg/token"
 	"errors"
 	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 	"os"
 	"strconv"
@@ -97,14 +96,14 @@ func (m *Service) DeletePtySession(id string) {
 	}
 }
 
-// AttachWebsocket if pty session already exists
-func (m *Service) AttachWebsocket(ws *websocket.Conn, claims *token.Claims) error {
-	session, exists := m.GetPtySession(claims.Connection.PtySession.Id)
+// AttachConnToExisting if pty session already exists
+func (m *Service) AttachConnToExisting(conn *client.Connection) error {
+	session, exists := m.GetPtySession(conn.Claims.Connection.PtySession.Id)
 	if !exists {
 		return errors.New("pty session not found")
 	}
 
-	return session.RegisterConn(ws, claims)
+	return session.RegisterConn(conn)
 }
 
 // tmp  for demo

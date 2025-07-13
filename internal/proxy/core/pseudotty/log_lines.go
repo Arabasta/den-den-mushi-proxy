@@ -6,8 +6,8 @@ import (
 )
 
 func getLogHeader(s *Session) string {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	claims := s.primary.Claims
 
@@ -45,6 +45,9 @@ func getLogHeader(s *Session) string {
 }
 
 func getLogFooter(s *Session) string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	footer := "\n# Session End Time: " + s.endTime
 	// todo: add list of all users
 	return footer

@@ -1,54 +1,53 @@
 package client
 
 import (
+	"context"
+	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"den-den-mushi-Go/pkg/token"
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
-	"io"
 	"sync"
 )
 
 type Connection struct {
-	Sock             *websocket.Conn
-	Claims           *token.Claims
+	id     string
+	Sock   *websocket.Conn
+	Claims *token.Claims
+
 	WsWriteCh        chan protocol.Packet
 	OnceCloseWriteCh sync.Once
-	Close            func()
+
+	Close  func()
+	Ctx    context.Context
+	Cancel context.CancelFunc
+
+	Log *zap.Logger
+	cfg *config.Config
 }
 
-// ObserverReadLoop is for reading close messages from Observers ONLY
-func (c *Connection) ObserverReadLoop() {
-	for {
-		_, _, err := c.Sock.ReadMessage()
-		if err != nil {
-			c.Close()
-			return
-		}
+func New(sock *websocket.Conn, claims *token.Claims, cfg *config.Config) *Connection {
+	return &Connection{
+		id:        claims.Connection.UserSession.Id,
+		Sock:      sock,
+		Claims:    claims,
+		WsWriteCh: make(chan protocol.Packet, 100), // todo: make configurable
+		cfg:       cfg,
 	}
 }
 
-func (c *Connection) WriteClient(log *zap.Logger) {
-	for pkt := range c.WsWriteCh {
-		b := protocol.PacketToByte(pkt)
+func (c *Connection) DoClose() {
+	c.OnceCloseWriteCh.Do(func() {
+		if c.Cancel != nil {
+			c.Cancel()
+		}
 
-		// concurrent write ok if Write not called elsewhere
-		err := c.Sock.WriteMessage(websocket.BinaryMessage, b)
-		if err != nil {
-			if err == io.EOF {
-				log.Info("PTY session ended normally")
-			} else if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-				log.Info("WebSocket closed normally") // client sends close, currently not implemented on frontend
-			} else if websocket.IsCloseError(err, websocket.CloseGoingAway) {
-				log.Info("WebSocket closed. Probably tab closed") // most closures are this
-			} else if websocket.IsUnexpectedCloseError(err, websocket.CloseAbnormalClosure) {
-				log.Warn("WebSocket closed unexpectedly", zap.Error(err))
-			} else {
-				log.Error("Error handling output packet", zap.Error(err))
+		if c.Sock != nil {
+			c.Log.Debug("Closing websocket connection")
+			err := c.Sock.Close()
+			if err != nil {
+				c.Log.Error("Failed to close websocket connection", zap.Error(err))
 			}
-
-			c.Close()
-			return
 		}
-	}
+	})
 }

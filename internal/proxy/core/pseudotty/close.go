@@ -4,70 +4,52 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/client"
 	"go.uber.org/zap"
 	"io"
-	"sync"
 	"time"
 )
 
 func (s *Session) EndSession() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.closed {
-		return
-	}
-	defer func() { s.closed = true }()
+	s.once.Do(func() {
+		s.cancel() // exit conn loop
+		if s.closed {
+			return
+		}
+		defer func() { s.closed = true }()
 
-	s.log.Info("Ending pty session")
-	s.closeTheWorld()
-	s.endTime = time.Now().Format(time.RFC3339)
-	s.logL(getLogFooter(s))
-	s.onClose(s.id)
+		s.log.Info("Ending pty session")
+		s.closeTheWorld()
+		s.endTime = time.Now().Format(time.RFC3339)
+		s.logL(getLogFooter(s))
+		if s.onClose != nil {
+			s.onClose(s.id)
+		}
+	})
 }
 
-func (s *Session) closeTheWorld() func() {
-	var once sync.Once
-	return func() {
-		once.Do(func() {
-			s.log.Debug("Closing the world")
-			s.deregisterAllWsConnections()
-			s.closePty()
-			s.closeSessionChannels()
-			s.closeLogWriter()
-		})
-	}
+func (s *Session) closeTheWorld() {
+	s.log.Debug("Closing the world")
+	s.deregisterAllWsConnections()
+	s.closePty()
+	s.closeLogWriter()
 }
 
 func (s *Session) deregisterAllWsConnections() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.connDeregisterCh <- s.primary
-
+	s.mu.RLock()
+	// don't use deregisterCh
+	primary := s.primary
+	observers := make([]*client.Connection, 0, len(s.observers))
 	for o := range s.observers {
-		s.connDeregisterCh <- o
+		observers = append(observers, o)
+	}
+	s.mu.RUnlock()
+
+	if primary != nil {
+		s.removeConn(primary)
+	}
+	for _, o := range observers {
+		s.removeConn(o)
 	}
 
 	s.log.Info("Closed all websocket connections")
-}
-
-func (s *Session) closeSessionChannels() {
-	close(s.connRegisterCh)
-	close(s.connDeregisterCh)
-	s.log.Info("Closed session channels")
-}
-
-func (s *Session) closeWs(c *client.Connection) {
-	c.OnceCloseWriteCh.Do(func() {
-		close(c.WsWriteCh)
-
-		if c.Sock != nil {
-			s.log.Debug("Closing websocket connection", zap.String("userSessionId", c.Claims.Connection.UserSession.Id))
-			err := c.Sock.Close()
-			if err != nil {
-				s.log.Error("Failed to close websocket connection", zap.Error(err))
-				return
-			}
-		}
-	})
 }
 
 // todo: more error handling eg check if pty is arleady closed
