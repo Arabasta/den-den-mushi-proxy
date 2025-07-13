@@ -29,7 +29,7 @@ func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
 			log))
 
 	sessionManager := session_manager.New(log, cfg)
-	websocketService := websocket.NewWebsocketService(connectionMethodFactory, sessionManager, log, cfg)
+	websocketService := websocket.NewService(connectionMethodFactory, sessionManager, log, cfg)
 
 	issuer := control_server_tmp.New(cfg, log)
 

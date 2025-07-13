@@ -4,6 +4,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/internal/proxy/core/client"
 	"den-den-mushi-Go/internal/proxy/core/pseudotty"
+	"den-den-mushi-Go/pkg/token"
 	"errors"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -28,7 +29,7 @@ func New(log *zap.Logger, cfg *config.Config) *Service {
 	}
 }
 
-func (m *Service) CreatePtySession(pty *os.File, log *zap.Logger) (*pseudotty.Session, error) {
+func (m *Service) CreatePtySession(pty *os.File, claims *token.Claims, log *zap.Logger) (string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.log.Info("Creating pty session")
@@ -39,7 +40,7 @@ func (m *Service) CreatePtySession(pty *os.File, log *zap.Logger) (*pseudotty.Se
 	if err != nil {
 		m.log.Error("Failed to create pty session", zap.Error(err), zap.String("id", id))
 		// todo: close it
-		return nil, err
+		return "", err
 	}
 
 	s.SetOnClose(func(sessionID string) {
@@ -50,10 +51,16 @@ func (m *Service) CreatePtySession(pty *os.File, log *zap.Logger) (*pseudotty.Se
 
 	if err = m.AddPtySession(id, s); err != nil {
 		m.log.Error("Failed to add pty session to map", zap.Error(err), zap.String("id", id))
-		return nil, err
+		return "", err
 	}
 
-	return s, nil
+	err = s.Setup(claims)
+	if err != nil {
+		m.log.Error("Failed to setup session", zap.Error(err))
+		return "", err
+	}
+
+	return id, nil
 }
 
 func (m *Service) AddPtySession(id string, s *pseudotty.Session) error {
@@ -96,9 +103,9 @@ func (m *Service) DeletePtySession(id string) {
 	}
 }
 
-// AttachConnToExisting if pty session already exists
-func (m *Service) AttachConnToExisting(conn *client.Connection) error {
-	session, exists := m.GetPtySession(conn.Claims.Connection.PtySession.Id)
+// AttachConn if pty session already exists
+func (m *Service) AttachConn(conn *client.Connection, ptySessionId string) error {
+	session, exists := m.GetPtySession(ptySessionId)
 	if !exists {
 		return errors.New("pty session not found")
 	}

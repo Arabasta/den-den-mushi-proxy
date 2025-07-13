@@ -83,7 +83,7 @@ func New(id string, pty *os.File, log *zap.Logger, cfg *config.Config) (*Session
 	return s, nil
 }
 
-func (s *Session) Run(claims *token.Claims) error {
+func (s *Session) Setup(claims *token.Claims) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

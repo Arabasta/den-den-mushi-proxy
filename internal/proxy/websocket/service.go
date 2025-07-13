@@ -18,7 +18,7 @@ type Service struct {
 	cfg                     *config.Config
 }
 
-func NewWebsocketService(c *connect.ConnectionMethodFactory, sm *session_manager.Service, log *zap.Logger,
+func NewService(c *connect.ConnectionMethodFactory, sm *session_manager.Service, log *zap.Logger,
 	cfg *config.Config) *Service {
 	return &Service{
 		connectionMethodFactory: c,
@@ -54,21 +54,15 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 
 		s.log.Info("Connected to pty ", zap.String("type", string(claims.Connection.Type)))
 
-		session, err := s.sessionManager.CreatePtySession(pty, s.log)
+		ptySessionId, err := s.sessionManager.CreatePtySession(pty, claims, s.log)
 		if err != nil {
 			s.log.Error("Failed to create pty session", zap.Error(err))
 			s.closeWs(ws)
 			return
 		}
 
-		err = session.Run(claims)
-		if err != nil {
-			s.log.Error("Failed to setup session", zap.Error(err))
-			return
-		}
-
 		s.log.Info("Registering websocket connection to pty session")
-		err = session.RegisterConn(conn)
+		err = s.sessionManager.AttachConn(conn, ptySessionId)
 		if err != nil {
 			s.closeWs(ws)
 			// todo: close pty if fail
@@ -77,7 +71,7 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 		return
 	} else {
 		// join existing session
-		err := s.sessionManager.AttachConnToExisting(conn)
+		err := s.sessionManager.AttachConn(conn, claims.Connection.PtySession.Id)
 		if err != nil {
 			s.closeWs(ws)
 		}
