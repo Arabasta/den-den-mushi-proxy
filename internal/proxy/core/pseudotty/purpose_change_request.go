@@ -16,7 +16,7 @@ func (p *ChangeRequestPurpose) HandleInput(s *Session, pkt protocol.Packet) (str
 
 	// todo: log line on enter, need to add LineEditor to this
 
-	return h.Handle(pkt, s.Pty)
+	return h.Handle(pkt, s.pty)
 }
 
 func (p *ChangeRequestPurpose) HandleOther(s *Session, pkt protocol.Packet) (string, error) {
@@ -25,5 +25,5 @@ func (p *ChangeRequestPurpose) HandleOther(s *Session, pkt protocol.Packet) (str
 		return "", fmt.Errorf("no handler found for packet header: %s", string(pkt.Header))
 	}
 
-	return h.Handle(pkt, s.Pty)
+	return h.Handle(pkt, s.pty)
 }

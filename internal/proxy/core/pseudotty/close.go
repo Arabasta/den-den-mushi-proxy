@@ -55,7 +55,7 @@ func (s *Session) deregisterAllWsConnections() {
 
 // todo: more error handling eg check if pty is arleady closed
 func (s *Session) closePty() {
-	err := s.Pty.Close()
+	err := s.pty.Close()
 	if err != nil {
 		if err != io.EOF {
 			s.log.Info("PTY session ended normally")

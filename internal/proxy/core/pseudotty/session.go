@@ -20,7 +20,7 @@ import (
 
 type Session struct {
 	id          string
-	Pty         *os.File
+	pty         *os.File
 	startClaims *token.Claims // claims from the creator of the session, this must not be modified
 	startTime   string
 	EndTime     string
@@ -58,7 +58,7 @@ type Session struct {
 func New(id string, pty *os.File, log *zap.Logger, cfg *config.Config) (*Session, error) {
 	s := &Session{
 		id:        id,
-		Pty:       pty,
+		pty:       pty,
 		startTime: time.Now().Format(time.RFC3339),
 		log:       log.With(zap.String("ptySession", id)),
 		cfg:       cfg,

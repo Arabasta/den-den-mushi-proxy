@@ -11,7 +11,7 @@ func (s *Session) readPtyLoop() {
 	//maxBufSize := s.cfg.Proxy.Pty.MaxBufferSize
 	buf := make([]byte, 512)
 	for {
-		n, err := s.Pty.Read(buf)
+		n, err := s.pty.Read(buf)
 		if err != nil {
 			if err == io.EOF {
 				s.log.Info("PTY session ended normally")
