@@ -1,16 +1,17 @@
-package pseudotty
+package logging
 
 import (
+	"den-den-mushi-Go/pkg/token"
 	"den-den-mushi-Go/pkg/types"
+	"fmt"
 	"time"
 )
 
-func getLogHeader(s *Session) string {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+func FormatLogLine(header, data string) string {
+	return fmt.Sprintf("%s [%s] %s", time.Now().Format(time.TimeOnly), header, data)
+}
 
-	claims := s.primary.Claims
-
+func FormatHeader(claims *token.Claims) string {
 	header :=
 		"# Session Start Time: " + time.Now().UTC().Format(time.RFC3339) + "\n" +
 			"# Created By: " + claims.Subject + "\n\n"
@@ -44,11 +45,8 @@ func getLogHeader(s *Session) string {
 	return header
 }
 
-func getLogFooter(s *Session) string {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	footer := "\n# Session End Time: " + s.endTime
+func FormatFooter(endTime string) string {
+	footer := "\n# Session End Time: " + endTime
 	// todo: add list of all users
 	return footer
 }

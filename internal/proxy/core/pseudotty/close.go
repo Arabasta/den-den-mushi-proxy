@@ -2,6 +2,7 @@ package pseudotty
 
 import (
 	"den-den-mushi-Go/internal/proxy/core/client"
+	"den-den-mushi-Go/internal/proxy/core/pseudotty/logging"
 	"go.uber.org/zap"
 	"io"
 	"time"
@@ -17,8 +18,8 @@ func (s *Session) EndSession() {
 
 		s.log.Info("Ending pty session")
 		s.closeTheWorld()
-		s.endTime = time.Now().Format(time.RFC3339)
-		s.logL(getLogFooter(s))
+		s.EndTime = time.Now().Format(time.RFC3339)
+		s.logL(logging.FormatFooter(s.EndTime))
 		if s.onClose != nil {
 			s.onClose(s.id)
 		}
@@ -68,8 +69,8 @@ func (s *Session) closePty() {
 }
 
 func (s *Session) closeLogWriter() {
-	if s.logWriter != nil {
-		if err := s.logWriter.Close(); err != nil {
+	if s.sessionLogger != nil {
+		if err := s.sessionLogger.Close(); err != nil {
 			s.log.Warn("Failed to close log writer", zap.Error(err))
 		} else {
 			s.log.Info("Closed log writer")
