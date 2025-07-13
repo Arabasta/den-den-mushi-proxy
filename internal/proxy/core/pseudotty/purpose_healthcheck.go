@@ -5,6 +5,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/core_helpers"
 	"den-den-mushi-Go/internal/proxy/handler"
 	"den-den-mushi-Go/internal/proxy/protocol"
+	"den-den-mushi-Go/pkg/constants"
 	"fmt"
 	"go.uber.org/zap"
 )
@@ -20,54 +21,54 @@ var healthcheckBlockedControlHandlers map[string]func(*HealthcheckPurpose, *Sess
 func init() {
 	// explicitly define allowed for now
 	healthcheckAllowedControlHandlers = map[string]func(*HealthcheckPurpose, *Session, protocol.Packet) (string, error){
-		string(Enter): (*HealthcheckPurpose).handleEnter,
+		string(constants.Enter): (*HealthcheckPurpose).handleEnter,
 
-		string(Backspace):  (*HealthcheckPurpose).handleBackspace,
-		string(ArrowLeft):  (*HealthcheckPurpose).HandleLeft,
-		string(ArrowRight): (*HealthcheckPurpose).HandleRight,
-		string(CtrlC):      (*HealthcheckPurpose).handleTerminatingControlChar,
+		string(constants.Backspace):  (*HealthcheckPurpose).handleBackspace,
+		string(constants.ArrowLeft):  (*HealthcheckPurpose).HandleLeft,
+		string(constants.ArrowRight): (*HealthcheckPurpose).HandleRight,
+		string(constants.CtrlC):      (*HealthcheckPurpose).handleTerminatingControlChar,
 	}
 
 	healthcheckBlockedControlHandlers = map[string]func(*HealthcheckPurpose, *Session, protocol.Packet) (string, error){
 		// for now block unhandled
-		string(RightBackslash):    (*HealthcheckPurpose).handleBlockedControlChar,
-		string(LeftBackslash):     (*HealthcheckPurpose).handleBlockedControlChar,
-		string(LeftParenthesis):   (*HealthcheckPurpose).handleBlockedControlChar,
-		string(RightParenthesis):  (*HealthcheckPurpose).handleBlockedControlChar,
-		string(LeftBracket):       (*HealthcheckPurpose).handleBlockedControlChar,
-		string(RightBracket):      (*HealthcheckPurpose).handleBlockedControlChar,
-		string(LeftBrace):         (*HealthcheckPurpose).handleBlockedControlChar,
-		string(RightBrace):        (*HealthcheckPurpose).handleBlockedControlChar,
-		string(EqualSign):         (*HealthcheckPurpose).handleBlockedControlChar,
-		string(OutputRedirection): (*HealthcheckPurpose).handleBlockedControlChar,
-		string(InputRedirection):  (*HealthcheckPurpose).handleBlockedControlChar,
-		string(SingleQuote):       (*HealthcheckPurpose).handleBlockedControlChar,
-		string(DoubleQuote):       (*HealthcheckPurpose).handleBlockedControlChar,
-		string(Backtick):          (*HealthcheckPurpose).handleBlockedControlChar,
-		string(Comma):             (*HealthcheckPurpose).handleBlockedControlChar,
-		string(Colon):             (*HealthcheckPurpose).handleBlockedControlChar,
-		string(ExclamationMark):   (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.RightBackslash):    (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.LeftBackslash):     (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.LeftParenthesis):   (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.RightParenthesis):  (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.LeftBracket):       (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.RightBracket):      (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.LeftBrace):         (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.RightBrace):        (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.EqualSign):         (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.OutputRedirection): (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.InputRedirection):  (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.SingleQuote):       (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.DoubleQuote):       (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.Backtick):          (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.Comma):             (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.Colon):             (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.ExclamationMark):   (*HealthcheckPurpose).handleBlockedControlChar,
 
 		// for now, block control characters that changes the line on pty without
 		// explicitly sending the command through the input handler
 		// filtering these will require reading the command from the output handler
-		string(ArrowUp):   (*HealthcheckPurpose).handleBlockedControlChar,
-		string(ArrowDown): (*HealthcheckPurpose).handleBlockedControlChar,
-		string(CtrlR):     (*HealthcheckPurpose).handleBlockedControlChar,
-		string(CtrlU):     (*HealthcheckPurpose).handleBlockedControlChar,
-		string(CtrlZ):     (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.ArrowUp):   (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.ArrowDown): (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.CtrlR):     (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.CtrlU):     (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.CtrlZ):     (*HealthcheckPurpose).handleBlockedControlChar,
 
 		// block pipe, sequential, background execution
-		string(Pipe):      (*HealthcheckPurpose).handleBlockedControlChar,
-		string(SemiColon): (*HealthcheckPurpose).handleBlockedControlChar,
-		string(Ampersand): (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.Pipe):      (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.SemiColon): (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.Ampersand): (*HealthcheckPurpose).handleBlockedControlChar,
 
 		// block $ for env vars
 		// this is required as users can use env vars to bypass the filter
 		// e.g.,
 		// a=su
 		// $a
-		string(DollarSign): (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.DollarSign): (*HealthcheckPurpose).handleBlockedControlChar,
 	}
 }
 
@@ -87,7 +88,7 @@ func (p *HealthcheckPurpose) HandleInput(s *Session, pkt protocol.Packet) (strin
 	data := pkt.Data
 
 	// for now block pasting
-	if bytes.Equal(data, PasteStart) || bytes.Equal(data, PasteEnd) {
+	if bytes.Equal(data, constants.PasteStart) || bytes.Equal(data, constants.PasteEnd) {
 		// todo: handle paste
 		return handler.Get[protocol.BlockedControl].Handle(pkt, s.Pty)
 	}
@@ -122,7 +123,7 @@ func (p *HealthcheckPurpose) handleEnter(s *Session, pkt protocol.Packet) (strin
 		s.fanout(errPkt, nil)
 
 		// send Ctrl +C to clear pty
-		ctrlCPkt := protocol.Packet{Header: protocol.Input, Data: CtrlC}
+		ctrlCPkt := protocol.Packet{Header: protocol.Input, Data: constants.CtrlC}
 		_, err := handler.Get[protocol.Input].Handle(ctrlCPkt, s.Pty)
 		if err != nil {
 			return "", err
@@ -172,49 +173,3 @@ func (p *HealthcheckPurpose) HandleOther(s *Session, pkt protocol.Packet) (strin
 
 	return h.Handle(pkt, s.Pty)
 }
-
-var (
-	Enter     = []byte{13}
-	Backspace = []byte{127}
-
-	ArrowUp    = []byte{27, 91, 65}
-	ArrowDown  = []byte{27, 91, 66}
-	ArrowRight = []byte{27, 91, 67}
-	ArrowLeft  = []byte{27, 91, 68}
-
-	CtrlR = []byte{18}
-	CtrlC = []byte{3}
-	CtrlZ = []byte{26}
-	CtrlU = []byte{21}
-
-	PasteStart = []byte{27, 91, 50, 48, 48, 126}
-	PasteEnd   = []byte{27, 91, 50, 48, 49, 126}
-
-	SemiColon = []byte{59}
-	Ampersand = []byte{38}
-	Pipe      = []byte{124}
-
-	// todo: handle >>, 2>, &>, >&2, <<<, <<, 2>&1, etc
-	OutputRedirection = []byte{62} // >
-	InputRedirection  = []byte{60} // <
-
-	SingleQuote = []byte{39} // '
-	DoubleQuote = []byte{34} // "
-	Backtick    = []byte{96} // `
-
-	Comma           = []byte{44} // ,
-	Colon           = []byte{58} // :
-	ExclamationMark = []byte{33} // !
-
-	LeftParenthesis  = []byte{40}  // (
-	RightParenthesis = []byte{41}  // )
-	LeftBracket      = []byte{91}  // [
-	RightBracket     = []byte{93}  // ]
-	LeftBrace        = []byte{123} // {
-	RightBrace       = []byte{125} // }
-
-	DollarSign     = []byte{36} // $
-	EqualSign      = []byte{61} // =
-	RightBackslash = []byte{92} // \
-	LeftBackslash  = []byte{47} // /
-)
