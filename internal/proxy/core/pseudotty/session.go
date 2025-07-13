@@ -39,7 +39,7 @@ type Session struct {
 
 	ptyOutput *ds.CircularArray[protocol.Packet]
 
-	mu      sync.Mutex
+	mu      sync.RWMutex
 	closed  bool // todo: change to state and atomic
 	onClose func(string)
 
@@ -71,7 +71,7 @@ func New(id string, pty *os.File, log *zap.Logger, cfg *config.Config) (*Session
 
 	s.log.Info("Initializing event loop and pty reader")
 
-	go s.connEventLoop()
+	go s.connLoop()
 	go s.readPty()
 	return s, nil
 }

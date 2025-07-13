@@ -75,6 +75,7 @@ func (s *Session) addConn(c *client.Connection) {
 		zap.String("userSessionId", c.Claims.Connection.UserSession.Id),
 		zap.String("role", string(c.Claims.Connection.UserSession.StartRole)))
 
+	s.mu.Lock()
 	if c.Claims.Connection.UserSession.StartRole == types.Implementor {
 		s.primary = c
 	} else if c.Claims.Connection.UserSession.StartRole == types.Observer {
@@ -84,6 +85,7 @@ func (s *Session) addConn(c *client.Connection) {
 		// todo: return err
 		return
 	}
+	s.mu.Unlock()
 
 	s.log.Info("Websocket connection registered")
 
@@ -121,11 +123,13 @@ func (s *Session) removeConn(c *client.Connection) {
 	s.log.Info("Deregistering websocket connection from pty session",
 		zap.String("userSessionId", c.Claims.Connection.UserSession.Id))
 
+	s.mu.Lock()
 	if s.primary == c {
 		s.primary = nil
 	} else {
 		delete(s.observers, c)
 	}
+	s.mu.Unlock()
 
 	s.closeWs(c)
 
