@@ -5,6 +5,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/core_helpers"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"den-den-mushi-Go/pkg/types"
+	"errors"
 	"go.uber.org/zap"
 )
 
@@ -14,18 +15,11 @@ func (s *Session) addConn(c *client.Connection) {
 		zap.String("userSessionId", c.Claims.Connection.UserSession.Id),
 		zap.String("role", string(c.Claims.Connection.UserSession.StartRole)))
 
-	s.mu.Lock()
-	if c.Claims.Connection.UserSession.StartRole == types.Implementor {
-		s.primary = c
-	} else if c.Claims.Connection.UserSession.StartRole == types.Observer {
-		s.observers[c] = struct{}{}
-	} else {
-		s.log.Error("Unknown role for websocket connection")
-		s.mu.Unlock()
-		// todo: return err
+	err := s.assignRole(c)
+	if err != nil {
+		//todo : return error
 		return
 	}
-	s.mu.Unlock()
 
 	c.Log = s.log.With(zap.String("userSessionId", c.Claims.Connection.UserSession.Id))
 
@@ -58,6 +52,30 @@ func (s *Session) addConn(c *client.Connection) {
 		s.log.Info("Is observer role, starting ObserverReadLoop")
 		go c.ObserverReadLoop()
 	}
+}
+
+func (s *Session) assignRole(c *client.Connection) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if c.Claims.Connection.UserSession.StartRole == types.Implementor {
+		// check if primary already exists
+		if s.primary != nil {
+			s.mu.Unlock()
+			return errors.New("max of one primaryConn per pty session allowed")
+		}
+
+		s.primary = c
+	} else if c.Claims.Connection.UserSession.StartRole == types.Observer {
+		if _, exists := s.observers[c]; exists {
+			return errors.New("already registered as observer")
+		}
+		s.observers[c] = struct{}{}
+	} else {
+		return errors.New("unknown role for websocket connection")
+	}
+
+	return nil
 }
 
 // removeConn when a new websocket connection is deregistered, called by the event loop
