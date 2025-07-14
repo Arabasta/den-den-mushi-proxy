@@ -24,7 +24,7 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 
 	if err != nil {
 		s.log.Error("Failed to process message", zap.Error(err))
-		core_helpers.SendToConn(s.primary, protocol.Packet{
+		core_helpers.SendToConn(s.activePrimary, protocol.Packet{
 			Header: protocol.Warn,
 			Data:   []byte("Failed to process message"),
 		})

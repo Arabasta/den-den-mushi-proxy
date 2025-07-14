@@ -10,10 +10,10 @@ func (s *Session) fanout(pkt protocol.Packet, except *client.Connection) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	if s.primary != except {
-		core_helpers.SendToConn(s.primary, pkt)
+	if s.activePrimary != except {
+		core_helpers.SendToConn(s.activePrimary, pkt)
 	}
-	for o := range s.observers {
+	for o := range s.activeObservers {
 		if o != except {
 			core_helpers.SendToConn(o, pkt)
 		}

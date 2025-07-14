@@ -45,7 +45,8 @@ func (m *Service) CreatePtySession(pty *os.File, claims *token.Claims, log *zap.
 
 	s.SetOnClose(func(sessionID string) {
 		// remove from map todo: update state on redis
-		m.DeletePtySession(sessionID)
+		// todo: dont remove until redis up, need to use inmem map for retrieval
+		// m.DeletePtySession(sessionID)
 	})
 
 	m.log.Info("Created pty session", zap.String("id", id))
@@ -91,7 +92,6 @@ func (m *Service) DeletePtySession(id string) {
 	m.log.Info("Deleting pty session", zap.String("id", id))
 	// delete from map
 	delete(m.ptySessions, id)
-
 }
 
 // AttachConn if pty session already exists
@@ -99,6 +99,10 @@ func (m *Service) AttachConn(conn *client.Connection, ptySessionId string) error
 	session, exists := m.GetPtySession(ptySessionId)
 	if !exists {
 		return errors.New("pty session not found")
+	}
+
+	if closed := session.Closed; closed {
+		return errors.New("pty session is closed")
 	}
 
 	return session.RegisterConn(conn)

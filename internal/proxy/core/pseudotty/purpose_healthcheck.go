@@ -156,7 +156,7 @@ func (p *HealthcheckPurpose) handleTerminatingControlChar(s *Session, pkt protoc
 func (p *HealthcheckPurpose) handleBlockedControlChar(s *Session, pkt protocol.Packet) (string, error) {
 	// change header and queue it
 	pkt.Header = protocol.BlockedControl
-	core_helpers.SendToConn(s.primary, pkt)
+	core_helpers.SendToConn(s.activePrimary, pkt)
 	return "\n[Blocked Control Character]: " + string(pkt.Data), nil
 }
 

@@ -11,10 +11,10 @@ import (
 func (s *Session) EndSession() {
 	s.once.Do(func() {
 		s.cancel() // exit conn loop
-		if s.closed {
+		if s.Closed {
 			return
 		}
-		defer func() { s.closed = true }()
+		defer func() { s.Closed = true }()
 
 		s.log.Info("Ending pty session")
 		s.closeTheWorld()
@@ -28,17 +28,17 @@ func (s *Session) closeTheWorld() {
 	s.log.Debug("Closing the world")
 	s.deregisterAllWsConnections()
 	s.closePty()
-	s.EndTime = time.Now().Format(time.RFC3339)
-	s.logL(session_logging.FormatFooter(s.EndTime))
+	s.endTime = time.Now().Format(time.RFC3339)
+	s.logL(session_logging.FormatFooter(s.endTime))
 	s.closeLogWriter()
 }
 
 func (s *Session) deregisterAllWsConnections() {
 	s.mu.RLock()
 	// don't use deregisterCh
-	primary := s.primary
-	observers := make([]*client.Connection, 0, len(s.observers))
-	for o := range s.observers {
+	primary := s.activePrimary
+	observers := make([]*client.Connection, 0, len(s.activeObservers))
+	for o := range s.activeObservers {
 		observers = append(observers, o)
 	}
 	s.mu.RUnlock()
@@ -53,7 +53,7 @@ func (s *Session) deregisterAllWsConnections() {
 	s.log.Info("Closed all websocket connections")
 }
 
-// todo: more error handling eg check if pty is arleady closed
+// todo: more error handling eg check if pty is arleady Closed
 func (s *Session) closePty() {
 	err := s.pty.Close()
 	if err != nil {

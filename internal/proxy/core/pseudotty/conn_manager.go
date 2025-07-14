@@ -9,6 +9,7 @@ import (
 	"den-den-mushi-Go/pkg/types"
 	"errors"
 	"go.uber.org/zap"
+	"time"
 )
 
 // RegisterConn client connection to pty session
@@ -16,6 +17,7 @@ func (s *Session) RegisterConn(c *client.Connection) error {
 	s.log.Info("Attaching connection to pty session", zap.String("userSessionId",
 		c.Claims.Connection.UserSession.Id))
 
+	c.JoinTime = time.Now().Format(time.RFC3339)
 	c.Ctx, c.Cancel = context.WithCancel(s.ctx)
 
 	c.Close = func() {
@@ -44,7 +46,7 @@ func (s *Session) addConn(c *client.Connection) {
 
 	if c.Claims.Connection.PtySession.IsNew {
 		s.log.Info("Is new pty, adding log header")
-		s.logL(session_logging.FormatHeader(s.primary.Claims))
+		s.logL(session_logging.FormatHeader(s.activePrimary.Claims))
 	} else {
 		// is joining existing pty session
 		ptyLastPackets := s.ptyOutput.GetAll()
@@ -75,18 +77,20 @@ func (s *Session) assignRole(c *client.Connection) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	s.livetimeConnections[c] = struct{}{}
+
 	if c.Claims.Connection.UserSession.StartRole == types.Implementor {
 		// check if primary already exists
-		if s.primary != nil {
+		if s.activePrimary != nil {
 			return errors.New("max of one primaryConn per pty session allowed")
 		}
 
-		s.primary = c
+		s.activePrimary = c
 	} else if c.Claims.Connection.UserSession.StartRole == types.Observer {
-		if _, exists := s.observers[c]; exists {
+		if _, exists := s.activeObservers[c]; exists {
 			return errors.New("already registered as observer")
 		}
-		s.observers[c] = struct{}{}
+		s.activeObservers[c] = struct{}{}
 	} else {
 		return errors.New("unknown role for websocket connection")
 	}
@@ -100,14 +104,15 @@ func (s *Session) removeConn(c *client.Connection) {
 		zap.String("userSessionId", c.Claims.Connection.UserSession.Id))
 
 	s.mu.Lock()
-	if s.primary == c {
-		s.primary = nil
+	if s.activePrimary == c {
+		s.activePrimary = nil
 	} else {
-		delete(s.observers, c)
+		delete(s.activeObservers, c)
 	}
 	s.mu.Unlock()
 
 	c.DoClose()
+	c.LeaveTime = time.Now().Format(time.RFC3339)
 
 	pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " has left")}
 	s.logPacket(pkt)
