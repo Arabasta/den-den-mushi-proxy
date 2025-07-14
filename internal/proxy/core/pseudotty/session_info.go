@@ -27,16 +27,16 @@ func extractConnectionInfo(c *client.Connection) ConnectionInfo {
 }
 
 type SessionInfo struct {
-	SessionID              string           `json:"session_id"`
-	ProxyDetails           ProxyDetails     `json:"proxy_details"`
-	StartConnectionDetails dto.Connection   `json:"start_connection_details"`
-	CreatedBy              string           `json:"created_by"`
-	StartTime              string           `json:"start_time"`
-	EndTime                string           `json:"end_time,omitempty"`
-	State                  string           `json:"state,omitempty"`         // todo: use enum
-	LastActivity           string           `json:"last_activity,omitempty"` // ISO 8601 format
-	ActiveConnections      []ConnectionInfo `json:"active_connections"`
-	LivetimeConnections    []ConnectionInfo `json:"livetime_connections"`
+	SessionID              string                `json:"session_id"`
+	ProxyDetails           ProxyDetails          `json:"proxy_details"`
+	StartConnectionDetails dto.Connection        `json:"start_connection_details"`
+	CreatedBy              string                `json:"created_by"`
+	StartTime              string                `json:"start_time"`
+	EndTime                string                `json:"end_time,omitempty"`
+	State                  types.PtySessionState `json:"state,omitempty"`
+	LastActivity           string                `json:"last_activity,omitempty"` // ISO 8601 format
+	ActiveConnections      []ConnectionInfo      `json:"active_connections"`
+	LivetimeConnections    []ConnectionInfo      `json:"livetime_connections"`
 }
 
 type ProxyDetails struct {
@@ -79,14 +79,9 @@ func (s *Session) GetDetails() SessionInfo {
 		CreatedBy:              s.startClaims.Subject,
 		StartTime:              s.startTime,
 		EndTime:                s.endTime,
-		State: func() string {
-			if s.Closed {
-				return "closed"
-			}
-			return "active"
-		}(),
-		LastActivity:        "", // TODO: add last activity tracking
-		ActiveConnections:   activeParticipants,
-		LivetimeConnections: livetimeConnections,
+		State:                  s.State,
+		LastActivity:           "", // TODO: add last activity tracking
+		ActiveConnections:      activeParticipants,
+		LivetimeConnections:    livetimeConnections,
 	}
 }

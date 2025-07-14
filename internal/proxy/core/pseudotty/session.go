@@ -47,8 +47,9 @@ type Session struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	mu      sync.RWMutex
-	Closed  bool // todo: change to state
+	mu sync.RWMutex
+
+	State   types.PtySessionState
 	onClose func(string)
 	once    sync.Once
 
@@ -70,6 +71,8 @@ func New(id string, pty *os.File, log *zap.Logger, cfg *config.Config) (*Session
 
 		connRegisterCh:   make(chan *client.Connection),
 		connDeregisterCh: make(chan *client.Connection),
+
+		State: types.Created,
 
 		ptyOutput: ds.NewCircularArray[protocol.Packet](500), // todo: make configurable capa and maybe track line or something
 	}

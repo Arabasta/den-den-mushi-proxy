@@ -5,6 +5,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/client"
 	"den-den-mushi-Go/internal/proxy/core/pseudotty"
 	"den-den-mushi-Go/pkg/token"
+	"den-den-mushi-Go/pkg/types"
 	"errors"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -101,7 +102,7 @@ func (m *Service) AttachConn(conn *client.Connection, ptySessionId string) error
 		return errors.New("pty session not found")
 	}
 
-	if closed := session.Closed; closed {
+	if session.State == types.Closed {
 		return errors.New("pty session is closed")
 	}
 

@@ -3,6 +3,7 @@ package pseudotty
 import (
 	"den-den-mushi-Go/internal/proxy/core/client"
 	"den-den-mushi-Go/internal/proxy/core/pseudotty/session_logging"
+	"den-den-mushi-Go/pkg/types"
 	"go.uber.org/zap"
 	"io"
 	"time"
@@ -11,10 +12,10 @@ import (
 func (s *Session) EndSession() {
 	s.once.Do(func() {
 		s.cancel() // exit conn loop
-		if s.Closed {
+		if s.State == types.Closed {
 			return
 		}
-		defer func() { s.Closed = true }()
+		defer func() { s.State = types.Closed }()
 
 		s.log.Info("Ending pty session")
 		s.closeTheWorld()
