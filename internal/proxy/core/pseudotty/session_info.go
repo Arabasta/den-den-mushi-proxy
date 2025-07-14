@@ -30,6 +30,7 @@ type SessionInfo struct {
 	SessionID              string           `json:"session_id"`
 	ProxyDetails           ProxyDetails     `json:"proxy_details"`
 	StartConnectionDetails dto.Connection   `json:"start_connection_details"`
+	CreatedBy              string           `json:"created_by"`
 	StartTime              string           `json:"start_time"`
 	EndTime                string           `json:"end_time,omitempty"`
 	State                  string           `json:"state,omitempty"`         // todo: use enum
@@ -75,6 +76,7 @@ func (s *Session) GetDetails() SessionInfo {
 		SessionID:              s.id,
 		ProxyDetails:           proxyDetails,
 		StartConnectionDetails: s.startClaims.Connection,
+		CreatedBy:              s.startClaims.Subject,
 		StartTime:              s.startTime,
 		EndTime:                s.endTime,
 		State: func() string {
