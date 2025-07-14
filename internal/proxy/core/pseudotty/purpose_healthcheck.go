@@ -1,7 +1,6 @@
 package pseudotty
 
 import (
-	"bytes"
 	"den-den-mushi-Go/internal/proxy/core/core_helpers"
 	"den-den-mushi-Go/internal/proxy/handler"
 	"den-den-mushi-Go/internal/proxy/protocol"
@@ -85,13 +84,7 @@ func (p *HealthcheckPurpose) HandleInput(s *Session, pkt protocol.Packet) (strin
 		return "", fmt.Errorf("expected Input header, got %s", string(pkt.Header))
 	}
 
-	data := pkt.Data
-
-	// for now block pasting
-	if bytes.Equal(data, constants.PasteStart) || bytes.Equal(data, constants.PasteEnd) {
-		// todo: handle paste
-		return handler.Get[protocol.BlockedControl].Handle(pkt, s.pty)
-	}
+	data := constants.StripPaste(pkt.Data)
 
 	// check for control char
 	if handlerFunc, ok := healthcheckAllowedControlHandlers[string(data)]; ok {
@@ -102,9 +95,12 @@ func (p *HealthcheckPurpose) HandleInput(s *Session, pkt protocol.Packet) (strin
 		return handlerFunc(p, s, pkt)
 	}
 
-	// check for normal text
-	if len(data) == 1 && isAllowedNormalRune(rune(data[0])) {
-		s.line.Insert(rune(data[0]))
+	if len(data) > 0 {
+		for _, r := range string(data) {
+			if isAllowedNormalRune(r) {
+				s.line.Insert(r)
+			}
+		}
 		return handler.Get[protocol.Input].Handle(pkt, s.pty)
 	}
 
