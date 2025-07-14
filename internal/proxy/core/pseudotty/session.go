@@ -4,7 +4,7 @@ import (
 	"context"
 	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/internal/proxy/core/client"
-	"den-den-mushi-Go/internal/proxy/core/pseudotty/logging"
+	"den-den-mushi-Go/internal/proxy/core/pseudotty/session_logging"
 	"den-den-mushi-Go/internal/proxy/filter"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"den-den-mushi-Go/pkg/ds"
@@ -31,7 +31,7 @@ type Session struct {
 	log *zap.Logger
 
 	// for logging all session events
-	sessionLogger logging.SessionLogger
+	sessionLogger session_logging.SessionLogger
 
 	filter filter.CommandFilter // only for health check
 	line   *filter.LineEditor   // only for health check, tracks pty's current line

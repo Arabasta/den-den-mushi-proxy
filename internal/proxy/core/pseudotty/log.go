@@ -1,7 +1,7 @@
 package pseudotty
 
 import (
-	"den-den-mushi-Go/internal/proxy/core/pseudotty/logging"
+	"den-den-mushi-Go/internal/proxy/core/pseudotty/session_logging"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"fmt"
 	"go.uber.org/zap"
@@ -16,7 +16,7 @@ func (s *Session) initSessionLogger() error {
 		return err
 	}
 
-	s.sessionLogger, err = logging.NewFileSessionLogger(path)
+	s.sessionLogger, err = session_logging.NewFileSessionLogger(path)
 
 	if err != nil {
 		s.log.Error("Failed to initialize session logger", zap.Error(err), zap.String("path", path))
@@ -44,5 +44,5 @@ func (s *Session) logPacket(pkt protocol.Packet) {
 		// don't log resize events
 		return
 	}
-	s.logL(logging.FormatLogLine(pkt.Header.String(), string(pkt.Data)))
+	s.logL(session_logging.FormatLogLine(pkt.Header.String(), string(pkt.Data)))
 }

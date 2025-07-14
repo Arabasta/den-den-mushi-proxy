@@ -1,4 +1,4 @@
-package logging
+package session_logging
 
 import (
 	"io"

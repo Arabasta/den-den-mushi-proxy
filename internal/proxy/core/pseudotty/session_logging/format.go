@@ -1,4 +1,4 @@
-package logging
+package session_logging
 
 import (
 	"den-den-mushi-Go/pkg/token"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"den-den-mushi-Go/internal/proxy/core/client"
 	"den-den-mushi-Go/internal/proxy/core/core_helpers"
-	"den-den-mushi-Go/internal/proxy/core/pseudotty/logging"
+	"den-den-mushi-Go/internal/proxy/core/pseudotty/session_logging"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"den-den-mushi-Go/pkg/types"
 	"errors"
@@ -44,7 +44,7 @@ func (s *Session) addConn(c *client.Connection) {
 
 	if c.Claims.Connection.PtySession.IsNew {
 		s.log.Info("Is new pty, adding log header")
-		s.logL(logging.FormatHeader(s.primary.Claims))
+		s.logL(session_logging.FormatHeader(s.primary.Claims))
 	} else {
 		// is joining existing pty session
 		ptyLastPackets := s.ptyOutput.GetAll()

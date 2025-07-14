@@ -2,7 +2,7 @@ package pseudotty
 
 import (
 	"den-den-mushi-Go/internal/proxy/core/core_helpers"
-	"den-den-mushi-Go/internal/proxy/core/pseudotty/logging"
+	"den-den-mushi-Go/internal/proxy/core/pseudotty/session_logging"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"go.uber.org/zap"
 )
@@ -33,6 +33,6 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 	if logMsg != "" {
 		s.log.Info("Message from handler", zap.String("header", string(pkt.Header)),
 			zap.String("message", logMsg))
-		s.logL(logging.FormatLogLine(string(pkt.Header), logMsg))
+		s.logL(session_logging.FormatLogLine(string(pkt.Header), logMsg))
 	}
 }

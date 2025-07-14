@@ -2,7 +2,7 @@ package pseudotty
 
 import (
 	"den-den-mushi-Go/internal/proxy/core/client"
-	"den-den-mushi-Go/internal/proxy/core/pseudotty/logging"
+	"den-den-mushi-Go/internal/proxy/core/pseudotty/session_logging"
 	"go.uber.org/zap"
 	"io"
 	"time"
@@ -29,7 +29,7 @@ func (s *Session) closeTheWorld() {
 	s.deregisterAllWsConnections()
 	s.closePty()
 	s.EndTime = time.Now().Format(time.RFC3339)
-	s.logL(logging.FormatFooter(s.EndTime))
+	s.logL(session_logging.FormatFooter(s.EndTime))
 	s.closeLogWriter()
 }
 
