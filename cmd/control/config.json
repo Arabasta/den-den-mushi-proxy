@@ -1,0 +1,40 @@
+{
+  "app": {
+    "name": "den-den-mushi-control",
+    "environment": "dev",
+    "version": "1.0.0",
+    "port": 55007
+  },
+  "development": {
+    "useInMemoryRepository": true
+  },
+  "logging": {
+    "level": "debug",
+    "format": "console",
+    "output": "both",
+    "filePath": "./log/ddm-control.log"
+  },
+  "token": {
+    "issuer": "control-server",
+    "secret": "peanut",
+    "ttl": 120
+  },
+  "Redis": {
+    "Address": "localhost:6379",
+    "Password": "",
+    "DB": 0,
+    "PoolSize": 10,
+    "MinIdleConns": 5,
+    "MaxConnAgeSeconds": 300
+  },
+  "Mariadb": {
+    "Address": "localhost:3306",
+    "Username": "",
+    "Password": "",
+    "Database": "ddm_proxy",
+    "MaxOpenConns": 10,
+    "MaxIdleConns": 5,
+    "ConnMaxLifetimeSeconds": 300
+  }
+
+}
