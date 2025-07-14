@@ -8,7 +8,7 @@ import (
 type MintRequest struct {
 	Purpose      types.ConnectionPurpose `json:"purpose" binding:"required,oneof=change_request health_check"`
 	ChangeID     string                  `json:"change_id,omitempty"`
-	PtySessionId string                  `json:"pty_session_id,omitempty"`           // if not provided, a new session will be created
+	PtySessionId string                  `json:"pty_session_id,omitempty"`
 	StartRole    types.StartRole         `json:"start_role,omitempty"`               // required if PtySessionId is provided
 	Type         types.ConnectionMethod  `json:"connection_type" binding:"required"` // temporarily from client, should be set based on server details
 	Server       ServerInfo              `json:"server" binding:"required"`
