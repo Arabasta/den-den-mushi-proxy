@@ -36,6 +36,12 @@ const socketManager = {
                 case 0x07: // pty session event
                     showSideToast(new TextDecoder().decode(payload));
                     break;
+                case 0x13: // pty normal close
+                    term.write(`\r\n\x1b[32mSession ended normally, shutting down session.\r\nSessionId: ${new TextDecoder().decode(payload)}\x1b[0m\r\n`);
+                    break;
+                case 0x14: // pty error close
+                    term.write(`\r\n\x1b[31mError reading from pty, shutting down session.\r\nSessionId: ${new TextDecoder().decode(payload)}\x1b[0m\r\n`);
+                    break;
                 default:
                     console.warn("Unknown header:", header);
             }

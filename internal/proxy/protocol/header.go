@@ -26,8 +26,12 @@ func (h Header) String() string {
 		return "Resize"
 	case Sudo:
 		return "Sudo"
-	case Close:
-		return "Close"
+	case ClientClose:
+		return "ClientClose"
+	case PtyNormalClose:
+		return "PtyNormalClose"
+	case PtyErrorClose:
+		return "PtyErrorClose"
 	case ParseError:
 		return "ParseError"
 	default:
@@ -70,8 +74,14 @@ const (
 	// Sudo is called when the client wants to switch users. Required since "su" is blocked.
 	Sudo Header = 0x11
 
-	// Close for closing the websocket connection, can be sent by either the client or the server
-	Close Header = 0x12
+	// ClientClose for closing the websocket connection
+	ClientClose Header = 0x12
+
+	// PtyNormalClose is used when the pty session ends normally
+	PtyNormalClose Header = 0x13
+
+	// PtyErrorClose is used when the pty session ends with an error
+	PtyErrorClose Header = 0x14
 
 	// ParseError indicates an error in parsing the header
 	ParseError Header = 0xff

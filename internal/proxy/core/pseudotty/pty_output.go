@@ -4,6 +4,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"go.uber.org/zap"
 	"io"
+	"time"
 )
 
 // readPtyLoop and add data to outbound channel
@@ -13,17 +14,25 @@ func (s *Session) readPtyLoop() {
 	for {
 		n, err := s.pty.Read(buf)
 		if err != nil {
+			var pkt protocol.Packet
 			if err == io.EOF {
 				s.log.Info("PTY session ended normally")
+				s.logL("PTY session ended normally")
+				pkt = protocol.Packet{
+					Header: protocol.PtyNormalClose,
+					Data:   []byte(s.id),
+				}
 			} else {
 				s.log.Error("Error reading from pty", zap.Error(err))
 				s.logL("Error reading from pty, shutting down session")
-				pkt := protocol.Packet{
-					Header: protocol.Error,
-					Data:   []byte("Error reading from pty, shutting down session: " + err.Error()),
+				pkt = protocol.Packet{
+					Header: protocol.PtyErrorClose,
+					Data:   []byte(s.id),
 				}
-				s.ptyOutput.Add(pkt)
 			}
+			s.ptyOutput.Add(pkt)
+			s.fanout(pkt, nil)
+			time.Sleep(1000 * time.Millisecond) // hack to allow pkt to be sent
 			s.EndSession()
 			return
 		}
