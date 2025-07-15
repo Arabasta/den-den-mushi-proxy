@@ -36,6 +36,7 @@ func (s *Session) readPtyLoop() {
 
 		s.ptyOutput.Add(pkt)
 		s.fanout(pkt, nil)
+		s.logPacket(pkt)
 
 		s.log.Debug("Pty Output", zap.ByteString("data", data))
 	}
