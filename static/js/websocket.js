@@ -28,7 +28,7 @@ const socketManager = {
                     term.write(new TextDecoder().decode(payload));
                     break;
                 case 0x03: // blocked control char detected
-                    showToast(new TextDecoder().decode(payload))
+                    showToast(controlCharToString(payload))
                     break;
                 case 0x04: // blocked command detected
                     term.write(`\r\n\x1b[31m${new TextDecoder().decode(payload)} not allowed\x1b[0m\r\n`);
@@ -147,3 +147,40 @@ function showSideToast(message, type = 'info') {
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
+
+const controlCharToString = (payload) => {
+    if (!payload?.length) return "Empty input";
+
+    // Handle single-byte input
+    if (payload.length === 1) {
+        const code = payload[0];
+        const namedControl = {
+            3: "Ctrl+C",
+            18: "Ctrl+R",
+            21: "Ctrl+U",
+            26: "Ctrl+Z"
+        }[code];
+
+        if (namedControl) return namedControl;
+
+        // If printable ASCII (32–126), return as char
+        if (code >= 32 && code <= 126) {
+            return String.fromCharCode(code);
+        }
+
+        return `Control character (code ${code})`;
+    }
+
+    // Handle known arrow escape sequences
+    if (payload.length === 3 && payload[0] === 27 && payload[1] === 91) {
+        return {
+            65: "Arrow Up",
+            66: "Arrow Down",
+            67: "Arrow Right",
+            68: "Arrow Left"
+        }[payload[2]] ?? `Special key sequence (${payload.join(',')})`;
+    }
+
+    // Default fallback
+    return `Unknown sequence (${payload.join(',')})`;
+};
