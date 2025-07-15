@@ -25,6 +25,11 @@ func (s *Session) RegisterConn(c *client.Connection) error {
 	}
 
 	s.connRegisterCh <- c
+
+	core_helpers.SendToConn(c, protocol.Packet{
+		Header: protocol.PtyConnectionSuccess,
+		Data:   []byte(s.id),
+	})
 	return nil
 }
 

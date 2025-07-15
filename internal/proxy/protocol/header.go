@@ -32,6 +32,8 @@ func (h Header) String() string {
 		return "PtyNormalClose"
 	case PtyErrorClose:
 		return "PtyErrorClose"
+	case PtyConnectionSuccess:
+		return "PtyConnectionSuccess"
 	case ParseError:
 		return "ParseError"
 	default:
@@ -82,6 +84,9 @@ const (
 
 	// PtyErrorClose is used when the pty session ends with an error
 	PtyErrorClose Header = 0x14
+
+	// PtyConnectionSuccess
+	PtyConnectionSuccess Header = 0x15
 
 	// ParseError indicates an error in parsing the header
 	ParseError Header = 0xff

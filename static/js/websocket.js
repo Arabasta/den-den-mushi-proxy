@@ -42,6 +42,9 @@ const socketManager = {
                 case 0x14: // pty error close
                     term.write(`\r\n\x1b[31mError reading from pty, shutting down session.\r\nSessionId: ${new TextDecoder().decode(payload)}\x1b[0m\r\n`);
                     break;
+                case 0x15: // pty connection success
+                    term.write(`\r\n\x1b[32mConnected to terminal session.\r\nSessionId: ${new TextDecoder().decode(payload)}\x1b[0m\r\n`);
+                    break;
                 default:
                     console.warn("Unknown header:", header);
             }
