@@ -2,6 +2,7 @@ package server
 
 import (
 	"den-den-mushi-Go/internal/control/config"
+	"den-den-mushi-Go/internal/control/make_change"
 	"den-den-mushi-Go/internal/control/pty_token"
 	oapi "den-den-mushi-Go/openapi/control"
 	"embed"
@@ -14,7 +15,9 @@ import (
 func registerProtectedRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log *zap.Logger) {
 	protected := r.Group("")
 	protected.Use(
-	// todo use keycloak  / webseal middleware
+	// todo use webseal middleware
+	//middleware.Webseal(log),
+	//middleware.SetAuthContext(),
 	)
 
 	m := &MasterHandler{
@@ -22,10 +25,10 @@ func registerProtectedRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log 
 			Service: deps.PtyTokenService,
 			Log:     log,
 		},
-		//MakeChangeHandler: &make_change.Handler{
-		//	Service: deps.MakeChangeService,
-		//	Log:     log,
-		//}
+		MakeChangeHandler: &make_change.Handler{
+			Service: deps.MakeChangeService,
+			Log:     log,
+		},
 	}
 
 	oapi.RegisterHandlers(protected, m)

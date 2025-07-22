@@ -32,28 +32,59 @@ func extractIPFromCyberarkObject(o string) string {
 
 func IsOsUserInCyberarkObjects(osUser string, objects []string) bool {
 	for _, o := range objects {
-		if extractOsUsersFromObject(o) == osUser {
+		if extractOsUserFromObject(o) == osUser {
 			return true
 		}
 	}
 	return false
 }
 
-func extractOsUsersFromObject(o string) string {
+func extractOsUserFromObject(o string) string {
 	if o == "" {
 		return ""
 	}
 
-	// special case for ec2-user
+	// special cases
 	if strings.Contains(o, "ec2-user") {
 		return "ec2-user"
+	} else if strings.Contains(o, "ec2-read") {
+		return "ec2-read"
+	} else if strings.Contains(o, "ec2-app") {
+		return "ec2-app"
 	}
 
-	// extract os user, assuming object format xxx-osuser-xxxxx where osuser is the second last part
+	// extract os user, assuming object format xxx-osuser-xxxxx where osuser is the second part
 	parts := strings.Split(o, "-")
-	if len(parts) < 3 {
+	if len(parts) < 2 {
 		return ""
 	}
 
-	return parts[len(parts)-2] // second last element
+	return parts[1] // second element
+}
+
+func MapIPToOSUsers(objects []string) map[string][]string {
+	ipToUsers := make(map[string]map[string]struct{})
+
+	for _, o := range objects {
+		ip := extractIPFromCyberarkObject(o)
+		user := extractOsUserFromObject(o)
+
+		if ip == "" || user == "" {
+			continue
+		}
+
+		if _, ok := ipToUsers[ip]; !ok {
+			ipToUsers[ip] = make(map[string]struct{})
+		}
+		ipToUsers[ip][user] = struct{}{}
+	}
+
+	result := make(map[string][]string)
+	for ip, userSet := range ipToUsers {
+		for user := range userSet {
+			result[ip] = append(result[ip], user)
+		}
+	}
+
+	return result
 }

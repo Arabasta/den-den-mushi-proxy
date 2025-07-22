@@ -3,6 +3,7 @@ package testdata
 import (
 	"den-den-mushi-Go/pkg/dto/change_request"
 	"den-den-mushi-Go/pkg/dto/cyberark"
+	"den-den-mushi-Go/pkg/dto/host"
 	"den-den-mushi-Go/pkg/dto/implementor_groups"
 	"den-den-mushi-Go/pkg/dto/proxy_host"
 	"den-den-mushi-Go/pkg/dto/proxy_lb"
@@ -10,85 +11,86 @@ import (
 )
 
 func CallAll(db *gorm.DB) {
-	//createCR(db)
-	//createCyberark(db)
-	//createProxyLb(db)
-	//createProxyHost(db)
+	createCR(db)
+	createCyberark(db)
+	createProxyLb(db)
+	createProxyHost(db)
+	createHosts(db)
 }
 
 func createCR(db *gorm.DB) {
 	// create test crs
 	db.Create(&[]change_request.Model{
-		//{
-		//	// approved CR, valid time, valid implementor groups, valid cyberark objects
-		//	ID:                1,
-		//	CRNumber:          "CR202512314",
-		//	Country:           "SG,HK",
-		//	Lob:               "TechOps",
-		//	Summary:           "System update and patching",
-		//	Description:       "Patching EC2 instances in SG and HK region.",
-		//	ChangeStartTime:   "2025-07-20 23:00:00",
-		//	ChangeEndTime:     "2026-07-22 01:00:00",
-		//	ImplementorGroups: "admin,devops",
-		//	State:             "Approved",
-		//	CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.1-root-w123",
-		//},
-		//{
-		//	// unapproved CR
-		//	ID:                2,
-		//	CRNumber:          "CR202512315",
-		//	Country:           "SG,HK",
-		//	Lob:               "TechOps",
-		//	Summary:           "System update and patching",
-		//	Description:       "Patching EC2 instances in SG and HK region.",
-		//	ChangeStartTime:   "2025-07-20 23:00:00",
-		//	ChangeEndTime:     "2026-07-22 01:00:00",
-		//	ImplementorGroups: "admin,devops",
-		//	State:             "Closed",
-		//	CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.1-root-w123",
-		//},
-		//{
-		//	// invalid time
-		//	ID:                3,
-		//	CRNumber:          "CR202512316",
-		//	Country:           "SG,HK",
-		//	Lob:               "TechOps",
-		//	Summary:           "System update and patching",
-		//	Description:       "Patching EC2 instances in SG and HK region.",
-		//	ChangeStartTime:   "2024-07-21 23:00:00",
-		//	ChangeEndTime:     "2024-07-22 01:00:00",
-		//	ImplementorGroups: "admin,devops",
-		//	State:             "Approved",
-		//	CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.1-root-w123",
-		//},
-		//{
-		//	// invalid implementor groups
-		//	ID:                4,
-		//	CRNumber:          "CR202512317",
-		//	Country:           "SG,HK",
-		//	Lob:               "TechOps",
-		//	Summary:           "System update and patching",
-		//	Description:       "Patching EC2 instances in SG and HK region.",
-		//	ChangeStartTime:   "2025-07-20 23:00:00",
-		//	ChangeEndTime:     "2026-07-22 01:00:00",
-		//	ImplementorGroups: "invalid,ddddevops",
-		//	State:             "Approved",
-		//	CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.1-root-w123",
-		//},
-		//{
-		//	// invalid cyberark objects
-		//	ID:                5,
-		//	CRNumber:          "CR202512318",
-		//	Country:           "SG,HK",
-		//	Lob:               "TechOps",
-		//	Summary:           "System update and patching",
-		//	Description:       "Patching EC2 instances in SG and HK region.",
-		//	ChangeStartTime:   "2025-07-20 23:00:00",
-		//	ChangeEndTime:     "2026-07-22 01:00:00",
-		//	ImplementorGroups: "admin,devops",
-		//	State:             "Approved",
-		//	CyberArkObjects:   "123-ec2user-x123,127.0.1-root-w123",
-		//},
+		{
+			// approved CR, valid time, valid implementor groups, valid cyberark objects
+			ID:                1,
+			CRNumber:          "CR202512314",
+			Country:           "SG,HK",
+			Lob:               "TechOps",
+			Summary:           "System update and patching",
+			Description:       "Patching EC2 instances in SG and HK region.",
+			ChangeStartTime:   "2025-07-20 23:00:00",
+			ChangeEndTime:     "2026-07-22 01:00:00",
+			ImplementorGroups: "admin,devops",
+			State:             "Approved",
+			CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.1-root-w123",
+		},
+		{
+			// unapproved CR
+			ID:                2,
+			CRNumber:          "CR202512315",
+			Country:           "SG,HK",
+			Lob:               "TechOps",
+			Summary:           "System update and patching",
+			Description:       "Patching EC2 instances in SG and HK region.",
+			ChangeStartTime:   "2025-07-20 23:00:00",
+			ChangeEndTime:     "2026-07-22 01:00:00",
+			ImplementorGroups: "admin,devops",
+			State:             "Closed",
+			CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.1-root-w123",
+		},
+		{
+			// invalid time
+			ID:                3,
+			CRNumber:          "CR202512316",
+			Country:           "SG,HK",
+			Lob:               "TechOps",
+			Summary:           "System update and patching",
+			Description:       "Patching EC2 instances in SG and HK region.",
+			ChangeStartTime:   "2024-07-21 23:00:00",
+			ChangeEndTime:     "2024-07-22 01:00:00",
+			ImplementorGroups: "admin,devops",
+			State:             "Approved",
+			CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.1-root-w123",
+		},
+		{
+			// invalid implementor groups
+			ID:                4,
+			CRNumber:          "CR202512317",
+			Country:           "SG,HK",
+			Lob:               "TechOps",
+			Summary:           "System update and patching",
+			Description:       "Patching EC2 instances in SG and HK region.",
+			ChangeStartTime:   "2025-07-20 23:00:00",
+			ChangeEndTime:     "2026-07-22 01:00:00",
+			ImplementorGroups: "invalid,ddddevops",
+			State:             "Approved",
+			CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.1-root-w123",
+		},
+		{
+			// invalid cyberark objects
+			ID:                5,
+			CRNumber:          "CR202512318",
+			Country:           "SG,HK",
+			Lob:               "TechOps",
+			Summary:           "System update and patching",
+			Description:       "Patching EC2 instances in SG and HK region.",
+			ChangeStartTime:   "2025-07-20 23:00:00",
+			ChangeEndTime:     "2026-07-22 01:00:00",
+			ImplementorGroups: "admin,devops",
+			State:             "Approved",
+			CyberArkObjects:   "123-ec2user-x123,127.0.1-root-w123",
+		},
 		{
 			// empty cyberark objects
 			ID:                6,
@@ -192,6 +194,30 @@ func createImplementorGroups(db *gorm.DB) {
 			MemberName:       "kei2",
 			GroupName:        "log",
 			MembershipStatus: "Active",
+		},
+	})
+}
+
+func createHosts(db *gorm.DB) {
+	// create test hosts
+	db.Create(&[]host.Model{
+		{
+			IpAddress:   "127.0.1",
+			HostName:    "ddm-proxy",
+			Status:      "Active",
+			OSType:      "Linux",
+			Environment: "Production",
+			Country:     "SG",
+			Appcode:     "ddm",
+		},
+		{
+			IpAddress:   "54.255.144.215",
+			HostName:    "aws-ec2-123",
+			Status:      "Active",
+			OSType:      "Linux",
+			Environment: "Production",
+			Country:     "SG",
+			Appcode:     "UCHIHA",
 		},
 	})
 }

@@ -37,8 +37,22 @@ func (r *GormRepository) FindByStartConnChangeRequestIdsAndState(changeIDs []str
 	err := r.db.
 		Preload("Connections").
 		Preload("ProxyDetails").
-		Where("start_conn_change_request_id IN ?", changeIDs).
+		Where("start_conn_cr IN ?", changeIDs).
 		Where("state = ?", state).
+		Find(&sessions).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return dto.FromModels(sessions), nil
+}
+
+func (r *GormRepository) FindAllByChangeRequestIDAndServerIPs(changeRequestID string, ips []string) ([]*dto.Record, error) {
+	var sessions []dto.Model
+	err := r.db.
+		Preload("Connections").
+		Where("start_conn_cr_id = ?", changeRequestID).
+		Where("start_conn_server_ip IN ?", ips).
 		Find(&sessions).Error
 
 	if err != nil {

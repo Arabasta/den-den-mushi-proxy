@@ -43,7 +43,7 @@ func (r *GormRepository) FindChangeRequests(filter filters.ListCR) ([]*dto.Recor
 		query = query.Where("TicketNumber IN ?", *filter.TicketIDs)
 	}
 
-	query = query.Where("Status = ?", "Approved")
+	query = query.Where("State = ?", "Approved")
 
 	if filter.ImplementorGroups != nil {
 		for _, group := range *filter.ImplementorGroups {

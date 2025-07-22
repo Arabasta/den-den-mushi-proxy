@@ -4,6 +4,7 @@ import (
 	"den-den-mushi-Go"
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/server"
+	"den-den-mushi-Go/internal/control/testdata"
 	configpkg "den-den-mushi-Go/pkg/config"
 	"den-den-mushi-Go/pkg/dto/change_request"
 	"den-den-mushi-Go/pkg/dto/cyberark"
@@ -60,7 +61,7 @@ func main() {
 		}
 
 		// todo: remove this, insert test data only for dev
-		//testdata.CallAll(ddmDb)
+		testdata.CallAll(ddmDb)
 	}
 
 	//invDb, err := mysql.Client(configpkg.SqlDb{

@@ -27,16 +27,13 @@ func (s *Service) FindByIp(ip string) (*dto.Record, error) {
 }
 
 func (s *Service) FindTypeByIp(ip string) (types.Proxy, error) {
-	h, err := s.repo.FindByIp(ip)
-	if err != nil {
-		return "", err
-	}
-	if h == nil {
-		return "", nil
-	}
-
+	//_, _ := s.repo.FindByIp(ip)
 	// todo
 	return "OS", nil
+}
+
+func (s *Service) FindAllByIps(ips []string) ([]*dto.Record, error) {
+	return s.repo.FindAllByIps(ips)
 }
 
 // todo

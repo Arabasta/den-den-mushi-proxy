@@ -29,7 +29,7 @@ func New(ddmDb *gorm.DB, staticFiles embed.FS, cfg *config.Config, log *zap.Logg
 		middleware.Cors(cfg.Cors, log),
 		gin.Recovery())
 
-	ServeSwagger(r, cfg.App, log)
+	serveSwagger(r, cfg.App, log)
 	registerProtectedRoutes(r, deps, cfg, log)
 	addStaticRoutes(r, staticFiles, cfg, log)
 

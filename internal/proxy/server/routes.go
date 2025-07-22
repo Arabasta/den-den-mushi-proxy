@@ -25,6 +25,9 @@ func registerUnprotectedRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, lo
 func registerWebsocketRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log *zap.Logger) {
 	protected := r.Group("")
 	protected.Use(
+		//middlewarepkg.Keycloak(cfg.Keycloak, log),
+		//middlewarepkg.Webseal(log),
+		//middlewarepkg.SetAuthContext(),
 		middleware.WsJwtMiddleware(deps.Validator, log),
 	)
 

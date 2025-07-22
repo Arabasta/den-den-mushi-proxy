@@ -12,16 +12,16 @@ import (
 )
 
 type Handler struct {
-	service *Service
-	log     *zap.Logger
+	Service *Service
+	Log     *zap.Logger
 }
 
 func (h *Handler) GetApiV1ChangeRequests(c *gin.Context, params oapi.GetApiV1ChangeRequestsParams) {
-	h.log.Debug("GetApiV1ChangeRequests called", zap.Any("params", params))
+	h.Log.Debug("GetApiV1ChangeRequests called", zap.Any("params", params))
 
 	authCtx, ok := middleware.GetAuthContext(c.Request.Context())
 	if !ok {
-		httpx.RespondError(c, http.StatusUnauthorized, "auth context missing", nil, h.log)
+		httpx.RespondError(c, http.StatusUnauthorized, "auth context missing", nil, h.Log)
 		return
 	}
 
@@ -37,9 +37,9 @@ func (h *Handler) GetApiV1ChangeRequests(c *gin.Context, params oapi.GetApiV1Cha
 		PageSize:          derefOr(params.PageSize, 20),
 	}
 
-	results, err := h.service.ListChangeRequestsWithSessions(r, authCtx)
+	results, err := h.Service.ListChangeRequestsWithSessions(r, authCtx)
 	if err != nil {
-		httpx.RespondError(c, http.StatusInternalServerError, "failed to retrieve change requests", err, h.log)
+		httpx.RespondError(c, http.StatusInternalServerError, "failed to retrieve change requests", err, h.Log)
 		return
 	}
 

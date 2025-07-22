@@ -6,6 +6,7 @@ import (
 	"den-den-mushi-Go/internal/control/host"
 	"den-den-mushi-Go/internal/control/implementor_groups"
 	"den-den-mushi-Go/internal/control/jwt"
+	"den-den-mushi-Go/internal/control/make_change"
 	"den-den-mushi-Go/internal/control/policy"
 	"den-den-mushi-Go/internal/control/proxy_lb"
 	"den-den-mushi-Go/internal/control/pty_sessions"
@@ -23,6 +24,7 @@ type Deps struct {
 	PtySessionService        *pty_sessions.Service
 	HostService              *host.Service
 	PtyTokenService          *pty_token.Service
+	MakeChangeService        *make_change.Service
 }
 
 func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps {
@@ -81,6 +83,8 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 		changeRequestPolicyChain, healthcheckPolicyChain,
 		log, cfg)
 
+	makeChangeService := make_change.NewService(changeService, ptySessionService, hostService, log)
+
 	return &Deps{
 		Issuer:                   issuer,
 		ProxyService:             proxyLbService,
@@ -89,5 +93,6 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 		PtySessionService:        ptySessionService,
 		HostService:              hostService,
 		PtyTokenService:          ptyTokenService,
+		MakeChangeService:        makeChangeService,
 	}
 }

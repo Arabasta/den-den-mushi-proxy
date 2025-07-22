@@ -26,3 +26,7 @@ func (s *Service) FindByStartConnChangeRequestIdsAndState(changeIDs []string,
 	state types.PtySessionState) ([]*dto.Record, error) {
 	return s.repo.FindByStartConnChangeRequestIdsAndState(changeIDs, state)
 }
+
+func (s *Service) FindAllByChangeRequestIDAndServerIPs(changeRequestID string, serverIPs []string) ([]*dto.Record, error) {
+	return s.repo.FindAllByChangeRequestIDAndServerIPs(changeRequestID, serverIPs)
+}

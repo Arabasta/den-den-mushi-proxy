@@ -33,3 +33,19 @@ func (r *GormRepository) FindByIp(ip string) (*dto.Record, error) {
 
 	return dto.FromModel(&m), nil
 }
+
+func (r *GormRepository) FindAllByIps(ips []string) ([]*dto.Record, error) {
+	var models []dto.Model
+	err := r.db.Where("IpAddress IN ?", ips).Find(&models).Error
+	if err != nil {
+		r.log.Error("DB error while fetching hosts", zap.Strings("ips", ips), zap.Error(err))
+		return nil, err
+	}
+
+	if len(models) == 0 {
+		r.log.Debug("No hosts found for provided IPs", zap.Strings("ips", ips))
+		return nil, nil
+	}
+
+	return dto.FromModels(models), nil
+}
