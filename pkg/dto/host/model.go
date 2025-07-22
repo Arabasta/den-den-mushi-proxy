@@ -4,6 +4,7 @@ type Model struct {
 	ID          uint   `gorm:"column:Inventory_ID;primaryKey"`
 	IpAddress   string `gorm:"column:IpAddress"`
 	HostName    string `gorm:"column:HostName"`
+	Appcode     string `gorm:"column:APPLICATION_CODE"`
 	OSType      string `gorm:"column:OS_TYPE"`
 	Status      string `gorm:"column:Status"`
 	Environment string `gorm:"column:Environment"`
