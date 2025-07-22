@@ -32,7 +32,7 @@ import type { PtySessionState } from '../models';
 export const MakeChangeApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Returns all active Change Requests associated with the user\'s implementor group and associated PTY sessions and connections Implementor group is retrieved from the user\'s id provided by the authentication token.
+         * Returns all APPROVED Change Requests associated with the user\'s implementor group and associated PTY sessions and connections Implementor group is retrieved from the user\'s id provided by the authentication token.
          * @summary Get change request and associated PTY sessions
          * @param {Array<string>} [ticketIds] 
          * @param {Array<string>} [implementorGroups] 
@@ -40,7 +40,7 @@ export const MakeChangeApiAxiosParamCreator = function (configuration?: Configur
          * @param {string} [country] 
          * @param {string} [startTime] 
          * @param {string} [endTime] 
-         * @param {PtySessionState} [ptySessionState] 
+         * @param {PtySessionState} [ptySessionState] Does not filter out CRs, field not for users
          * @param {number} [page] 
          * @param {number} [pageSize] 
          * @param {*} [options] Override http request option.
@@ -125,7 +125,7 @@ export const MakeChangeApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = MakeChangeApiAxiosParamCreator(configuration)
     return {
         /**
-         * Returns all active Change Requests associated with the user\'s implementor group and associated PTY sessions and connections Implementor group is retrieved from the user\'s id provided by the authentication token.
+         * Returns all APPROVED Change Requests associated with the user\'s implementor group and associated PTY sessions and connections Implementor group is retrieved from the user\'s id provided by the authentication token.
          * @summary Get change request and associated PTY sessions
          * @param {Array<string>} [ticketIds] 
          * @param {Array<string>} [implementorGroups] 
@@ -133,7 +133,7 @@ export const MakeChangeApiFp = function(configuration?: Configuration) {
          * @param {string} [country] 
          * @param {string} [startTime] 
          * @param {string} [endTime] 
-         * @param {PtySessionState} [ptySessionState] 
+         * @param {PtySessionState} [ptySessionState] Does not filter out CRs, field not for users
          * @param {number} [page] 
          * @param {number} [pageSize] 
          * @param {*} [options] Override http request option.
@@ -156,7 +156,7 @@ export const MakeChangeApiFactory = function (configuration?: Configuration, bas
     const localVarFp = MakeChangeApiFp(configuration)
     return {
         /**
-         * Returns all active Change Requests associated with the user\'s implementor group and associated PTY sessions and connections Implementor group is retrieved from the user\'s id provided by the authentication token.
+         * Returns all APPROVED Change Requests associated with the user\'s implementor group and associated PTY sessions and connections Implementor group is retrieved from the user\'s id provided by the authentication token.
          * @summary Get change request and associated PTY sessions
          * @param {MakeChangeApiApiV1ChangeRequestsGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
@@ -217,7 +217,7 @@ export interface MakeChangeApiApiV1ChangeRequestsGetRequest {
     readonly endTime?: string
 
     /**
-     * 
+     * Does not filter out CRs, field not for users
      * @type {PtySessionState}
      * @memberof MakeChangeApiApiV1ChangeRequestsGet
      */
@@ -246,7 +246,7 @@ export interface MakeChangeApiApiV1ChangeRequestsGetRequest {
  */
 export class MakeChangeApi extends BaseAPI {
     /**
-     * Returns all active Change Requests associated with the user\'s implementor group and associated PTY sessions and connections Implementor group is retrieved from the user\'s id provided by the authentication token.
+     * Returns all APPROVED Change Requests associated with the user\'s implementor group and associated PTY sessions and connections Implementor group is retrieved from the user\'s id provided by the authentication token.
      * @summary Get change request and associated PTY sessions
      * @param {MakeChangeApiApiV1ChangeRequestsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.

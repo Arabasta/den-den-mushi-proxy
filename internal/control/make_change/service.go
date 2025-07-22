@@ -46,14 +46,13 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, authCtx 
 	for _, cr := range crs {
 		// extract ips from cr
 		ipToUsers := cyberark.MapIPToOSUsers(cr.CyberArkObjects)
-		if len(ipToUsers) == 0 {
-			continue
-		}
+		s.log.Debug("Mapped CyberArk object", zap.Any("object", cr.CyberArkObjects))
 
 		ips := make([]string, 0, len(ipToUsers))
 		for ip := range ipToUsers {
 			ips = append(ips, ip)
 		}
+		s.log.Debug("Mapped IPs to OS Users", zap.Strings("ips", ips))
 
 		// get host details
 		hosts, err := s.hostSvc.FindAllByIps(ips)
@@ -61,17 +60,20 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, authCtx 
 			s.log.Error("Failed to fetch hosts by IPs", zap.Error(err))
 			continue
 		}
+		s.log.Debug("Fetched hosts by IPs", zap.Any("hosts", hosts))
 
 		hostMap := make(map[string]*hostpkg.Record)
 		for _, h := range hosts {
 			hostMap[h.IpAddress] = h
 		}
+		s.log.Debug("Mapped hosts by IPs", zap.Any("hostMap", hostMap))
 
 		sessions, err := s.ptySessionsSvc.FindAllByChangeRequestIDAndServerIPs(cr.ChangeRequestId, ips)
 		if err != nil {
 			s.log.Error("Failed to fetch PTY sessions", zap.Error(err))
 			continue
 		}
+		s.log.Debug("Fetched PTY sessions", zap.Any("sessions", sessions))
 
 		// group sessions by StartConnServerIP
 		ipSessionsMap := map[string]*hostAggregate{}
@@ -83,28 +85,31 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, authCtx 
 			}
 			ipSessionsMap[s.StartConnServerIP].sessions = append(ipSessionsMap[s.StartConnServerIP].sessions, s)
 		}
+		s.log.Debug("Grouped PTY sessions by IP", zap.Any("ipSessionsMap", ipSessionsMap))
 
 		var hostDetails []oapi.HostSessionDetails
-		for k, v := range ipSessionsMap {
-			h := hostMap[k]
-			if h == nil {
-				continue
+		for ip, hostRec := range hostMap {
+			hostInfo := &oapi.Host{
+				AppCode:     hostRec.Appcode,
+				Environment: hostRec.Environment,
+				IpAddress:   hostRec.IpAddress,
+				Name:        hostRec.HostName,
 			}
 
-			osUsers, ok := ipToUsers[k]
+			osUsers, ok := ipToUsers[ip]
 			if !ok {
 				osUsers = []string{}
 			}
 
+			var sessions []*ptysessionspkg.Record
+			if agg, ok := ipSessionsMap[ip]; ok {
+				sessions = agg.sessions
+			}
+
 			hostDetails = append(hostDetails, oapi.HostSessionDetails{
-				Host: &oapi.Host{
-					AppCode:     h.Appcode,
-					Environment: h.Environment,
-					IpAddress:   h.IpAddress,
-					Name:        h.HostName,
-				},
+				Host:        hostInfo,
 				OsUsers:     &osUsers,
-				PtySessions: convertToPtySessionSummaries(v.sessions),
+				PtySessions: convertToPtySessionSummaries(sessions),
 			})
 		}
 
@@ -121,6 +126,7 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, authCtx 
 		})
 	}
 
+	s.log.Debug("Returning change request sessions response", zap.Any("response", r))
 	return r, nil
 }
 

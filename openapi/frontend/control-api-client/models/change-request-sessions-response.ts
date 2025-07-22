@@ -31,10 +31,10 @@ export interface ChangeRequestSessionsResponse {
     'change_id'?: string;
     /**
      * 
-     * @type {string}
+     * @type {Array<string>}
      * @memberof ChangeRequestSessionsResponse
      */
-    'country'?: string;
+    'country'?: Array<string>;
     /**
      * 
      * @type {string}

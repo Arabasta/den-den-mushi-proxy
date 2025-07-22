@@ -40,14 +40,14 @@ func (r *GormRepository) FindChangeRequests(filter filters.ListCR) ([]*dto.Recor
 	query := r.db.Model(&dto.Model{})
 
 	if filter.TicketIDs != nil && len(*filter.TicketIDs) > 0 {
-		query = query.Where("TicketNumber IN ?", *filter.TicketIDs)
+		query = query.Where("Ticketnumber IN ?", *filter.TicketIDs)
 	}
 
 	query = query.Where("State = ?", "Approved")
 
 	if filter.ImplementorGroups != nil {
 		for _, group := range *filter.ImplementorGroups {
-			query = query.Or("ImplementorGroups LIKE ?", "%"+group+"%")
+			query = query.Or("Implementorgroups LIKE ?", "%"+group+"%")
 		}
 	}
 
@@ -56,7 +56,7 @@ func (r *GormRepository) FindChangeRequests(filter filters.ListCR) ([]*dto.Recor
 	}
 
 	if filter.Country != nil {
-		query = query.Where("Country = ?", *filter.Country)
+		query = query.Where("CountryImpacted LIKE ?", "%"+*filter.Country+"%")
 	}
 
 	// note that this is stored as text in DB
@@ -67,6 +67,19 @@ func (r *GormRepository) FindChangeRequests(filter filters.ListCR) ([]*dto.Recor
 	if filter.EndTime != nil {
 		query = query.Where("ChangeSchedEndTime <= ?", filter.EndTime.Format("2006-01-02 15:04:05"))
 	}
+
+	page := filter.Page
+	if page < 1 {
+		page = 1
+	}
+
+	pageSize := filter.PageSize
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 20
+	}
+
+	offset := (page - 1) * pageSize
+	query = query.Offset(offset).Limit(pageSize)
 
 	err := query.Find(&models).Error
 	if err != nil {

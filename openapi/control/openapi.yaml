@@ -82,7 +82,7 @@ paths:
       tags:
         - Make Change
       summary: Get change request and associated PTY sessions
-      description: Returns all active Change Requests associated with the user's implementor group and associated 
+      description: Returns all APPROVED Change Requests associated with the user's implementor group and associated 
         PTY sessions and connections
         Implementor group is retrieved from the user's id provided by the authentication token.
       security:
@@ -115,6 +115,7 @@ paths:
           - name: pty_session_state
             in: query
             required: false
+            description: Does not filter out CRs, field not for users
             schema:
               $ref: '#/components/schemas/PtySessionState'
           - name: page

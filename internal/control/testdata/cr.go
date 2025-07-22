@@ -3,7 +3,6 @@ package testdata
 import (
 	"den-den-mushi-Go/pkg/dto/change_request"
 	"den-den-mushi-Go/pkg/dto/cyberark"
-	"den-den-mushi-Go/pkg/dto/host"
 	"den-den-mushi-Go/pkg/dto/implementor_groups"
 	"den-den-mushi-Go/pkg/dto/proxy_host"
 	"den-den-mushi-Go/pkg/dto/proxy_lb"
@@ -11,11 +10,11 @@ import (
 )
 
 func CallAll(db *gorm.DB) {
-	createCR(db)
-	createCyberark(db)
-	createProxyLb(db)
-	createProxyHost(db)
-	createHosts(db)
+	//createCR(db)
+	//createCyberark(db)
+	//createProxyLb(db)
+	//createProxyHost(db)
+	//createHosts(db)
 }
 
 func createCR(db *gorm.DB) {
@@ -33,7 +32,7 @@ func createCR(db *gorm.DB) {
 			ChangeEndTime:     "2026-07-22 01:00:00",
 			ImplementorGroups: "admin,devops",
 			State:             "Approved",
-			CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.1-root-w123",
+			CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.0.1-root-w123",
 		},
 		{
 			// unapproved CR
@@ -47,7 +46,7 @@ func createCR(db *gorm.DB) {
 			ChangeEndTime:     "2026-07-22 01:00:00",
 			ImplementorGroups: "admin,devops",
 			State:             "Closed",
-			CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.1-root-w123",
+			CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.0.1-root-w123",
 		},
 		{
 			// invalid time
@@ -61,7 +60,7 @@ func createCR(db *gorm.DB) {
 			ChangeEndTime:     "2024-07-22 01:00:00",
 			ImplementorGroups: "admin,devops",
 			State:             "Approved",
-			CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.1-root-w123",
+			CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.0.1-root-w123",
 		},
 		{
 			// invalid implementor groups
@@ -75,7 +74,7 @@ func createCR(db *gorm.DB) {
 			ChangeEndTime:     "2026-07-22 01:00:00",
 			ImplementorGroups: "invalid,ddddevops",
 			State:             "Approved",
-			CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.1-root-w123",
+			CyberArkObjects:   "54.255.144.215-ec2user-x123,127.0.0.1-root-w123",
 		},
 		{
 			// invalid cyberark objects
@@ -89,7 +88,7 @@ func createCR(db *gorm.DB) {
 			ChangeEndTime:     "2026-07-22 01:00:00",
 			ImplementorGroups: "admin,devops",
 			State:             "Approved",
-			CyberArkObjects:   "123-ec2user-x123,127.0.1-root-w123",
+			CyberArkObjects:   "123-ec2user-x123,127.0.0.1-root-w123",
 		},
 		{
 			// empty cyberark objects
@@ -118,7 +117,22 @@ func createCR(db *gorm.DB) {
 			ChangeEndTime:     "2026-07-22 01:00:00",
 			ImplementorGroups: "admin,devops",
 			State:             "Approved",
-			CyberArkObjects:   "54.255.144.215-ec2-user-x123,127.0.1-root-w123",
+			CyberArkObjects:   "54.255.144.215-ec2-user-x123,127.0.0.1-root-w123",
+		},
+		{
+			// approved CR, valid time, valid implementor groups, valid cyberark objects
+			// with cyberark ec2-user
+			ID:                8,
+			CRNumber:          "CR202512321",
+			Country:           "SG,CN",
+			Lob:               "KEI",
+			Summary:           "System update and patching",
+			Description:       "Patching EC2 instances in SG and HK region.",
+			ChangeStartTime:   "2025-07-23 23:00:00",
+			ChangeEndTime:     "2026-07-24 01:00:00",
+			ImplementorGroups: "kei",
+			State:             "Approved",
+			CyberArkObjects:   "54.255.144.215-ec2-user-x123,127.0.0.1-rootabc-w123,127.0.0.1-root-w123",
 		},
 	})
 
@@ -198,26 +212,26 @@ func createImplementorGroups(db *gorm.DB) {
 	})
 }
 
-func createHosts(db *gorm.DB) {
-	// create test hosts
-	db.Create(&[]host.Model{
-		{
-			IpAddress:   "127.0.1",
-			HostName:    "ddm-proxy",
-			Status:      "Active",
-			OSType:      "Linux",
-			Environment: "Production",
-			Country:     "SG",
-			Appcode:     "ddm",
-		},
-		{
-			IpAddress:   "54.255.144.215",
-			HostName:    "aws-ec2-123",
-			Status:      "Active",
-			OSType:      "Linux",
-			Environment: "Production",
-			Country:     "SG",
-			Appcode:     "UCHIHA",
-		},
-	})
-}
+//func createHosts(db *gorm.DB) {
+//	// create test hosts
+//	db.Create(&[]host.Model{
+//		{
+//			IpAddress:   "127.0.0.1",
+//			HostName:    "ddm-proxy",
+//			Status:      "Active",
+//			OSType:      "Linux",
+//			Environment: "Production",
+//			Country:     "SG",
+//			Appcode:     "ddm",
+//		},
+//		{
+//			IpAddress:   "54.255.144.215",
+//			HostName:    "aws-ec2-123",
+//			Status:      "Active",
+//			OSType:      "Linux",
+//			Environment: "Production",
+//			Country:     "SG",
+//			Appcode:     "UCHIHA",
+//		},
+//	})
+//}

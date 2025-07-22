@@ -6,7 +6,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **change_id** | **string** |  | [optional] [default to undefined]
-**country** | **string** |  | [optional] [default to undefined]
+**country** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
 **lob** | **string** |  | [optional] [default to undefined]
 **implementor_groups** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
 **change_start_time** | **string** |  | [optional] [default to undefined]

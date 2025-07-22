@@ -25,24 +25,24 @@ export interface Host {
      * @type {string}
      * @memberof Host
      */
-    'name'?: string;
+    'name': string;
     /**
      * 
      * @type {string}
      * @memberof Host
      */
-    'ip_address'?: string;
+    'ip_address': string;
     /**
      * 
      * @type {string}
      * @memberof Host
      */
-    'environment'?: string;
+    'environment': string;
     /**
      * 
      * @type {string}
      * @memberof Host
      */
-    'app_code'?: string;
+    'app_code': string;
 }
 

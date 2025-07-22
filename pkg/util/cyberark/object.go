@@ -1,6 +1,7 @@
 package cyberark
 
 import (
+	"fmt"
 	"net"
 	"strings"
 )
@@ -68,6 +69,7 @@ func MapIPToOSUsers(objects []string) map[string][]string {
 	for _, o := range objects {
 		ip := extractIPFromCyberarkObject(o)
 		user := extractOsUserFromObject(o)
+		fmt.Printf("Parsed IP=%s, User=%s, Raw=%s\n", ip, user, o)
 
 		if ip == "" || user == "" {
 			continue

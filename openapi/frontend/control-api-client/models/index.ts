@@ -5,7 +5,6 @@ export * from './connection-status';
 export * from './healthcheck-sessions-response';
 export * from './host';
 export * from './host-session-details';
-export * from './host-session-details-host';
 export * from './join-request';
 export * from './proxy-load-balancer';
 export * from './pty-session';

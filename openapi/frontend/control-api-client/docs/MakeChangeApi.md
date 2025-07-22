@@ -9,7 +9,7 @@ All URIs are relative to *http://localhost:55007*
 # **apiV1ChangeRequestsGet**
 > Array<ChangeRequestSessionsResponse> apiV1ChangeRequestsGet()
 
-Returns all active Change Requests associated with the user\'s implementor group and associated PTY sessions and connections Implementor group is retrieved from the user\'s id provided by the authentication token.
+Returns all APPROVED Change Requests associated with the user\'s implementor group and associated PTY sessions and connections Implementor group is retrieved from the user\'s id provided by the authentication token.
 
 ### Example
 
@@ -28,7 +28,7 @@ let lob: string; // (optional) (default to undefined)
 let country: string; // (optional) (default to undefined)
 let startTime: string; // (optional) (default to undefined)
 let endTime: string; // (optional) (default to undefined)
-let ptySessionState: PtySessionState; // (optional) (default to undefined)
+let ptySessionState: PtySessionState; //Does not filter out CRs, field not for users (optional) (default to undefined)
 let page: number; // (optional) (default to 1)
 let pageSize: number; // (optional) (default to 20)
 
@@ -55,7 +55,7 @@ const { status, data } = await apiInstance.apiV1ChangeRequestsGet(
 | **country** | [**string**] |  | (optional) defaults to undefined|
 | **startTime** | [**string**] |  | (optional) defaults to undefined|
 | **endTime** | [**string**] |  | (optional) defaults to undefined|
-| **ptySessionState** | **PtySessionState** |  | (optional) defaults to undefined|
+| **ptySessionState** | **PtySessionState** | Does not filter out CRs, field not for users | (optional) defaults to undefined|
 | **page** | [**number**] |  | (optional) defaults to 1|
 | **pageSize** | [**number**] |  | (optional) defaults to 20|
 

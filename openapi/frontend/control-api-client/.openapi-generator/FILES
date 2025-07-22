@@ -14,7 +14,6 @@ docs/ConnectionStatus.md
 docs/HealthcheckSessionsResponse.md
 docs/Host.md
 docs/HostSessionDetails.md
-docs/HostSessionDetailsHost.md
 docs/JoinRequest.md
 docs/MakeChangeApi.md
 docs/PTYTokenApi.md
@@ -33,7 +32,6 @@ models/connection-purpose.ts
 models/connection-status.ts
 models/connection.ts
 models/healthcheck-sessions-response.ts
-models/host-session-details-host.ts
 models/host-session-details.ts
 models/host.ts
 models/index.ts

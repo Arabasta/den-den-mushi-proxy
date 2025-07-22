@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**host** | [**HostSessionDetailsHost**](HostSessionDetailsHost.md) |  | [optional] [default to undefined]
+**host** | [**Host**](Host.md) |  | [optional] [default to undefined]
 **os_users** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
 **pty_sessions** | [**Array&lt;PtySessionSummary&gt;**](PtySessionSummary.md) |  | [optional] [default to undefined]
 

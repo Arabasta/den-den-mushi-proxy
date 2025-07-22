@@ -15,7 +15,7 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { HostSessionDetailsHost } from './host-session-details-host';
+import type { Host } from './host';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { PtySessionSummary } from './pty-session-summary';
@@ -28,10 +28,10 @@ import type { PtySessionSummary } from './pty-session-summary';
 export interface HostSessionDetails {
     /**
      * 
-     * @type {HostSessionDetailsHost}
+     * @type {Host}
      * @memberof HostSessionDetails
      */
-    'host'?: HostSessionDetailsHost;
+    'host'?: Host;
     /**
      * 
      * @type {Array<string>}

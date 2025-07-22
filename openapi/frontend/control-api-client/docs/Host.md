@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**name** | **string** |  | [optional] [default to undefined]
-**ip_address** | **string** |  | [optional] [default to undefined]
-**environment** | **string** |  | [optional] [default to undefined]
-**app_code** | **string** |  | [optional] [default to undefined]
+**name** | **string** |  | [default to undefined]
+**ip_address** | **string** |  | [default to undefined]
+**environment** | **string** |  | [default to undefined]
+**app_code** | **string** |  | [default to undefined]
 
 ## Example
 
