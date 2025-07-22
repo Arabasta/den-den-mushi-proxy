@@ -7,7 +7,9 @@
   },
   "development": {
     "useInMemoryRepository": true,
-    "skipPolicyChecks": false
+    "skipPolicyChecks": false,
+    "IsUsingInvDb": false,
+    "IsAutoMigrateEnabled": true
   },
   "ssl": {
     "enabled": false

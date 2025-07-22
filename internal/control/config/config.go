@@ -10,6 +10,8 @@ type Config struct {
 	Development struct {
 		UseInMemoryRepository bool
 		SkipPolicyChecks      bool
+		IsUsingInvDb          bool
+		IsAutoMigrateEnabled  bool
 	}
 
 	Ssl *config.Ssl

@@ -4,6 +4,7 @@ import (
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/make_change"
 	"den-den-mushi-Go/internal/control/pty_token"
+	"den-den-mushi-Go/internal/control/whiteblacklist"
 	oapi "den-den-mushi-Go/openapi/control"
 	"embed"
 	"github.com/gin-gonic/gin"
@@ -27,6 +28,10 @@ func registerProtectedRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log 
 		},
 		MakeChangeHandler: &make_change.Handler{
 			Service: deps.MakeChangeService,
+			Log:     log,
+		},
+		WhiteBlacklistHandler: &whiteblacklist.Handler{
+			Service: deps.WhiteBlacklistService,
 			Log:     log,
 		},
 	}

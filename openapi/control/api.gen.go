@@ -45,6 +45,12 @@ const (
 	PtySessionStateCreated PtySessionState = "created"
 )
 
+// Defines values for RegexFilterFilterType.
+const (
+	BLACKLIST RegexFilterFilterType = "BLACKLIST"
+	WHITELIST RegexFilterFilterType = "WHITELIST"
+)
+
 // Defines values for StartRole.
 const (
 	Implementor StartRole = "implementor"
@@ -151,6 +157,24 @@ type PtySessionSummary struct {
 	State PtySessionState `json:"state"`
 }
 
+// RegexFilter defines model for RegexFilter.
+type RegexFilter struct {
+	CreatedAt  *time.Time             `json:"created_at,omitempty"`
+	CreatedBy  *string                `json:"created_by,omitempty"`
+	DeletedAt  *time.Time             `json:"deleted_at,omitempty"`
+	DeletedBy  *string                `json:"deleted_by,omitempty"`
+	FilterType *RegexFilterFilterType `json:"filter_type,omitempty"`
+	Id         *int                   `json:"id,omitempty"`
+	IsEnabled  *bool                  `json:"is_enabled,omitempty"`
+	OuGroup    *string                `json:"ou_group,omitempty"`
+	Pattern    *string                `json:"pattern,omitempty"`
+	UpdatedAt  *time.Time             `json:"updated_at,omitempty"`
+	UpdatedBy  *string                `json:"updated_by,omitempty"`
+}
+
+// RegexFilterFilterType defines model for RegexFilter.FilterType.
+type RegexFilterFilterType string
+
 // ServerInfo Info about the target server for the PTY session
 type ServerInfo struct {
 	// OsUser The Os user to connect as
@@ -199,11 +223,31 @@ type GetApiV1ChangeRequestsParams struct {
 	PageSize        *int             `form:"page_size,omitempty" json:"page_size,omitempty"`
 }
 
+// PostApiV1WhitelistRegexJSONBody defines parameters for PostApiV1WhitelistRegex.
+type PostApiV1WhitelistRegexJSONBody struct {
+	// Pattern The regular expression pattern
+	Pattern string `json:"pattern"`
+}
+
+// PutApiV1WhitelistRegexIdJSONBody defines parameters for PutApiV1WhitelistRegexId.
+type PutApiV1WhitelistRegexIdJSONBody struct {
+	IsEnabled *bool `json:"isEnabled,omitempty"`
+
+	// Pattern Updated regular expression pattern
+	Pattern string `json:"pattern"`
+}
+
 // PostApiV1PtyTokenJoinJSONRequestBody defines body for PostApiV1PtyTokenJoin for application/json ContentType.
 type PostApiV1PtyTokenJoinJSONRequestBody = JoinRequest
 
 // PostApiV1PtyTokenStartJSONRequestBody defines body for PostApiV1PtyTokenStart for application/json ContentType.
 type PostApiV1PtyTokenStartJSONRequestBody = StartRequest
+
+// PostApiV1WhitelistRegexJSONRequestBody defines body for PostApiV1WhitelistRegex for application/json ContentType.
+type PostApiV1WhitelistRegexJSONRequestBody PostApiV1WhitelistRegexJSONBody
+
+// PutApiV1WhitelistRegexIdJSONRequestBody defines body for PutApiV1WhitelistRegexId for application/json ContentType.
+type PutApiV1WhitelistRegexIdJSONRequestBody PutApiV1WhitelistRegexIdJSONBody
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -290,6 +334,22 @@ type ClientInterface interface {
 	PostApiV1PtyTokenStartWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PostApiV1PtyTokenStart(ctx context.Context, body PostApiV1PtyTokenStartJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetApiV1WhitelistRegex request
+	GetApiV1WhitelistRegex(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostApiV1WhitelistRegexWithBody request with any body
+	PostApiV1WhitelistRegexWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostApiV1WhitelistRegex(ctx context.Context, body PostApiV1WhitelistRegexJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteApiV1WhitelistRegexId request
+	DeleteApiV1WhitelistRegexId(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutApiV1WhitelistRegexIdWithBody request with any body
+	PutApiV1WhitelistRegexIdWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutApiV1WhitelistRegexId(ctx context.Context, id int, body PutApiV1WhitelistRegexIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetApiV1ChangeRequests(ctx context.Context, params *GetApiV1ChangeRequestsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -342,6 +402,78 @@ func (c *Client) PostApiV1PtyTokenStartWithBody(ctx context.Context, contentType
 
 func (c *Client) PostApiV1PtyTokenStart(ctx context.Context, body PostApiV1PtyTokenStartJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPostApiV1PtyTokenStartRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetApiV1WhitelistRegex(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1WhitelistRegexRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostApiV1WhitelistRegexWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostApiV1WhitelistRegexRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostApiV1WhitelistRegex(ctx context.Context, body PostApiV1WhitelistRegexJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostApiV1WhitelistRegexRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteApiV1WhitelistRegexId(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteApiV1WhitelistRegexIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutApiV1WhitelistRegexIdWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutApiV1WhitelistRegexIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutApiV1WhitelistRegexId(ctx context.Context, id int, body PutApiV1WhitelistRegexIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutApiV1WhitelistRegexIdRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -609,6 +741,154 @@ func NewPostApiV1PtyTokenStartRequestWithBody(server string, contentType string,
 	return req, nil
 }
 
+// NewGetApiV1WhitelistRegexRequest generates requests for GetApiV1WhitelistRegex
+func NewGetApiV1WhitelistRegexRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/whitelist/regex")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostApiV1WhitelistRegexRequest calls the generic PostApiV1WhitelistRegex builder with application/json body
+func NewPostApiV1WhitelistRegexRequest(server string, body PostApiV1WhitelistRegexJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostApiV1WhitelistRegexRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostApiV1WhitelistRegexRequestWithBody generates requests for PostApiV1WhitelistRegex with any type of body
+func NewPostApiV1WhitelistRegexRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/whitelist/regex")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteApiV1WhitelistRegexIdRequest generates requests for DeleteApiV1WhitelistRegexId
+func NewDeleteApiV1WhitelistRegexIdRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/whitelist/regex/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutApiV1WhitelistRegexIdRequest calls the generic PutApiV1WhitelistRegexId builder with application/json body
+func NewPutApiV1WhitelistRegexIdRequest(server string, id int, body PutApiV1WhitelistRegexIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutApiV1WhitelistRegexIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutApiV1WhitelistRegexIdRequestWithBody generates requests for PutApiV1WhitelistRegexId with any type of body
+func NewPutApiV1WhitelistRegexIdRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/whitelist/regex/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -664,6 +944,22 @@ type ClientWithResponsesInterface interface {
 	PostApiV1PtyTokenStartWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1PtyTokenStartResponse, error)
 
 	PostApiV1PtyTokenStartWithResponse(ctx context.Context, body PostApiV1PtyTokenStartJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1PtyTokenStartResponse, error)
+
+	// GetApiV1WhitelistRegexWithResponse request
+	GetApiV1WhitelistRegexWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1WhitelistRegexResponse, error)
+
+	// PostApiV1WhitelistRegexWithBodyWithResponse request with any body
+	PostApiV1WhitelistRegexWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1WhitelistRegexResponse, error)
+
+	PostApiV1WhitelistRegexWithResponse(ctx context.Context, body PostApiV1WhitelistRegexJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1WhitelistRegexResponse, error)
+
+	// DeleteApiV1WhitelistRegexIdWithResponse request
+	DeleteApiV1WhitelistRegexIdWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteApiV1WhitelistRegexIdResponse, error)
+
+	// PutApiV1WhitelistRegexIdWithBodyWithResponse request with any body
+	PutApiV1WhitelistRegexIdWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutApiV1WhitelistRegexIdResponse, error)
+
+	PutApiV1WhitelistRegexIdWithResponse(ctx context.Context, id int, body PutApiV1WhitelistRegexIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutApiV1WhitelistRegexIdResponse, error)
 }
 
 type GetApiV1ChangeRequestsResponse struct {
@@ -732,6 +1028,93 @@ func (r PostApiV1PtyTokenStartResponse) StatusCode() int {
 	return 0
 }
 
+type GetApiV1WhitelistRegexResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]RegexFilter
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApiV1WhitelistRegexResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApiV1WhitelistRegexResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostApiV1WhitelistRegexResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *RegexFilter
+}
+
+// Status returns HTTPResponse.Status
+func (r PostApiV1WhitelistRegexResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostApiV1WhitelistRegexResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteApiV1WhitelistRegexIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteApiV1WhitelistRegexIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteApiV1WhitelistRegexIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutApiV1WhitelistRegexIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RegexFilter
+}
+
+// Status returns HTTPResponse.Status
+func (r PutApiV1WhitelistRegexIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutApiV1WhitelistRegexIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetApiV1ChangeRequestsWithResponse request returning *GetApiV1ChangeRequestsResponse
 func (c *ClientWithResponses) GetApiV1ChangeRequestsWithResponse(ctx context.Context, params *GetApiV1ChangeRequestsParams, reqEditors ...RequestEditorFn) (*GetApiV1ChangeRequestsResponse, error) {
 	rsp, err := c.GetApiV1ChangeRequests(ctx, params, reqEditors...)
@@ -773,6 +1156,58 @@ func (c *ClientWithResponses) PostApiV1PtyTokenStartWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParsePostApiV1PtyTokenStartResponse(rsp)
+}
+
+// GetApiV1WhitelistRegexWithResponse request returning *GetApiV1WhitelistRegexResponse
+func (c *ClientWithResponses) GetApiV1WhitelistRegexWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1WhitelistRegexResponse, error) {
+	rsp, err := c.GetApiV1WhitelistRegex(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetApiV1WhitelistRegexResponse(rsp)
+}
+
+// PostApiV1WhitelistRegexWithBodyWithResponse request with arbitrary body returning *PostApiV1WhitelistRegexResponse
+func (c *ClientWithResponses) PostApiV1WhitelistRegexWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1WhitelistRegexResponse, error) {
+	rsp, err := c.PostApiV1WhitelistRegexWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostApiV1WhitelistRegexResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostApiV1WhitelistRegexWithResponse(ctx context.Context, body PostApiV1WhitelistRegexJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1WhitelistRegexResponse, error) {
+	rsp, err := c.PostApiV1WhitelistRegex(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostApiV1WhitelistRegexResponse(rsp)
+}
+
+// DeleteApiV1WhitelistRegexIdWithResponse request returning *DeleteApiV1WhitelistRegexIdResponse
+func (c *ClientWithResponses) DeleteApiV1WhitelistRegexIdWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteApiV1WhitelistRegexIdResponse, error) {
+	rsp, err := c.DeleteApiV1WhitelistRegexId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteApiV1WhitelistRegexIdResponse(rsp)
+}
+
+// PutApiV1WhitelistRegexIdWithBodyWithResponse request with arbitrary body returning *PutApiV1WhitelistRegexIdResponse
+func (c *ClientWithResponses) PutApiV1WhitelistRegexIdWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutApiV1WhitelistRegexIdResponse, error) {
+	rsp, err := c.PutApiV1WhitelistRegexIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutApiV1WhitelistRegexIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutApiV1WhitelistRegexIdWithResponse(ctx context.Context, id int, body PutApiV1WhitelistRegexIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutApiV1WhitelistRegexIdResponse, error) {
+	rsp, err := c.PutApiV1WhitelistRegexId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutApiV1WhitelistRegexIdResponse(rsp)
 }
 
 // ParseGetApiV1ChangeRequestsResponse parses an HTTP response from a GetApiV1ChangeRequestsWithResponse call
@@ -853,6 +1288,100 @@ func ParsePostApiV1PtyTokenStartResponse(rsp *http.Response) (*PostApiV1PtyToken
 	return response, nil
 }
 
+// ParseGetApiV1WhitelistRegexResponse parses an HTTP response from a GetApiV1WhitelistRegexWithResponse call
+func ParseGetApiV1WhitelistRegexResponse(rsp *http.Response) (*GetApiV1WhitelistRegexResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetApiV1WhitelistRegexResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []RegexFilter
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostApiV1WhitelistRegexResponse parses an HTTP response from a PostApiV1WhitelistRegexWithResponse call
+func ParsePostApiV1WhitelistRegexResponse(rsp *http.Response) (*PostApiV1WhitelistRegexResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostApiV1WhitelistRegexResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest RegexFilter
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteApiV1WhitelistRegexIdResponse parses an HTTP response from a DeleteApiV1WhitelistRegexIdWithResponse call
+func ParseDeleteApiV1WhitelistRegexIdResponse(rsp *http.Response) (*DeleteApiV1WhitelistRegexIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteApiV1WhitelistRegexIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePutApiV1WhitelistRegexIdResponse parses an HTTP response from a PutApiV1WhitelistRegexIdWithResponse call
+func ParsePutApiV1WhitelistRegexIdResponse(rsp *http.Response) (*PutApiV1WhitelistRegexIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutApiV1WhitelistRegexIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RegexFilter
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Get change request and associated PTY sessions
@@ -864,6 +1393,18 @@ type ServerInterface interface {
 	// Mint a start token for a new PTY session
 	// (POST /api/v1/pty_token/start)
 	PostApiV1PtyTokenStart(c *gin.Context)
+	// Get all whitelist regex filters for healthcheck ou group
+	// (GET /api/v1/whitelist/regex)
+	GetApiV1WhitelistRegex(c *gin.Context)
+	// Add a regex to whitelist for healthcheck ou group
+	// (POST /api/v1/whitelist/regex)
+	PostApiV1WhitelistRegex(c *gin.Context)
+	// Soft delete a whitelist regex filter
+	// (DELETE /api/v1/whitelist/regex/{id})
+	DeleteApiV1WhitelistRegexId(c *gin.Context, id int)
+	// Update a whitelist regex filter
+	// (PUT /api/v1/whitelist/regex/{id})
+	PutApiV1WhitelistRegexId(c *gin.Context, id int)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -997,6 +1538,88 @@ func (siw *ServerInterfaceWrapper) PostApiV1PtyTokenStart(c *gin.Context) {
 	siw.Handler.PostApiV1PtyTokenStart(c)
 }
 
+// GetApiV1WhitelistRegex operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1WhitelistRegex(c *gin.Context) {
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetApiV1WhitelistRegex(c)
+}
+
+// PostApiV1WhitelistRegex operation middleware
+func (siw *ServerInterfaceWrapper) PostApiV1WhitelistRegex(c *gin.Context) {
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostApiV1WhitelistRegex(c)
+}
+
+// DeleteApiV1WhitelistRegexId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteApiV1WhitelistRegexId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteApiV1WhitelistRegexId(c, id)
+}
+
+// PutApiV1WhitelistRegexId operation middleware
+func (siw *ServerInterfaceWrapper) PutApiV1WhitelistRegexId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutApiV1WhitelistRegexId(c, id)
+}
+
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL      string
@@ -1027,52 +1650,62 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/api/v1/change_requests/", wrapper.GetApiV1ChangeRequests)
 	router.POST(options.BaseURL+"/api/v1/pty_token/join", wrapper.PostApiV1PtyTokenJoin)
 	router.POST(options.BaseURL+"/api/v1/pty_token/start", wrapper.PostApiV1PtyTokenStart)
+	router.GET(options.BaseURL+"/api/v1/whitelist/regex", wrapper.GetApiV1WhitelistRegex)
+	router.POST(options.BaseURL+"/api/v1/whitelist/regex", wrapper.PostApiV1WhitelistRegex)
+	router.DELETE(options.BaseURL+"/api/v1/whitelist/regex/:id", wrapper.DeleteApiV1WhitelistRegexId)
+	router.PUT(options.BaseURL+"/api/v1/whitelist/regex/:id", wrapper.PutApiV1WhitelistRegexId)
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"kflvAAAA///5kQi0OSMAAA==",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

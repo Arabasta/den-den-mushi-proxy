@@ -12,6 +12,8 @@ import (
 	"den-den-mushi-Go/internal/control/pty_sessions"
 	"den-den-mushi-Go/internal/control/pty_token"
 	"den-den-mushi-Go/internal/control/pty_token/request"
+	"den-den-mushi-Go/internal/control/regex_filters"
+	"den-den-mushi-Go/internal/control/whiteblacklist"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -25,6 +27,8 @@ type Deps struct {
 	HostService              *host.Service
 	PtyTokenService          *pty_token.Service
 	MakeChangeService        *make_change.Service
+	RegexService             *regex_filters.Service
+	WhiteBlacklistService    *whiteblacklist.Service
 }
 
 func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps {
@@ -48,6 +52,11 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 
 	hostRepo := host.NewGormRepository(ddmDb, log)
 	hostService := host.NewService(hostRepo, log)
+
+	regexRepo := regex_filters.NewGormRepository(ddmDb, log)
+	regexSvc := regex_filters.NewService(regexRepo, log)
+
+	whiteblacklistSvc := whiteblacklist.NewService(regexSvc, log)
 
 	// policies ==================================================================================================
 
@@ -94,5 +103,7 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 		HostService:              hostService,
 		PtyTokenService:          ptyTokenService,
 		MakeChangeService:        makeChangeService,
+		RegexService:             regexSvc,
+		WhiteBlacklistService:    whiteblacklistSvc,
 	}
 }

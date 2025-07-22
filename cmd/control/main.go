@@ -12,11 +12,13 @@ import (
 	"den-den-mushi-Go/pkg/dto/implementor_groups"
 	"den-den-mushi-Go/pkg/dto/proxy_host"
 	"den-den-mushi-Go/pkg/dto/proxy_lb"
+	"den-den-mushi-Go/pkg/dto/regex_filters"
 	"den-den-mushi-Go/pkg/logger"
 	"den-den-mushi-Go/pkg/mysql"
 	"flag"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"os"
 	"path/filepath"
 )
@@ -39,44 +41,46 @@ func main() {
 		_ = log.Sync()
 	}()
 
-	ddmDb, err := mysql.Client(configpkg.SqlDb{
-		User:                   cfg.DdmDB.User,
-		Password:               cfg.DdmDB.Password,
-		Host:                   cfg.DdmDB.Host,
-		Port:                   cfg.DdmDB.Port,
-		DBName:                 cfg.DdmDB.DBName,
-		Params:                 cfg.DdmDB.Params,
-		MaxIdleConns:           cfg.DdmDB.MaxIdleConns,
-		MaxOpenConns:           cfg.DdmDB.MaxOpenConns,
-		ConnMaxLifetimeMinutes: cfg.DdmDB.ConnMaxLifetimeMinutes}, log)
+	var db *gorm.DB
+	var err error
+
+	if !cfg.Development.IsUsingInvDb {
+		db, err = mysql.Client(configpkg.SqlDb{
+			User:                   cfg.DdmDB.User,
+			Password:               cfg.DdmDB.Password,
+			Host:                   cfg.DdmDB.Host,
+			Port:                   cfg.DdmDB.Port,
+			DBName:                 cfg.DdmDB.DBName,
+			Params:                 cfg.DdmDB.Params,
+			MaxIdleConns:           cfg.DdmDB.MaxIdleConns,
+			MaxOpenConns:           cfg.DdmDB.MaxOpenConns,
+			ConnMaxLifetimeMinutes: cfg.DdmDB.ConnMaxLifetimeMinutes}, log)
+	} else {
+		db, err = mysql.Client(configpkg.SqlDb{
+			User:                   cfg.InvDB.User,
+			Password:               cfg.InvDB.Password,
+			Host:                   cfg.InvDB.Host,
+			Port:                   cfg.InvDB.Port,
+			DBName:                 cfg.InvDB.DBName,
+			Params:                 cfg.InvDB.Params,
+			MaxIdleConns:           cfg.InvDB.MaxIdleConns,
+			MaxOpenConns:           cfg.InvDB.MaxOpenConns,
+			ConnMaxLifetimeMinutes: cfg.InvDB.ConnMaxLifetimeMinutes}, log)
+	}
 	if err != nil {
 		log.Fatal("Failed to connect to database", zap.Error(err))
 	}
 
-	if cfg.App.Environment != "prod" {
+	if cfg.App.Environment != "prod" && cfg.Development.IsAutoMigrateEnabled {
 		log.Info("Running AutoMigrate for non-production environment")
-		if err := ddmDb.AutoMigrate(&host.Model{}, &proxy_lb.Model{}, &proxy_host.Model{}, &change_request.Model{},
-			implementor_groups.Model{}, &cyberark.Model{}); err != nil {
+		if err := db.AutoMigrate(&host.Model{}, &proxy_lb.Model{}, &proxy_host.Model{},
+			&change_request.Model{}, implementor_groups.Model{}, &cyberark.Model{}, &regex_filters.Model{}); err != nil {
 			log.Fatal("AutoMigrate failed", zap.Error(err))
 		}
 
 		// todo: remove this, insert test data only for dev
-		testdata.CallAll(ddmDb)
+		testdata.CallAll(db)
 	}
-
-	//invDb, err := mysql.Client(configpkg.SqlDb{
-	//	User:                   cfg.InvDB.User,
-	//	Password:               cfg.InvDB.Password,
-	//	Host:                   cfg.InvDB.Host,
-	//	Port:                   cfg.InvDB.Port,
-	//	DBName:                 cfg.InvDB.DBName,
-	//	Params:                 cfg.InvDB.Params,
-	//	MaxIdleConns:           cfg.InvDB.MaxIdleConns,
-	//	MaxOpenConns:           cfg.InvDB.MaxOpenConns,
-	//	ConnMaxLifetimeMinutes: cfg.InvDB.ConnMaxLifetimeMinutes}, log)
-	//if err != nil {
-	//	log.Fatal("Failed to connect to database", zap.Error(err))
-	//}
 
 	//_, err = redis.Client(configpkg.Redis{
 	//	Addrs:    cfg.Redis.Addrs,
@@ -86,7 +90,7 @@ func main() {
 	//	log.Fatal("Failed to connect to Redis cluster", zap.Error(err))
 	//}
 
-	s := server.New(ddmDb, root.Files, cfg, log)
+	s := server.New(db, root.Files, cfg, log)
 	if err := server.Start(s, cfg, log); err != nil {
 		log.Fatal("failed to start server", zap.Error(err))
 	}

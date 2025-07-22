@@ -12,11 +12,11 @@ tags:
   - name: PTY Token
     description: Get tokens for starting and joining PTY sessions
   - name: Make Change
-    description: Retrieve Change Requests, their hosts and associated PTY sessions
+    description: Retrieve Change Requests, their hosts and associated PTY sessions for user's implementor group
   - name: Healthcheck
-    description: Retrieve healthcheck servers and associated PTY sessions
+    description: Retrieve healthcheck servers and associated PTY sessions for OU Group
   - name: Whitelist / Blacklist
-    description: Manage whitelists and blacklists for Healthcheck
+    description: Manage whitelists and blacklists for Healthcheck OU Group
   - name: Audit
     description: Retrieve session logs for PTY sessions and connections
   - name: Admin
@@ -173,6 +173,116 @@ paths:
           '500':
             description: Internal server error
 
+######################################################################### Whitelist / Blacklist Use Case
+  /api/v1/whitelist/regex:
+    get:
+      tags:
+        - Whitelist / Blacklist
+      summary: Get all whitelist regex filters for healthcheck ou group
+      security:
+        - BearerAuth: [ ]
+      responses:
+        '200':
+          description: List of whitelist regex filters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegexFilter'
+        '500':
+          description: Internal server error
+
+    post:
+      tags:
+        - Whitelist / Blacklist
+      summary: Add a regex to whitelist for healthcheck ou group
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                  - pattern
+              properties:
+                pattern:
+                  type: string
+                  description: The regular expression pattern
+      responses:
+        '201':
+          description: Filter created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegexFilter'
+        '400':
+          description: Invalid input (e.g., malformed regex)
+        '500':
+          description: Internal server error
+
+  /api/v1/whitelist/regex/{id}:
+    put:
+      tags:
+        - Whitelist / Blacklist
+      summary: Update a whitelist regex filter
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - pattern
+              properties:
+                pattern:
+                  type: string
+                  description: Updated regular expression pattern
+                isEnabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Filter updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegexFilter'
+        '400':
+          description: Invalid input
+        '404':
+          description: Filter not found
+        '500':
+          description: Internal server error
+
+    delete:
+      tags:
+        - Whitelist / Blacklist
+      summary: Soft delete a whitelist regex filter
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Filter deleted successfully
+        '404':
+          description: Filter not found
+        '500':
+          description: Internal server error
 
 #  ######################################################################## PTY Session Filter
 #
@@ -498,3 +608,34 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/HostSessionDetails'
+    ######################################################################## Whitelist / blacklist use case
+
+    RegexFilter:
+      type: object
+      properties:
+        id:
+          type: integer
+        pattern:
+          type: string
+        ou_group:
+          type: string
+        filter_type:
+          type: string
+          enum: [WHITELIST, BLACKLIST]
+        is_enabled:
+          type: boolean
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        deleted_by:
+          type: string
+        deleted_at:
+            type: string
+            format: date-time
+        updated_by:
+          type: string
+        updated_at:
+            type: string
+            format: date-time
