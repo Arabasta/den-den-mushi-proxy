@@ -1,20 +1,19 @@
 package websocket
 
 import (
-	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/pkg/token"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-func RegisterWebsocketRoutes(r *gin.RouterGroup, cfg *config.Config, log *zap.Logger, svc *Service) {
+func RegisterWebsocketRoutes(r *gin.RouterGroup, log *zap.Logger, svc *Service) {
 	ws := r.Group("/v1")
 	ws.GET("/ws", websocketHandler(svc, log))
 }
 
 func websocketHandler(svc *Service, log *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.Info("websocketHandler called", zap.String("url", c.Request.URL.String()))
+		log.Debug("websocketHandler called", zap.String("url", c.Request.URL.String()))
 
 		val, _ := c.Get("claims")
 		claims := val.(*token.Claims)

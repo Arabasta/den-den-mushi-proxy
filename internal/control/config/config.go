@@ -1,27 +1,28 @@
 package config
 
+import (
+	"den-den-mushi-Go/pkg/config"
+)
+
 type Config struct {
-	App struct {
-		Name        string
-		Environment string
-		Version     string
-		Port        int
-	}
+	App *config.App
 
 	Development struct {
 		UseInMemoryRepository bool
+		SkipPolicyChecks      bool
 	}
 
-	Logging struct {
-		Level    string
-		Format   string
-		Output   string
-		FilePath string
-	}
+	Ssl *config.Ssl
 
-	Token struct {
-		Issuer string
-		Secret string
-		Ttl    int
-	}
+	Cors *config.Cors
+
+	Logger *config.Logger
+
+	JwtIssuer *config.JwtIssuer
+
+	DdmDB *config.SqlDb
+
+	InvDB *config.SqlDb
+
+	Redis *config.Redis
 }

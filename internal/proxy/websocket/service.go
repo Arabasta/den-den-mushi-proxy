@@ -29,7 +29,7 @@ func NewService(c *connect.ConnectionMethodFactory, sm *session_manager.Service,
 }
 
 // initial connection flow for websocket connections
-// todo: handle ws close with pty close
+// todo: handle ws close with pty close and return error to client
 func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Claims) {
 	conn := client.New(ws, claims, s.cfg)
 
@@ -64,6 +64,7 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 		s.log.Info("Registering websocket connection to pty session")
 		err = s.sessionManager.AttachConn(conn, ptySessionId)
 		if err != nil {
+			s.log.Error("Failed to attach websocket connection to pty session", zap.Error(err))
 			s.closeWs(ws)
 			// todo: close pty if fail
 			return
@@ -73,6 +74,7 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 		// join existing session
 		err := s.sessionManager.AttachConn(conn, claims.Connection.PtySession.Id)
 		if err != nil {
+			s.log.Error("Failed to attach websocket connection to existing pty session", zap.Error(err))
 			s.closeWs(ws)
 		}
 		return

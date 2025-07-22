@@ -9,6 +9,7 @@ import (
 func RequestLogger(log *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
+		c.Get(RequestIDKey)
 		c.Next() // process request
 
 		// log request details
@@ -19,6 +20,7 @@ func RequestLogger(log *zap.Logger) gin.HandlerFunc {
 		username, _ := user.(string)
 
 		logFields := []zap.Field{
+			zap.String("requestID", c.GetHeader(RequestIDHeader)),
 			zap.String("method", c.Request.Method),
 			zap.String("path", c.FullPath()),
 			zap.String("query", c.Request.URL.RawQuery),
@@ -31,9 +33,9 @@ func RequestLogger(log *zap.Logger) gin.HandlerFunc {
 
 		switch {
 		case status >= 500:
-			log.Error("HTTP request", logFields...)
+			log.Error("HTTP 5XX", logFields...)
 		case status >= 400:
-			log.Warn("HTTP request", logFields...)
+			log.Warn("HTTP 4XX", logFields...)
 		default:
 			log.Info("HTTP request", logFields...)
 		}

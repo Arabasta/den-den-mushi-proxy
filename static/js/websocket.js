@@ -52,7 +52,6 @@ const socketManager = {
 
         this.socket.onopen = () => {
             console.log("WebSocket connection opened");
-            term.write('\r\n\x1b[32mConnected to terminal session\x1b[0m\r\n');
             term.focus();
         };
 

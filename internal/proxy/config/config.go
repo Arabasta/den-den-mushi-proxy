@@ -1,32 +1,31 @@
 package config
 
-import "time"
+import (
+	"den-den-mushi-Go/pkg/config"
+	"time"
+)
 
 type Config struct {
-	App struct {
-		Name        string
-		Environment string
-		Version     string
-		Port        int
-	}
+	App *config.App
+
+	Ssl *config.Ssl
+
+	Cors *config.Cors
+
+	Host *config.Host
 
 	Development struct {
 		UseInMemoryRepository bool
 		SshTestKeyPath        string
 	}
 
-	Logging struct {
-		Level    string
-		Format   string
-		Output   string
-		FilePath string
-	}
+	Logger *config.Logger
 
-	Puppet struct {
-		Endpoints          []string
-		TaskTimeoutSeconds int
-		RetryAttempts      int
-	}
+	Puppet *config.Puppet
+
+	DdmDB *config.SqlDb
+
+	InvDB *config.SqlDb
 
 	Token struct {
 		Issuer      string

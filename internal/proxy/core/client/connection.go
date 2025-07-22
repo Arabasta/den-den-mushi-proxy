@@ -15,9 +15,6 @@ type Connection struct {
 	Sock   *websocket.Conn
 	Claims *token.Claims
 
-	JoinTime  string
-	LeaveTime string
-
 	WsWriteCh        chan protocol.Packet
 	OnceCloseWriteCh sync.Once
 

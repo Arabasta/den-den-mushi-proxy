@@ -3,7 +3,6 @@ package server
 import (
 	"den-den-mushi-Go/internal/control/change_request"
 	"den-den-mushi-Go/internal/control/config"
-	"den-den-mushi-Go/internal/control/dto"
 	"den-den-mushi-Go/internal/control/host"
 	"den-den-mushi-Go/internal/control/implementor_groups"
 	"den-den-mushi-Go/internal/control/jwt"
@@ -11,7 +10,9 @@ import (
 	"den-den-mushi-Go/internal/control/proxy_lb"
 	"den-den-mushi-Go/internal/control/pty_sessions"
 	"den-den-mushi-Go/internal/control/pty_token"
+	"den-den-mushi-Go/internal/control/pty_token/request"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type Deps struct {
@@ -24,55 +25,65 @@ type Deps struct {
 	PtyTokenService          *pty_token.Service
 }
 
-func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
+func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps {
 	issuer := jwt.New(cfg, log)
 
-	// init repos and services ========================================================================================
+	// repos and services ========================================================================================
+	proxyLbRepo := proxy_lb.NewGormRepository(ddmDb, log)
+	proxyLbService := proxy_lb.NewService(proxyLbRepo, log)
 
-	proxyRepo := proxy_lb.NewInMemRepository()
-	proxyService := proxy_lb.NewService(proxyRepo, log)
+	//proxyHostRepo := proxy_host.NewGormRepository(ddmDb, log)
+	//proxyHostService := proxy_host.NewService(proxyHostRepo, log)
 
-	changeRepo := change_request.NewInMemRepository()
+	changeRepo := change_request.NewGormRepository(ddmDb, log)
 	changeService := change_request.NewService(changeRepo, log)
 
-	impGroupsRepo := implementor_groups.NewInMemRepository()
+	impGroupsRepo := implementor_groups.NewGormRepository(ddmDb, log)
 	impGroupsService := implementor_groups.NewService(impGroupsRepo, log)
 
-	ptySessionRepo := pty_sessions.NewInMemRepository()
+	ptySessionRepo := pty_sessions.NewGormRepository(ddmDb, log)
 	ptySessionService := pty_sessions.NewService(ptySessionRepo, log)
 
-	hostRepo := host.NewInMemRepository()
+	hostRepo := host.NewGormRepository(ddmDb, log)
 	hostService := host.NewService(hostRepo, log)
 
-	// init policies ==================================================================================================
+	// policies ==================================================================================================
 
-	changePolicy := policy.NewChangePolicy[dto.RequestCtx](changeService, impGroupsService, hostService, log)
-	healthcheckPolicy := policy.NewHealthcheckPolicy[dto.RequestCtx](hostService, impGroupsService, log)
-	ouPolicy := policy.NewOUPolicy[dto.RequestCtx](hostService, log)
-	ptySessionPolicy := policy.NewPtySessionPolicy[dto.RequestCtx](ptySessionService, log)
+	changePolicy := policy.NewChangePolicy[request.Ctx](impGroupsService, log)
+	healthcheckPolicy := policy.NewHealthcheckPolicy[request.Ctx](hostService, impGroupsService, log)
+	ouPolicy := policy.NewOUPolicy[request.Ctx](hostService, log)
+	ptySessionPolicy := policy.NewPtySessionPolicy[request.Ctx](ptySessionService, log)
 
-	// build policy chains ============================================================================================
+	// policy chains ============================================================================================
 
-	changeRequestPolicyChain := policy.NewPolicyBuilder[dto.RequestCtx]().
+	changeRequestPolicyChain := policy.NewBuilder[request.Ctx]().
 		Add(changePolicy).
 		Add(ouPolicy).
 		Add(ptySessionPolicy).
 		Build()
 
-	healthcheckPolicyChain := policy.NewPolicyBuilder[dto.RequestCtx]().
+	healthcheckPolicyChain := policy.NewBuilder[request.Ctx]().
 		Add(healthcheckPolicy).
 		Add(ouPolicy).
 		Add(ptySessionPolicy).
 		Build()
 
-	// done
-	ptyTokenService := pty_token.NewService(ptySessionService, proxyService, hostService, issuer, changeService,
+	if cfg.App.Environment == "dev" && cfg.Development.SkipPolicyChecks {
+		log.Info("Using noop policy in development mode")
+		changeRequestPolicyChain = policy.NewBuilder[request.Ctx]().
+			Add(policy.NewNoopPolicy[request.Ctx](log)).Build()
+		healthcheckPolicyChain = policy.NewBuilder[request.Ctx]().
+			Add(policy.NewNoopPolicy[request.Ctx](log)).Build()
+	}
+
+	// pass policy chains to service
+	ptyTokenService := pty_token.NewService(ptySessionService, proxyLbService, hostService, issuer, changeService,
 		changeRequestPolicyChain, healthcheckPolicyChain,
 		log, cfg)
 
 	return &Deps{
 		Issuer:                   issuer,
-		ProxyService:             proxyService,
+		ProxyService:             proxyLbService,
 		ChangeService:            changeService,
 		ImplementorGroupsService: impGroupsService,
 		PtySessionService:        ptySessionService,

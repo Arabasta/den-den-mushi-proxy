@@ -1,10 +1,10 @@
 package server
 
 import (
-	"den-den-mushi-Go/internal/proxy/admin_server_tmp"
 	"den-den-mushi-Go/internal/proxy/config"
-	"den-den-mushi-Go/internal/proxy/control_server_tmp"
 	"den-den-mushi-Go/internal/proxy/middleware"
+	"den-den-mushi-Go/internal/proxy/tmp/admin_server_tmp"
+	"den-den-mushi-Go/internal/proxy/tmp/control_server_tmp"
 	"den-den-mushi-Go/internal/proxy/websocket"
 	"embed"
 	"github.com/gin-gonic/gin"
@@ -16,8 +16,10 @@ import (
 func registerUnprotectedRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log *zap.Logger) {
 	unprotected := r.Group("")
 
-	control_server_tmp.RegisterIssuerRoutes(unprotected, deps.Issuer, log)      // todo: remove
-	admin_server_tmp.RegisterAdminRoutes(unprotected, deps.SessionManager, log) // todo: remove
+	if cfg.App.Environment == "dev" {
+		control_server_tmp.RegisterIssuerRoutes(unprotected, deps.Issuer, log)
+		admin_server_tmp.RegisterAdminRoutes(unprotected, deps.SessionManager, log)
+	}
 }
 
 func registerWebsocketRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log *zap.Logger) {
@@ -26,7 +28,7 @@ func registerWebsocketRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log 
 		middleware.WsJwtMiddleware(deps.Validator, log),
 	)
 
-	websocket.RegisterWebsocketRoutes(protected, cfg, log, deps.WebsocketService)
+	websocket.RegisterWebsocketRoutes(protected, log, deps.WebsocketService)
 }
 
 func addStaticRoutes(r *gin.Engine, staticFiles embed.FS, cfg *config.Config, log *zap.Logger) {

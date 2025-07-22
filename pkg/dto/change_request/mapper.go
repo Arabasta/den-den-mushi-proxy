@@ -1,0 +1,51 @@
+package change_request
+
+import (
+	"den-den-mushi-Go/pkg/util/convert"
+	"errors"
+)
+
+const timeFmt = "2006-01-02 15:04:05"
+
+func FromModel(m *Model) (*Record, error) {
+	if m == nil {
+		return nil, nil
+	}
+
+	start, ok := convert.ParseTime(m.ChangeStartTime, timeFmt)
+	end, ok := convert.ParseTime(m.ChangeEndTime, timeFmt)
+
+	if !ok {
+		return nil, errors.New("failed to parse change time")
+	}
+
+	return &Record{
+		ChangeRequestId:   m.CRNumber,
+		Country:           convert.CsvToSlice(m.Country),
+		Lob:               m.Lob,
+		Summary:           m.Summary,
+		Description:       m.Description,
+		ChangeStartTime:   &start,
+		ChangeEndTime:     &end,
+		ImplementorGroups: convert.CsvToSlice(m.ImplementorGroups),
+		State:             m.State,
+		CyberArkObjects:   convert.CsvToSlice(m.CyberArkObjects),
+	}, nil
+}
+
+func FromModels(models []Model) ([]*Record, error) {
+	if models == nil {
+		return nil, nil
+	}
+
+	records := make([]*Record, 0, len(models))
+	for _, m := range models {
+		record, err := FromModel(&m)
+		if err != nil {
+			continue
+		}
+		records = append(records, record)
+	}
+
+	return records, nil
+}

@@ -3,14 +3,17 @@ package server
 import (
 	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/internal/proxy/connect"
-	"den-den-mushi-Go/internal/proxy/control_server_tmp"
 	"den-den-mushi-Go/internal/proxy/core/session_manager"
+	"den-den-mushi-Go/internal/proxy/core/session_manager/connections"
+	"den-den-mushi-Go/internal/proxy/core/session_manager/pty_sessions"
 	"den-den-mushi-Go/internal/proxy/jwt_service"
 	"den-den-mushi-Go/internal/proxy/jwt_service/jti"
 	"den-den-mushi-Go/internal/proxy/orchestrator/puppet"
 	"den-den-mushi-Go/internal/proxy/pty_util"
+	"den-den-mushi-Go/internal/proxy/tmp/control_server_tmp"
 	"den-den-mushi-Go/internal/proxy/websocket"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type Deps struct {
@@ -20,7 +23,7 @@ type Deps struct {
 	SessionManager   *session_manager.Service   // todo: tmp remove this
 }
 
-func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
+func initDependencies(db *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps {
 	connectionMethodFactory := connect.NewConnectionMethodFactory(
 		connect.NewDeps(
 			puppet.NewClient(cfg, log),
@@ -28,10 +31,16 @@ func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
 			cfg,
 			log))
 
-	sessionManager := session_manager.New(log, cfg)
+	ptySessionsRepo := pty_sessions.NewGormRepository(db, log)
+	ptySessionsSvc := pty_sessions.NewService(ptySessionsRepo, log)
+
+	connectionRepo := connections.NewGormRepository(db, log)
+	connectionSvc := connections.NewService(connectionRepo, log)
+
+	sessionManager := session_manager.New(ptySessionsSvc, connectionSvc, log, cfg)
 	websocketService := websocket.NewService(connectionMethodFactory, sessionManager, log, cfg)
 
-	issuer := control_server_tmp.New(cfg, log)
+	issuer := control_server_tmp.New(cfg, log) // todo: remove
 
 	parser := jwt_service.NewParser(cfg, log)
 
@@ -50,7 +59,7 @@ func initDependencies(cfg *config.Config, log *zap.Logger) *Deps {
 	return &Deps{
 		WebsocketService: websocketService,
 		Validator:        val,
-		Issuer:           issuer,
-		SessionManager:   sessionManager,
+		Issuer:           issuer,         // todo: remove
+		SessionManager:   sessionManager, // todo: remove
 	}
 }

@@ -5,15 +5,30 @@
     "version": "1.0.0",
     "port": 45007
   },
+  "ssl": {
+    "enabled": false
+  },
+  "host": {
+    "name": "ddm-proxy",
+    "ip": "127.0.0.1"
+  },
   "development": {
     "useInMemoryRepository": true,
     "SshTestKeyPath": "/Users/kei/Desktop/repos/ddm-proxy-tmp/ephemeral-ssh4192716415/id_ed25519"
   },
-  "logging": {
+  "logger": {
     "level": "debug",
     "format": "console",
     "output": "both",
     "filePath": "./log/ddm-proxy.log"
+  },
+  "Cors": {
+    "allowOrigins": ["*"],
+    "allowMethods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    "allowHeaders": ["Authorization", "Content-Type", "X-Requested-With"],
+    "exposeHeaders": [],
+    "allowCredentials": true,
+    "allowMaxAge": 3600
   },
   "Puppet": {
     "Endpoints": [
@@ -25,7 +40,7 @@
   },
   "token": {
     "issuer": "control-server",
-    "audience": "proxy-storage",
+    "audience": "OS",
     "expectedTyp": "proxy/ws+jwt",
     "secret": "peanut",
     "ttl": 120
@@ -37,5 +52,23 @@
       "MaxPingMissed": 10,
       "PongWaitSeconds": 10
     }
+  },
+  "DdmDB": {
+    "user": "root",
+    "port": 3306,
+    "dbName": "DenDenMushi",
+    "params": "charset=utf8mb4&parseTime=True&loc=Local",
+    "maxIdleConns": 2,
+    "maxOpenConns": 10,
+    "connMaxLifetimeMinutes": 30
+  },
+  "InvDB": {
+    "user": "root",
+    "password": "",
+    "dbName": "Invent",
+    "params": "charset=utf8mb4&parseTime=True&loc=Local",
+    "maxIdleConns": 1,
+    "maxOpenConns": 10,
+    "connMaxLifetimeMinutes": 30
   }
 }

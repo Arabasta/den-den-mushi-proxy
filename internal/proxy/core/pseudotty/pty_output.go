@@ -20,14 +20,14 @@ func (s *Session) readPtyLoop() {
 				s.logL("PTY session ended normally")
 				pkt = protocol.Packet{
 					Header: protocol.PtyNormalClose,
-					Data:   []byte(s.id),
+					Data:   []byte(s.Id),
 				}
 			} else {
 				s.log.Error("Error reading from pty", zap.Error(err))
 				s.logL("Error reading from pty, shutting down session")
 				pkt = protocol.Packet{
 					Header: protocol.PtyErrorClose,
-					Data:   []byte(s.id),
+					Data:   []byte(s.Id),
 				}
 			}
 			s.ptyOutput.Add(pkt)

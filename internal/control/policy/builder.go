@@ -1,16 +1,16 @@
 package policy
 
-type ChainBuilder[T any] struct {
+type Builder[T any] struct {
 	policies []Policy[T]
 }
 
-func NewPolicyBuilder[T any]() *ChainBuilder[T] {
-	return &ChainBuilder[T]{
+func NewBuilder[T any]() *Builder[T] {
+	return &Builder[T]{
 		policies: make([]Policy[T], 0),
 	}
 }
 
-func (b *ChainBuilder[T]) Add(p Policy[T]) *ChainBuilder[T] {
+func (b *Builder[T]) Add(p Policy[T]) *Builder[T] {
 	if p == nil {
 		return b
 	}
@@ -22,7 +22,7 @@ func (b *ChainBuilder[T]) Add(p Policy[T]) *ChainBuilder[T] {
 	return b
 }
 
-func (b *ChainBuilder[T]) Build() Policy[T] {
+func (b *Builder[T]) Build() Policy[T] {
 	if len(b.policies) == 0 {
 		return nil
 	}

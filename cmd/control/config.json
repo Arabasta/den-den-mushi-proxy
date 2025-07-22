@@ -6,35 +6,57 @@
     "port": 55007
   },
   "development": {
-    "useInMemoryRepository": true
+    "useInMemoryRepository": true,
+    "skipPolicyChecks": false
   },
-  "logging": {
+  "ssl": {
+    "enabled": false
+  },
+  "Cors": {
+    "allowOrigins": ["*"],
+    "allowMethods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    "allowHeaders": ["Authorization", "Content-Type", "X-Requested-With"],
+    "exposeHeaders": [],
+    "allowCredentials": true,
+    "allowMaxAge": 3600
+  },
+  "Logger": {
     "level": "debug",
     "format": "console",
     "output": "both",
     "filePath": "./log/ddm-control.log"
   },
-  "token": {
-    "issuer": "control-server",
-    "secret": "peanut",
-    "ttl": 120
+  "JwtIssuer": {
+    "Issuer": "control-server",
+    "Secret": "peanut",
+    "ExpirySeconds": 120
   },
-  "Redis": {
-    "Address": "localhost:6379",
-    "Password": "",
-    "DB": 0,
-    "PoolSize": 10,
-    "MinIdleConns": 5,
-    "MaxConnAgeSeconds": 300
+  "DdmDB": {
+    "user": "root",
+    "port": 3306,
+    "dbName": "DenDenMushi",
+    "params": "charset=utf8mb4&parseTime=True&loc=Local",
+    "maxIdleConns": 2,
+    "maxOpenConns": 10,
+    "connMaxLifetimeMinutes": 30
   },
-  "Mariadb": {
-    "Address": "localhost:3306",
-    "Username": "",
-    "Password": "",
-    "Database": "ddm_proxy",
-    "MaxOpenConns": 10,
-    "MaxIdleConns": 5,
-    "ConnMaxLifetimeSeconds": 300
+  "InvDB": {
+    "user": "root",
+    "port": 4506,
+    "dbName": "Invent",
+    "params": "charset=utf8mb4&parseTime=True&loc=Local",
+    "maxIdleConns": 1,
+    "maxOpenConns": 10,
+    "connMaxLifetimeMinutes": 30
+  },
+  "redis": {
+    "addrs": [
+      "127.0.0.1:7000",
+      "127.0.0.1:7001",
+      "127.0.0.1:7002"
+    ],
+    "port": 6379,
+    "password": "secret",
+    "poolSize": 10
   }
-
 }

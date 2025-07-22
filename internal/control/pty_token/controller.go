@@ -1,70 +1,98 @@
 package pty_token
 
 import (
-	"den-den-mushi-Go/internal/control/dto"
+	"den-den-mushi-Go/internal/control/pty_token/request"
+	oapi "den-den-mushi-Go/openapi/control"
+	dtopkg "den-den-mushi-Go/pkg/dto"
+	"den-den-mushi-Go/pkg/httpx"
+	"den-den-mushi-Go/pkg/middleware"
+	"den-den-mushi-Go/pkg/middleware/wrapper"
+	"den-den-mushi-Go/pkg/types"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"net/http"
 )
 
-func RegisterRoutes(r *gin.RouterGroup, s *Service, log *zap.Logger) {
-	issr := r.Group("/api/v1/pty_token")
-	issr.POST("/start", startHandler(s, log))
-	issr.POST("/join", joinHandler(s, log))
+type Handler struct {
+	Service *Service
+	Log     *zap.Logger
 }
 
-func joinHandler(s *Service, log *zap.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var body dto.JoinRequest
-		log.Debug("Join request received", zap.Any("request", body))
-		err := c.ShouldBindJSON(&body)
-		if err != nil {
-			c.JSON(400, gin.H{"error": err.Error()})
-			log.Error("Failed to bind JSON", zap.Error(err))
-			return
-		}
-
-		// load keycloak ctx
-		body.UserId = c.Keys["user_id"].(string)
-		body.OuGroups = c.Keys["ou_groups"].([]string)
-
-		t, p, err := s.mintJoinToken(&body)
-		if err != nil {
-			log.Error("Failed to mint join token", zap.Error(err))
-			c.JSON(500, gin.H{"error": err.Error()})
-			return
-		}
-
-		log.Debug("Join token minted successfully", zap.String("jwt", t), zap.String("userID", body.UserId))
-
-		c.JSON(200, gin.H{"token": t, "proxyUrl": p})
-
+func (h *Handler) PostApiV1PtyTokenStart(c *gin.Context) {
+	var raw oapi.StartRequest
+	if err := c.ShouldBindJSON(&raw); err != nil {
+		httpx.RespondError(c, http.StatusBadRequest, "Failed to bind JSON", err, h.Log)
+		return
 	}
+	h.Log.Debug("Start request received", zap.Any("request", raw))
+
+	authCtx, ok := middleware.GetAuthContext(c.Request.Context())
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "auth context missing"})
+		return
+	}
+
+	r := wrapper.WithAuth[request.StartRequest]{
+		Body: request.StartRequest{
+			Purpose: types.ConnectionPurpose(raw.Purpose),
+			ChangeID: func() string {
+				if raw.ChangeId != nil {
+					return *raw.ChangeId
+				}
+				return ""
+			}(),
+			Server: dtopkg.ServerInfo{
+				OSUser: raw.Server.OsUser,
+				IP:     raw.Server.ServerIp,
+			},
+		},
+		AuthCtx: *authCtx,
+	}
+
+	token, proxy, err := h.Service.mintStartToken(r)
+	if err != nil {
+		httpx.RespondError(c, http.StatusInternalServerError, "Failed to mint start token. Reason: "+err.Error(), err, h.Log)
+		return
+	}
+
+	h.Log.Debug("Start token minted", zap.String("jwt", token), zap.String("userID", r.AuthCtx.UserID))
+	c.JSON(200, oapi.TokenResponse{
+		Token:    token,
+		ProxyUrl: proxy,
+	})
 }
 
-func startHandler(s *Service, log *zap.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var body dto.StartRequest
-		log.Debug("Start request received", zap.Any("request", body))
-		err := c.ShouldBindJSON(&body)
-		if err != nil {
-			c.JSON(400, gin.H{"error": err.Error()})
-			log.Error("Failed to bind JSON", zap.Error(err))
-			return
-		}
-
-		// load keycloak ctx
-		body.UserId = c.Keys["user_id"].(string)
-		body.OuGroups = c.Keys["ou_groups"].([]string)
-
-		t, p, err := s.mintStartToken(&body)
-		if err != nil {
-			log.Error("Failed to mint start token", zap.Error(err))
-			c.JSON(500, gin.H{"error": err.Error()})
-			return
-		}
-
-		log.Debug("Start token minted successfully", zap.String("jwt", t), zap.String("userID", body.UserId))
-
-		c.JSON(200, gin.H{"token": t, "proxyUrl": p})
+func (h *Handler) PostApiV1PtyTokenJoin(c *gin.Context) {
+	var raw oapi.JoinRequest
+	if err := c.ShouldBindJSON(&raw); err != nil {
+		httpx.RespondError(c, http.StatusBadRequest, "Failed to bind JSON", err, h.Log)
+		return
 	}
+	h.Log.Debug("Join request received", zap.Any("request", raw))
+
+	authCtx, ok := middleware.GetAuthContext(c.Request.Context())
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "auth context missing"})
+		return
+	}
+
+	r := wrapper.WithAuth[request.JoinRequest]{
+		Body: request.JoinRequest{
+			PtySessionId: raw.PtySessionId,
+			StartRole:    types.StartRole(raw.StartRole),
+		},
+		AuthCtx: *authCtx,
+	}
+
+	token, proxy, err := h.Service.mintJoinToken(r)
+	if err != nil {
+		httpx.RespondError(c, http.StatusInternalServerError, "Failed to mint join token", err, h.Log)
+		return
+	}
+
+	h.Log.Debug("Join token minted", zap.String("jwt", token), zap.String("userID", r.AuthCtx.UserID))
+	c.JSON(200, oapi.TokenResponse{
+		Token:    token,
+		ProxyUrl: proxy,
+	})
 }

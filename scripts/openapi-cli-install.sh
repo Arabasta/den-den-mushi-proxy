@@ -1,0 +1,1 @@
+npx @openapitools/openapi-generator-cli version

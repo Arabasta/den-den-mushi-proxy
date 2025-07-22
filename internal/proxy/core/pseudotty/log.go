@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Session) initSessionLogger() error {
-	path := fmt.Sprintf("./log/pty_sessions/%s.log", s.id) // todo: add a config option for log path
+	path := fmt.Sprintf("./log/pty_sessions/%s.log", s.Id) // todo: add a config option for log path
 	err := os.MkdirAll("./log/pty_sessions", 0755)
 	if err != nil {
 		s.log.Error("Failed to create log directory", zap.Error(err))

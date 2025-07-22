@@ -1,0 +1,464 @@
+openapi: 3.0.3
+info:
+  title: Control API
+  version: 1.0.0
+  description: |-
+    API for starting and joining PTY sessions. Currently also hosting all non-proxy related endpoints.
+servers:
+  - url: http://localhost:55007
+    description: Local
+
+tags:
+  - name: PTY Token
+    description: Get tokens for starting and joining PTY sessions
+  - name: Make Change
+    description: Retrieve Change Requests, their hosts and associated PTY sessions
+  - name: Healthcheck
+    description: Retrieve healthcheck servers and associated PTY sessions
+  - name: Whitelist / Blacklist
+    description: Manage whitelists and blacklists for Healthcheck
+  - name: Audit
+    description: Retrieve session logs for PTY sessions and connections
+  - name: Admin
+    description: Administrative endpoints for managing PTY sessions and connections
+
+paths:
+  ######################################################################## Pty Token Use Case
+
+  /api/v1/pty_token/start:
+    post:
+      tags:
+        - PTY Token
+      summary: Mint a start token for a new PTY session
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartRequest'
+      responses:
+        '200':
+          description: Authorization token and proxy load balancer URL to connect to
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '4XX':
+          description: Invalid request
+        '5XX':
+          description: Server error
+
+  /api/v1/pty_token/join:
+    post:
+      tags:
+        - PTY Token
+      summary: Mint a join token for an existing PTY session
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JoinRequest'
+      responses:
+        '200':
+          description: Authorization token and proxy load balancer URL to connect to
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '4XX':
+          description: Invalid request
+        '5XX':
+          description: Server error
+
+######################################################################## Make change Use Case
+
+  /api/v1/change_requests/:
+    get:
+      tags:
+        - Make Change
+      summary: Get change request and associated PTY sessions
+      description: Returns all active Change Requests associated with the user's implementor group and associated 
+        PTY sessions and connections
+        Implementor group is retrieved from the user's id provided by the authentication token.
+      security:
+          - BearerAuth: [ ]
+      parameters:
+          - name: ticket_ids
+            in: query
+            required: false
+            schema: { type: array, items: { type: string } }
+          - name: implementor_groups
+            in: query
+            required: false
+            schema: { type: array, items: { type: string } }
+          - name: lob
+            in: query
+            required: false
+            schema: { type: string }
+          - name: country
+            in: query
+            required: false
+            schema: { type: string }
+          - name: start_time
+            in: query
+            required: false
+            schema: { type: string, format: date-time }
+          - name: end_time
+            in: query
+            required: false
+            schema: { type: string, format: date-time }
+          - name: pty_session_state
+            in: query
+            required: false
+            schema:
+              $ref: '#/components/schemas/PtySessionState'
+          - name: page
+            in: query
+            schema: { type: integer, minimum: 1, default: 1 }
+          - name: page_size
+            in: query
+            schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+          '200':
+            description: List change request details and their associated PTY sessions
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ChangeRequestSessionsResponse'
+          '404':
+            description: Not found
+          '500':
+            description: Internal server error
+
+
+#  ######################################################################## PTY Session Filter
+#
+#  /api/v1/pty_sessions:
+#    get:
+#      tags:
+#        - PTY Session
+#      summary: Search and filter PTY sessions
+#      security:
+#        - BearerAuth: []
+#      parameters:
+#        - name: user_id
+#          in: query
+#          required: false
+#          schema:
+#            type: string
+#        - name: state
+#          in: query
+#          required: false
+#          schema:
+#            type: string
+#            enum: [active, ended]
+#        - name: proxy_id
+#          in: query
+#          required: false
+#          schema:
+#            type: string
+#        - name: start_time_from
+#          in: query
+#          required: false
+#          schema:
+#            type: string
+#            format: date-time
+#        - name: start_time_to
+#          in: query
+#          required: false
+#          schema:
+#            type: string
+#            format: date-time
+#        - name: sort_field
+#          in: query
+#          required: false
+#          schema:
+#            type: string
+#            enum: [start_time, end_time, last_activity]
+#        - name: sort_order
+#          in: query
+#          required: false
+#          schema:
+#            type: string
+#            enum: [asc, desc]
+#        - name: page
+#          in: query
+#          required: false
+#          schema:
+#            type: integer
+#            minimum: 1
+#            default: 1
+#        - name: page_size
+#          in: query
+#          required: false
+#          schema:
+#            type: integer
+#            minimum: 1
+#            maximum: 100
+#            default: 20
+#      responses:
+#        '200':
+#          description: Filtered PTY sessions
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/PtySessionSearchResponse'
+#        '400':
+#          description: Bad filter parameters
+#        '500':
+#          description: Internal server error
+
+######################################################################## Components
+######################################################################## Components
+######################################################################## Components
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ######################################################################## Enums
+    ConnectionPurpose:
+      type: string
+      description: Type of connection being established
+      enum: [change_request, health_check]
+
+    StartRole:
+      type: string
+      description: Start role for joining existing PTY sessions
+      enum: [implementor, observer]
+
+    ConnectionStatus:
+      type: string
+      description: Status of the connection
+      enum: [ active, closed ]
+
+    PtySessionState:
+      type: string
+      description: State of the PTY session
+      enum: [created, active, closed]
+
+    ######################################################################## Full DTO Schemas
+    Host:
+      type: object
+      properties:
+        name:
+          type: string
+        ip_address:
+          type: string
+        environment:
+          type: string
+        app_code:
+          type: string
+
+    OsUsers:
+      type: array
+      items:
+        type: string
+
+    ServerInfo:
+      type: object
+      description: Info about the target server for the PTY session
+      properties:
+        os_user:
+          type: string
+          description: The Os user to connect as
+        server_ip:
+          type: string
+          description: IP address of the target server
+      required: [os_user, server_ip]
+
+    ProxyLoadBalancer:
+      type: object
+      description: Load balancer information for the proxy group
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the load balancer
+        url:
+          type: string
+          description: URL of the load balancer (e.g., `https://proxy.os.com`)
+      required: [id, url]
+
+    Connection:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        pty_session_id:
+          type: string
+        start_role:
+          $ref: '#/components/schemas/StartRole'
+        status:
+          $ref: '#/components/schemas/ConnectionStatus'
+        join_time:
+          type: string
+          format: date-time
+        leave_time:
+          type: string
+          format: date-time
+
+    ######################################################################## PTY Session Schemas
+
+    PtySession:
+      type: object
+      properties:
+        id:
+          type: string
+        created_by:
+          type: string
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        state:
+          $ref: '#/components/schemas/PtySessionState'
+        last_activity:
+          type: string
+          format: date-time
+# todo add all proxy and start conn details
+        purpose:
+          $ref: '#/components/schemas/ConnectionPurpose'
+        change_id:
+          type: string
+          description: ID of the change request associated with this PTY session, if applicable
+        connections:
+          type: array
+          items:
+            $ref: '#/components/schemas/Connection'
+          description: List of connections to this PTY session's life time
+
+    PtySessionSummary:
+      allOf:
+        - $ref: '#/components/schemas/PtySession'
+        - type: object
+          properties:
+            start_time:
+              type: string
+              format: date-time
+            end_time:
+              type: string
+              format: date-time
+            last_activity:
+              type: string
+              format: date-time
+            change_id:
+              type: string
+          required: [id, created_by, state, purpose, connections]
+
+    ######################################################################## PTY Token Use Case
+    StartRequest:
+      type: object
+      properties:
+        purpose:
+          $ref: '#/components/schemas/ConnectionPurpose'
+        change_id:
+          type: string
+          description: Only required if purpose is "change_request", ID of the change request to connect to
+        server:
+          $ref: '#/components/schemas/ServerInfo'
+      required: [ purpose, server ]
+      example:
+        purpose: change_request
+        change_id: CR202512314
+        server:
+          os_user: ec2-user
+          server_ip: 10.0.0.1
+
+    JoinRequest:
+      type: object
+      properties:
+        pty_session_id:
+          type: string
+          description: ID of the existing PTY session to join, user will be validated against this session's initial
+            connection details
+        start_role:
+          $ref: '#/components/schemas/StartRole'
+      required: [ pty_session_id, start_role ]
+      example:
+        pty_session_id: PTY202512314
+        start_role: implementor
+
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT token for proxy
+        proxyUrl:
+          type: string
+          description: Load balancer URL for proxy group (e.g., `https://proxy.os.com`, `https://proxy.db.com`)
+      required: [ token, proxyUrl ]
+      example:
+        token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+        proxyUrl: https://proxy.os.com
+
+    ######################################################################## Make change use case
+    
+    
+    ChangeRequestSessionsResponse:
+      type: object
+      properties:
+        change_id:
+          type: string
+        country:
+          type: string
+        lob:
+          type: string
+        implementor_groups:
+          type: array
+          items:
+              type: string
+        change_start_time:
+          type: string
+          format: date-time
+        change_end_time:
+          type: string
+          format: date-time
+        change_request_status:
+          type: string
+        summary:
+          type: string
+        host_session_details:
+          type: array
+          items:
+            $ref: '#/components/schemas/HostSessionDetails'
+
+    HostSessionDetails:
+      type: object
+      properties:
+        host:
+          allOf:
+           - $ref: '#/components/schemas/Host'
+           - type: object
+             required: [ name, ip_address, environment, app_code ]
+        os_users:
+          type: array
+          items:
+            type: string
+        pty_sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PtySessionSummary'
+
+    ######################################################################## Healthcheck use case
+
+    HealthcheckSessionsResponse:
+      type: object
+      properties:
+        host_session_details:
+          type: array
+          items:
+            $ref: '#/components/schemas/HostSessionDetails'

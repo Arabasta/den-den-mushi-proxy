@@ -1,19 +1,20 @@
 package policy
 
 import (
-	"den-den-mushi-Go/internal/control/dto"
 	"den-den-mushi-Go/internal/control/pty_sessions"
+	"den-den-mushi-Go/internal/control/pty_token/request"
+	"den-den-mushi-Go/pkg/types"
 	"go.uber.org/zap"
 )
 
-type PtySessionPolicy[T dto.RequestCtx] struct {
+type PtySessionPolicy[T request.Ctx] struct {
 	next Policy[T]
 
 	ptySessionService *pty_sessions.Service
 	log               *zap.Logger
 }
 
-func NewPtySessionPolicy[T dto.RequestCtx](ptySessionService *pty_sessions.Service, log *zap.Logger) *PtySessionPolicy[T] {
+func NewPtySessionPolicy[T request.Ctx](ptySessionService *pty_sessions.Service, log *zap.Logger) *PtySessionPolicy[T] {
 	return &PtySessionPolicy[T]{
 		ptySessionService: ptySessionService,
 		log:               log,
@@ -24,10 +25,25 @@ func (p *PtySessionPolicy[T]) SetNext(n Policy[T]) {
 	p.next = n
 }
 
-func (p *PtySessionPolicy[T]) Check(req T) error {
-	// 1. check server max connections
+func (p *PtySessionPolicy[T]) Check(r T) error {
+	sessionAware, isJoin := any(r).(request.HasJoinRequestFields)
+	if !isJoin {
+		if p.next != nil {
+			return p.next.Check(r)
+		}
+		return nil
+	}
 
-	// 2. check if have active implementor (if joining as implementor)
+	// 1. check if pty session is active
+	//ptyID := sessionAware.GetPtySessionId()
 
+	if sessionAware.GetStartRole() == types.Implementor {
+		// 2. check if pty session as active implementor
+
+	}
+
+	if p.next != nil {
+		return p.next.Check(r)
+	}
 	return nil
 }

@@ -1,32 +1,24 @@
 package policy
 
 import (
-	"den-den-mushi-Go/internal/control/change_request"
-	"den-den-mushi-Go/internal/control/dto"
-	"den-den-mushi-Go/internal/control/host"
 	"den-den-mushi-Go/internal/control/implementor_groups"
+	"den-den-mushi-Go/internal/control/policy/validators"
+	"den-den-mushi-Go/internal/control/pty_token/request"
 	"den-den-mushi-Go/pkg/types"
 	"errors"
 	"go.uber.org/zap"
 )
 
-type ChangePolicy[T dto.RequestCtx] struct {
+type ChangePolicy[T request.Ctx] struct {
 	next Policy[T]
 
-	crService       *change_request.Service
 	impGroupService *implementor_groups.Service
-	hostService     *host.Service
 	log             *zap.Logger
 }
 
-func NewChangePolicy[T dto.RequestCtx](
-	crService *change_request.Service,
-	impGroupService *implementor_groups.Service,
-	hostService *host.Service, log *zap.Logger) *ChangePolicy[T] {
+func NewChangePolicy[T request.Ctx](impGroupSvc *implementor_groups.Service, log *zap.Logger) *ChangePolicy[T] {
 	return &ChangePolicy[T]{
-		crService:       crService,
-		impGroupService: impGroupService,
-		hostService:     hostService,
+		impGroupService: impGroupSvc,
 		log:             log,
 	}
 }
@@ -35,57 +27,63 @@ func (p *ChangePolicy[T]) SetNext(n Policy[T]) {
 	p.next = n
 }
 
-func (p *ChangePolicy[T]) Check(req T) error {
+func (p *ChangePolicy[T]) Check(r T) error {
 	// 1. skip non-change requests
-	if req.GetPurpose() != types.Change {
+	if r.GetPurpose() != types.Change {
+		p.log.Warn("Skipping non-change request", zap.String("purpose", string(r.GetPurpose())))
 		if p.next != nil {
-			return p.next.Check(req)
+			return p.next.Check(r)
 		}
 		return nil
 	}
 
 	// 2. check for Change ID
-	if req.GetChangeId() == "" {
+	if r.GetChangeId() == "" {
 		return errors.New("changeID is empty")
 	}
 
-	// 3. get Change Request
-	cr, err := p.crService.FindById(req.GetChangeId())
-	if err != nil {
-		p.log.Error("Failed to find change request", zap.String("changeID", req.GetChangeId()), zap.Error(err))
-		return err
-	}
+	// 3a. get Change Request from ctx
+	cr := r.GetChangeRequest()
 	if cr == nil {
-		p.log.Error("Change request not found", zap.String("changeID", req.GetChangeId()))
+		p.log.Warn("Change request not found", zap.String("changeID", r.GetChangeId()))
 		return errors.New("change request not found")
 	}
 
-	// 4. check if CR valid
-	if !isValidWindow(cr.ChangeStartTime, cr.ChangeEndTime) {
-		p.log.Error("Change request is not valid", zap.String("changeID", req.GetChangeId()),
-			zap.String("start", cr.ChangeStartTime), zap.String("end", cr.ChangeEndTime))
-		return errors.New("change request is not valid")
+	// 3b. get user's implementor groups  todo: get from Request context and move this to implementor group policy
+	impGroups, err := p.impGroupService.FindAllByUserId(r.GetUserId())
+	if err != nil {
+		p.log.Warn("Failed to find implementor groups for user", zap.String("userId", r.GetUserId()), zap.Error(err))
+		return err
 	}
 
-	if !p.isUserInChangeImplementerGroup(req.GetUserId(), cr.ImplementorGroups) {
-		p.log.Error("User is not in change implementer group", zap.String("user", req.GetUserId()))
+	// 4. check if CR valid
+	if !validators.IsValidWindow(*cr.ChangeStartTime, *cr.ChangeEndTime) {
+		p.log.Warn("Change request time invalid", zap.String("changeID", r.GetChangeId()))
+		return errors.New("change request window is invalid")
+	}
+
+	if !implementor_groups.IsUsersGroupsInCRImplementerGroups(impGroups, cr.ImplementorGroups) {
+		p.log.Warn("User is not in change implementer group", zap.String("user", r.GetUserId()))
 		return errors.New("user is not in change implementer group")
 	}
 
-	if !p.isServerIpInChangeRequest(req.GetServerInfo().IP, cr.CyberArkObjects) {
-		p.log.Error("Server IP is not in change request", zap.String("ip", req.GetServerInfo().IP))
-		return errors.New("server IP is not in change request")
+	if !validators.IsServerIpInObjects(r.GetServerInfo().IP, cr.CyberArkObjects) {
+		p.log.Warn("Server IP is not in change request", zap.String("ip", r.GetServerInfo().IP))
+		return errors.New("server IP is not in change request cyberark objects")
 	}
 
-	if !p.isOsUserInChangeRequest(req.GetServerInfo().OSUser, cr.CyberArkObjects) {
-		p.log.Error("OS User is not in change request", zap.String("osUser", req.GetServerInfo().OSUser))
-		return errors.New("OS User is not in change request")
+	if !validators.IsOsUserInObjects(r.GetServerInfo().OSUser, cr.CyberArkObjects) {
+		p.log.Warn("OS User is not in change request", zap.String("osUser", r.GetServerInfo().OSUser))
+		return errors.New("OS User is not in change request cyberark objects")
 	}
 
-	if !p.isCRApproved(cr.State) {
-		p.log.Error("Change request is not approved", zap.String("changeID", req.GetChangeId()), zap.String("state", cr.State))
+	if !validators.IsApproved(cr.State) {
+		p.log.Warn("Change request is not approved", zap.String("changeID", r.GetChangeId()), zap.String("state", cr.State))
 		return errors.New("change request is not approved")
 	}
 
+	if p.next != nil {
+		return p.next.Check(r)
+	}
 	return nil
 }

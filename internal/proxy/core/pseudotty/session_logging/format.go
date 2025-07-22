@@ -29,8 +29,7 @@ func FormatHeader(claims *token.Claims) string {
 		header +=
 			"# Change Request Details:\n" +
 				"#\t- Change Request ID: " + claims.Connection.ChangeRequest.Id + "\n" +
-				"#\t- Implementor Group: " + claims.Connection.ChangeRequest.ImplementorGroup + "\n" +
-				"#\t- End Time: " + claims.Connection.ChangeRequest.EndTime
+				"#\t- End Time: " + claims.Connection.ChangeRequest.EndTime.Format(time.RFC3339)
 	} else if claims.Connection.Purpose == types.Healthcheck {
 		header +=
 			"# Health Check Details:\n" +
@@ -45,8 +44,8 @@ func FormatHeader(claims *token.Claims) string {
 	return header
 }
 
-func FormatFooter(endTime string) string {
-	footer := "\n# Session End Time: " + endTime
+func FormatFooter(endTime time.Time) string {
+	footer := "\n# Session End Time: " + endTime.Format(time.RFC3339)
 	// todo: add list of all users
 	return footer
 }

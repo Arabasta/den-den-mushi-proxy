@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type MintRequest struct {
+type MintRequestTmp struct {
 	Purpose      types.ConnectionPurpose `json:"purpose" binding:"required,oneof=change_request health_check"`
 	ChangeID     string                  `json:"change_id,omitempty"`
 	PtySessionId string                  `json:"pty_session_id,omitempty"`
@@ -18,18 +18,18 @@ type MintRequest struct {
 
 type ServerInfo struct {
 	IP     string `json:"ip" binding:"required"`
-	Port   string `json:"port" binding:"required"`
+	Port   string `json:"port" binding:"required"` // todo: should be set on server side
 	OSUser string `json:"os_user" binding:"required"`
 }
 
 type Connection struct {
-	Server        ServerInfo              `json:"server" binding:"required"`
-	Type          types.ConnectionMethod  `json:"type" binding:"required"` // todo: should be set based on server details
+	Server        ServerInfo              `json:"server" binding:"required" gorm:"column:start_conn_server"`
+	Type          types.ConnectionMethod  `json:"type" binding:"required"`
 	Purpose       types.ConnectionPurpose `json:"purpose" binding:"required"`
 	UserSession   UserSession             `json:"user_session"`
 	PtySession    PtySession              `json:"pty_session"`
 	ChangeRequest ChangeRequest           `json:"change_request,omitempty"`
-	FilterType    types.Filter            `json:"filter_type" binding:"required"` // should be set based on server details
+	FilterType    types.Filter            `json:"filter_type,omitempty"`
 }
 
 type UserSession struct {
@@ -38,17 +38,17 @@ type UserSession struct {
 }
 
 type PtySession struct {
-	Id                string `json:"id,omitempty"`
-	IsNew             bool   `json:"is_new,omitempty"` // true if creating new session, false if joining existing
-	IsObserverEnabled bool   `json:"is_observer_enabled,omitempty"`
-	MaxObservers      int    `json:"max_observers,omitempty"`
+	Id    string `json:"id,omitempty"`
+	IsNew bool   `json:"is_new,omitempty"` // true if creating new session, false if joining existing
+	//IsObserverEnabled bool   `json:"is_observer_enabled,omitempty"`
+	//MaxObservers      int    `json:"max_observers,omitempty"`
 	//MaxHeadlessMinutes        time.Duration `json:"max_headless_minutes,omitempty"`         // in minutes
-	MaxSessionDurationMinutes time.Duration `json:"max_session_duration_minutes,omitempty"` // in minutes
+	//MaxSessionDurationMinutes time.Duration `json:"max_session_duration_minutes,omitempty"` // in minutes
 }
 
 type ChangeRequest struct {
-	Id                       string        `json:"id" binding:"required"`
-	ImplementorGroup         string        `json:"implementor_group" binding:"required"`
-	EndTime                  string        `json:"end_time" binding:"required"` // ISO 8601 format
-	ChangeGracePeriodMinutes time.Duration `json:"change_grace_period_minutes" binding:"required"`
+	Id                string    `json:"id" binding:"required"`
+	ImplementorGroups []string  `json:"implementor_group" binding:"required"`
+	EndTime           time.Time `json:"end_time" binding:"required"` // ISO 8601 format
+	//ChangeGracePeriodMinutes time.Duration `json:"change_grace_period_minutes" binding:"required"`
 }

@@ -3,6 +3,7 @@ package server
 import (
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/pty_token"
+	oapi "den-den-mushi-Go/openapi/control"
 	"embed"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -13,11 +14,21 @@ import (
 func registerProtectedRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log *zap.Logger) {
 	protected := r.Group("")
 	protected.Use(
-	//middleware.WsJwtMiddleware(deps.Validator, log),
-	// todo use keycloak middleware
+	// todo use keycloak  / webseal middleware
 	)
 
-	pty_token.RegisterRoutes(protected, deps.PtyTokenService, log)
+	m := &MasterHandler{
+		PtyHandler: &pty_token.Handler{
+			Service: deps.PtyTokenService,
+			Log:     log,
+		},
+		//MakeChangeHandler: &make_change.Handler{
+		//	Service: deps.MakeChangeService,
+		//	Log:     log,
+		//}
+	}
+
+	oapi.RegisterHandlers(protected, m)
 }
 
 func addStaticRoutes(r *gin.Engine, staticFiles embed.FS, cfg *config.Config, log *zap.Logger) {

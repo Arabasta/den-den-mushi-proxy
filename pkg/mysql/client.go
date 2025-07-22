@@ -1,0 +1,59 @@
+package mysql
+
+import (
+	"den-den-mushi-Go/pkg/config"
+	"fmt"
+	"go.uber.org/zap"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"time"
+)
+
+func Client(cfg config.SqlDb, log *zap.Logger) (*gorm.DB, error) {
+	log.Info("Connecting to SQL database...")
+	log.Debug("Connection parameters",
+		zap.String("User", cfg.User),
+		zap.String("Host", cfg.Host),
+		zap.Int("Port", cfg.Port),
+		zap.String("DBName", cfg.DBName),
+		zap.String("Params", cfg.Params),
+	)
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s",
+		cfg.User,
+		cfg.Password,
+		cfg.Host,
+		cfg.Port,
+		cfg.DBName,
+		cfg.Params,
+	)
+
+	gormCfg := &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Warn),
+	}
+
+	db, err := gorm.Open(mysql.Open(dsn), gormCfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect database: %w", err)
+	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get sql.DB: %w", err)
+	}
+
+	// connection pool
+	sqlDB.SetMaxIdleConns(cfg.MaxIdleConns)
+	sqlDB.SetMaxOpenConns(cfg.MaxOpenConns)
+	sqlDB.SetConnMaxLifetime(time.Duration(cfg.ConnMaxLifetimeMinutes) * time.Minute)
+
+	// ping
+	if err := sqlDB.Ping(); err != nil {
+		return nil, fmt.Errorf("ping error: %w", err)
+	}
+
+	log.Info("Connected to SQL database", zap.String("dsn", dsn))
+
+	return db, nil
+}

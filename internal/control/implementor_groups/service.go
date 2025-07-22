@@ -1,41 +1,28 @@
 package implementor_groups
 
-import "go.uber.org/zap"
+import (
+	dto "den-den-mushi-Go/pkg/dto/implementor_groups"
+	"go.uber.org/zap"
+)
 
 type Service struct {
-	repository Repository
-	log        *zap.Logger
+	repo Repository
+	log  *zap.Logger
 }
 
-func NewService(repository Repository, log *zap.Logger) *Service {
+func NewService(r Repository, log *zap.Logger) *Service {
 	return &Service{
-		repository: repository,
-		log:        log,
+		repo: r,
+		log:  log,
 	}
 }
 
-func (s *Service) FindAllByUserId(userId string) ([]*Entity, error) {
-	groups, err := s.repository.FindAllByUserId(userId)
+// FindAllByUserId retrieves all implementor groups the user is a member of
+func (s *Service) FindAllByUserId(userId string) ([]*dto.Record, error) {
+	r, err := s.repo.FindAllByUserId(userId)
 	if err != nil {
 		s.log.Error("Failed to find groups by user ID", zap.String("userId", userId), zap.Error(err))
 		return nil, err
 	}
-	return groups, nil
-}
-
-func (s *Service) IsMemberOfGroup(groupName, userId string) (bool, error) {
-	g, err := s.repository.FindByGroupName(groupName)
-	if err != nil {
-		return false, err
-	}
-	if g == nil {
-		return false, nil
-	}
-
-	for _, m := range g.Members {
-		if m == userId {
-			return true, nil
-		}
-	}
-	return false, nil
+	return r, nil
 }

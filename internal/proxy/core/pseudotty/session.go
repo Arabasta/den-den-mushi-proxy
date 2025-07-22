@@ -18,11 +18,11 @@ import (
 )
 
 type Session struct {
-	id          string
+	Id          string
 	pty         *os.File
 	startClaims *token.Claims // claims from the creator of the session, this must not be modified
-	startTime   string
-	endTime     string
+	startTime   time.Time
+	endTime     time.Time
 
 	purpose Purpose
 
@@ -37,7 +37,7 @@ type Session struct {
 
 	activePrimary       *client.Connection
 	activeObservers     map[*client.Connection]struct{}
-	livetimeConnections map[*client.Connection]struct{}
+	lifetimeConnections map[*client.Connection]struct{}
 
 	connRegisterCh   chan *client.Connection
 	connDeregisterCh chan *client.Connection
@@ -56,23 +56,24 @@ type Session struct {
 	cfg *config.Config
 }
 
-func New(id string, pty *os.File, log *zap.Logger, cfg *config.Config) (*Session, error) {
+func New(id string, pty *os.File, now time.Time, onClose func(string), log *zap.Logger, cfg *config.Config) (*Session, error) {
 	s := &Session{
-		id:        id,
+		Id:        id,
 		pty:       pty,
-		startTime: time.Now().Format(time.RFC3339),
+		startTime: now,
 		log:       log.With(zap.String("ptySession", id)),
 		cfg:       cfg,
 
 		line: new(filter.LineEditor),
 
 		activeObservers:     make(map[*client.Connection]struct{}),
-		livetimeConnections: make(map[*client.Connection]struct{}),
+		lifetimeConnections: make(map[*client.Connection]struct{}),
 
 		connRegisterCh:   make(chan *client.Connection),
 		connDeregisterCh: make(chan *client.Connection),
 
-		State: types.Created,
+		State:   types.Created,
+		onClose: onClose,
 
 		ptyOutput: ds.NewCircularArray[protocol.Packet](500), // todo: make configurable capa and maybe track line or something
 	}
@@ -91,7 +92,7 @@ func (s *Session) Setup(claims *token.Claims) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.log.Debug("Setting up session", zap.String("id", s.id))
+	s.log.Debug("Setting up session", zap.String("id", s.Id))
 	s.startClaims = claims
 
 	err := setPurpose(s, s.startClaims.Connection.Purpose)
@@ -114,10 +115,4 @@ func (s *Session) Setup(claims *token.Claims) error {
 	go s.readPtyLoop()
 
 	return nil
-}
-
-func (s *Session) SetOnClose(f func(string)) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.onClose = f
 }

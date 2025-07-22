@@ -4,6 +4,6 @@ type PtySessionState string
 
 const (
 	Created PtySessionState = "created"
-	Running PtySessionState = "active"
+	Active  PtySessionState = "active"
 	Closed  PtySessionState = "closed"
 )

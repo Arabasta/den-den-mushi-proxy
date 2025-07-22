@@ -20,7 +20,7 @@ func (s *Session) EndSession() {
 		s.log.Info("Ending pty session")
 		s.closeTheWorld()
 		if s.onClose != nil {
-			s.onClose(s.id)
+			s.onClose(s.Id)
 		}
 	})
 }
@@ -29,7 +29,7 @@ func (s *Session) closeTheWorld() {
 	s.log.Debug("Closing the world")
 	s.deregisterAllWsConnections()
 	s.closePty()
-	s.endTime = time.Now().Format(time.RFC3339)
+	s.endTime = time.Now()
 	s.logL(session_logging.FormatFooter(s.endTime))
 	s.closeLogWriter()
 }

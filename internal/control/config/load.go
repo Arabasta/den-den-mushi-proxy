@@ -1,6 +1,8 @@
 package config
 
 import (
+	"den-den-mushi-Go/pkg/config"
+	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 	"log"
@@ -9,6 +11,8 @@ import (
 )
 
 func Load(path string) *Config {
+	var cfg Config
+
 	dir := filepath.Dir(path)
 	filename := filepath.Base(path)
 	name := strings.TrimSuffix(filename, filepath.Ext(filename))
@@ -20,11 +24,16 @@ func Load(path string) *Config {
 	v.AutomaticEnv()
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
+	// env bindings
+	config.BindSsl(v)
+	cfg.DdmDB = config.BindSqlDb(v, "DDM_DB", "DdmDB")
+	cfg.InvDB = config.BindSqlDb(v, "INV_DB", "InvDB")
+
+	fmt.Println("Config host", cfg.DdmDB.Host)
+
 	if err := v.ReadInConfig(); err != nil {
 		log.Fatalf("Failed to read config file: %v", err)
 	}
-
-	var cfg Config
 
 	if err := v.Unmarshal(&cfg); err != nil {
 		log.Fatalf("Failed to unmarshal config: %v", err)

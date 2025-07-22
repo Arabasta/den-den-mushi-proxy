@@ -40,6 +40,16 @@
 <h2>Den Den Mushi demo</h2>
 
 <h3>Change Request</h3>
+<label>Manual Connect JSON:</label>
+<textarea id="manual_json" rows="8">
+{
+  "proxyUrl": "localhost:45007",
+  "token": "eyJhbGciOi"
+}
+</textarea>
+<button id="manual_connect">Connect</button>
+
+
 <label>Request JSON:</label>
 <textarea id="tokenreq1" rows="12">
 {
@@ -148,6 +158,24 @@
 <pre id="imp_out"></pre>
 
 <script>
+  document.getElementById('manual_connect').onclick = () => {
+    try {
+      const input = document.getElementById('manual_json').value;
+      const { proxyUrl, token } = JSON.parse(input);
+
+      if (!proxyUrl || !token) {
+        alert("Missing proxyUrl or token");
+        return;
+      }
+
+      const url = `/static/terminal.html?jwt_tmp=${encodeURIComponent(token)}`;
+      window.open(url, '_blank');
+    } catch (err) {
+      console.error("Invalid JSON input:", err);
+      alert("Invalid JSON input.");
+    }
+  };
+  
     document.getElementById('get_token1').onclick = async () => {
         const body = document.getElementById('tokenreq1').value;
         console.log("Request body:", body);
@@ -166,6 +194,7 @@
         const url = `/static/terminal.html?jwt_tmp=${encodeURIComponent(token)}`;
         window.open(url, '_blank');
     };
+
     document.getElementById('get_token2').onclick = async () => {
         const body = document.getElementById('tokenreq2').value;
         console.log("Request body:", body);

@@ -2,12 +2,12 @@ package server
 
 import (
 	"den-den-mushi-Go/internal/proxy/config"
-	"den-den-mushi-Go/internal/proxy/middleware"
-	middleware2 "den-den-mushi-Go/pkg/middleware"
+	"den-den-mushi-Go/pkg/middleware"
 	"embed"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type Server struct {
@@ -20,13 +20,13 @@ func setupSecurityHeaders(r *gin.Engine) {
 
 }
 
-func New(staticFiles embed.FS, cfg *config.Config, log *zap.Logger) *Server {
-	deps := initDependencies(cfg, log)
+func New(staticFiles embed.FS, db *gorm.DB, cfg *config.Config, log *zap.Logger) *Server {
+	deps := initDependencies(db, cfg, log)
 
 	r := gin.New()
 	r.Use(
-		middleware2.RequestLogger(log),
-		middleware.Cors(cfg, log),
+		middleware.RequestLogger(log),
+		middleware.Cors(cfg.Cors, log),
 		gin.Recovery())
 
 	registerUnprotectedRoutes(r, deps, cfg, log)
@@ -36,7 +36,16 @@ func New(staticFiles embed.FS, cfg *config.Config, log *zap.Logger) *Server {
 	return &Server{engine: r, cfg: cfg, log: log}
 }
 
-func Start(s *Server, cfg *config.Config) error {
+func Start(s *Server, cfg *config.Config, log *zap.Logger) error {
 	addr := fmt.Sprintf(":%d", cfg.App.Port)
-	return s.engine.Run(addr)
+
+	if !cfg.Ssl.Enabled {
+		log.Info("Starting server without TLS", zap.String("address", addr))
+		return s.engine.Run(addr)
+	} else {
+		log.Info("Starting server with TLS")
+		log.Debug("Cert details", zap.String("cert", cfg.Ssl.CertFile),
+			zap.String("key", cfg.Ssl.KeyFile))
+		return s.engine.RunTLS(addr, cfg.Ssl.CertFile, cfg.Ssl.KeyFile)
+	}
 }

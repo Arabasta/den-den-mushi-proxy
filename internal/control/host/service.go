@@ -1,24 +1,25 @@
 package host
 
 import (
+	dto "den-den-mushi-Go/pkg/dto/host"
 	"den-den-mushi-Go/pkg/types"
 	"go.uber.org/zap"
 )
 
 type Service struct {
-	Repository Repository
-	log        *zap.Logger
+	repo Repository
+	log  *zap.Logger
 }
 
-func NewService(repository Repository, log *zap.Logger) *Service {
+func NewService(r Repository, log *zap.Logger) *Service {
 	return &Service{
-		Repository: repository,
-		log:        log,
+		repo: r,
+		log:  log,
 	}
 }
 
-func (s *Service) FindByIp(ip string) (*Entity, error) {
-	h, err := s.Repository.FindByIp(ip)
+func (s *Service) FindByIp(ip string) (*dto.Record, error) {
+	h, err := s.repo.FindByIp(ip)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +27,7 @@ func (s *Service) FindByIp(ip string) (*Entity, error) {
 }
 
 func (s *Service) FindTypeByIp(ip string) (types.Proxy, error) {
-	h, err := s.Repository.FindByIp(ip)
+	h, err := s.repo.FindByIp(ip)
 	if err != nil {
 		return "", err
 	}

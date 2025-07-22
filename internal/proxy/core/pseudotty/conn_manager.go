@@ -9,28 +9,29 @@ import (
 	"den-den-mushi-Go/pkg/types"
 	"errors"
 	"go.uber.org/zap"
-	"time"
 )
 
 // RegisterConn client connection to pty session
-func (s *Session) RegisterConn(c *client.Connection) error {
+func (s *Session) RegisterConn(c *client.Connection, onClose func(string)) error {
 	s.log.Info("Attaching connection to pty session", zap.String("userSessionId",
 		c.Claims.Connection.UserSession.Id))
 
-	c.JoinTime = time.Now().Format(time.RFC3339)
 	c.Ctx, c.Cancel = context.WithCancel(s.ctx)
-
 	c.Close = func() {
 		s.connDeregisterCh <- c
+		if onClose != nil {
+			onClose(c.Claims.Connection.UserSession.Id)
+		}
 	}
 
 	s.connRegisterCh <- c
-
-	core_helpers.SendToConn(c, protocol.Packet{
-		Header: protocol.PtyConnectionSuccess,
-		Data:   []byte(s.id),
-	})
 	return nil
+}
+
+func (s *Session) DeregisterConn(c *client.Connection) {
+	s.log.Info("Deregistering connection from pty session", zap.String("userSessionId",
+		c.Claims.Connection.UserSession.Id))
+	c.Close()
 }
 
 // addConn when a new websocket connection is registered, called by the event loop
@@ -39,12 +40,6 @@ func (s *Session) addConn(c *client.Connection) {
 		zap.String("userSessionId", c.Claims.Connection.UserSession.Id),
 		zap.String("role", string(c.Claims.Connection.UserSession.StartRole)))
 
-	err := s.assignRole(c)
-	if err != nil {
-		//todo : return error
-		return
-	}
-
 	c.Log = s.log.With(zap.String("userSessionId", c.Claims.Connection.UserSession.Id))
 
 	s.log.Info("Websocket connection registered")
@@ -52,6 +47,11 @@ func (s *Session) addConn(c *client.Connection) {
 	if c.Claims.Connection.PtySession.IsNew {
 		s.log.Info("Is new pty, adding log header")
 		s.logL(session_logging.FormatHeader(s.activePrimary.Claims))
+
+		core_helpers.SendToConn(c, protocol.Packet{
+			Header: protocol.PtyConnectionSuccess,
+			Data:   []byte(s.Id),
+		})
 	} else {
 		// is joining existing pty session
 		ptyLastPackets := s.ptyOutput.GetAll()
@@ -78,15 +78,17 @@ func (s *Session) addConn(c *client.Connection) {
 	}
 }
 
-func (s *Session) assignRole(c *client.Connection) error {
+func (s *Session) AssignRole(c *client.Connection) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.livetimeConnections[c] = struct{}{}
+	s.lifetimeConnections[c] = struct{}{}
 
 	if c.Claims.Connection.UserSession.StartRole == types.Implementor {
 		// check if primary already exists
 		if s.activePrimary != nil {
+			s.log.Warn("Primary connection already exists, cannot register another primary",
+				zap.String("userSessionId", c.Claims.Connection.UserSession.Id))
 			return errors.New("max of one primaryConn per pty session allowed")
 		}
 
@@ -117,7 +119,6 @@ func (s *Session) removeConn(c *client.Connection) {
 	s.mu.Unlock()
 
 	c.DoClose()
-	c.LeaveTime = time.Now().Format(time.RFC3339)
 
 	pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " has left")}
 	s.logPacket(pkt)

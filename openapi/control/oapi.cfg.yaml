@@ -1,0 +1,8 @@
+package: control_oapi
+output: ./api.gen.go
+
+generate:
+  - types
+  - gin
+  - client
+  - spec

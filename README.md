@@ -2,24 +2,36 @@
 
 Proxy server thing
 
-1. Build all
-
+## Build all
 ```bash
 make
 ```
+Outputs binaries in `bin/` directory.
 
-2. Run
+## Run without Building
 
+From root run:
 ```bash
 make run CMD=proxy
 ```
-
-3. Clean
-
 ```bash
-make clean
+make run CMD=control
 ```
 
+## OpenAPI
+
+Docs: http://localhost:55007/swagger/control <br>
+JSON: http://localhost:55007/swagger-spec/control.json
+
+### Generate backend code
+[gen.go](openapi/control/gen.go)
+
+
+### Generate frontend code
+```bash
+./scripts/openapi-cli-install.sh
+./openapi/control/gen.frontend.sh 
+```
 ## Load Test (switch to load-test branch)
 
 Apache JMeter 5.6.3

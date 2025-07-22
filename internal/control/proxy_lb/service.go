@@ -6,19 +6,20 @@ import (
 )
 
 type Service struct {
-	repository Repository
-	log        *zap.Logger
+	repo Repository
+	log  *zap.Logger
 }
 
-func NewService(repository Repository, log *zap.Logger) *Service {
+func NewService(r Repository, log *zap.Logger) *Service {
 	return &Service{
-		repository: repository,
-		log:        log,
+		repo: r,
+		log:  log,
 	}
 }
 
 func (s *Service) GetLBEndpointByProxyType(t types.Proxy) (string, error) {
-	pLb, err := s.repository.FindByProxyType(t)
+	s.log.Debug("Finding load balancer endpoint by proxy type", zap.String("proxyType", string(t)))
+	pLb, err := s.repo.FindByProxyType(t)
 	if err != nil {
 		return "", err
 	}

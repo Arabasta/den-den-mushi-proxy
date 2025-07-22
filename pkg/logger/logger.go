@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"den-den-mushi-Go/internal/proxy/config"
+	"den-den-mushi-Go/pkg/config"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,14 +10,14 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func Init(cfg *config.Config) *zap.Logger {
+func Init(cfg config.Logger) *zap.Logger {
 	level := getLogLevel(cfg)
 	encoder := getLogEncoder(cfg)
 
 	var cores []zapcore.Core
 
 	// stdout writer
-	if cfg.Logging.Output == "stdout" || cfg.Logging.Output == "both" {
+	if cfg.Output == "stdout" || cfg.Output == "both" {
 		cores = append(cores, zapcore.NewCore(
 			encoder,
 			zapcore.AddSync(os.Stdout),
@@ -26,14 +26,14 @@ func Init(cfg *config.Config) *zap.Logger {
 	}
 
 	// file writer
-	if cfg.Logging.Output == "file" || cfg.Logging.Output == "both" {
-		logPath := cfg.Logging.FilePath
+	if cfg.Output == "file" || cfg.Output == "both" {
+		logPath := cfg.FilePath
 		logDir := filepath.Dir(logPath)
 		if err := os.MkdirAll(logDir, 0755); err != nil {
 			panic("Failed to create log directory: " + err.Error())
 		}
 
-		file, err := os.OpenFile(cfg.Logging.FilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+		file, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 		if err != nil {
 			panic("Failed to open log file: " + err.Error())
 		}
@@ -46,12 +46,12 @@ func Init(cfg *config.Config) *zap.Logger {
 
 	// todo: addSync() to graylog
 
-	if cfg.App.Environment == "prod" {
+	if cfg.Environment == "prod" {
 		return zap.New(
 			zapcore.NewTee(cores...),
 			zap.AddCaller(),
 			zap.AddStacktrace(zapcore.ErrorLevel))
-	} else if cfg.App.Environment == "dev" {
+	} else if cfg.Environment == "dev" {
 		return zap.New(
 			zapcore.NewTee(cores...),
 			zap.AddCaller(),
@@ -62,15 +62,15 @@ func Init(cfg *config.Config) *zap.Logger {
 	}
 }
 
-func getLogLevel(cfg *config.Config) zapcore.Level {
+func getLogLevel(cfg config.Logger) zapcore.Level {
 	var level zapcore.Level
-	if err := level.UnmarshalText([]byte(cfg.Logging.Level)); err != nil {
+	if err := level.UnmarshalText([]byte(cfg.Level)); err != nil {
 		return zapcore.InfoLevel
 	}
 	return level
 }
 
-func getLogEncoder(cfg *config.Config) zapcore.Encoder {
+func getLogEncoder(cfg config.Logger) zapcore.Encoder {
 	encoderCfg := zap.NewProductionEncoderConfig()
 	encoderCfg.TimeKey = "timestamp"
 	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
@@ -78,10 +78,10 @@ func getLogEncoder(cfg *config.Config) zapcore.Encoder {
 	encoderCfg.LevelKey = "level"
 	encoderCfg.MessageKey = "msg"
 
-	if strings.ToLower(cfg.Logging.Format) == "json" {
+	if strings.ToLower(cfg.Format) == "json" {
 		return zapcore.NewJSONEncoder(encoderCfg)
-	} else if strings.ToLower(cfg.Logging.Format) == "console" {
-		if cfg.App.Environment == "development" {
+	} else if strings.ToLower(cfg.Format) == "console" {
+		if cfg.Environment == "dev" {
 			encoderCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
 		}
 		return zapcore.NewConsoleEncoder(encoderCfg)
