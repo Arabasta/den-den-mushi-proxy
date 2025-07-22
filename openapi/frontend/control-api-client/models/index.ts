@@ -1,3 +1,5 @@
+export * from './api-v1-whitelist-regex-id-put-request';
+export * from './api-v1-whitelist-regex-post-request';
 export * from './change-request-sessions-response';
 export * from './connection';
 export * from './connection-purpose';
@@ -10,6 +12,7 @@ export * from './proxy-load-balancer';
 export * from './pty-session';
 export * from './pty-session-state';
 export * from './pty-session-summary';
+export * from './regex-filter';
 export * from './server-info';
 export * from './start-request';
 export * from './start-role';

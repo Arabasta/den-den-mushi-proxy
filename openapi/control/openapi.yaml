@@ -284,6 +284,116 @@ paths:
         '500':
           description: Internal server error
 
+  /api/v1/blacklist/regex:
+    get:
+      tags:
+        - Whitelist / Blacklist
+      summary: Get all blacklist regex filters for healthcheck ou group
+      security:
+        - BearerAuth: [ ]
+      responses:
+        '200':
+          description: List of blacklist regex filters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegexFilter'
+        '500':
+          description: Internal server error
+
+    post:
+      tags:
+        - Whitelist / Blacklist
+      summary: Add a regex to blacklist for healthcheck ou group
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - pattern
+              properties:
+                pattern:
+                  type: string
+                  description: The regular expression pattern
+      responses:
+        '201':
+          description: Filter created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegexFilter'
+        '400':
+          description: Invalid input (e.g., malformed regex)
+        '500':
+          description: Internal server error
+
+  /api/v1/blacklist/regex/{id}:
+    put:
+      tags:
+        - Whitelist / Blacklist
+      summary: Update a blacklist regex filter
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - pattern
+              properties:
+                pattern:
+                  type: string
+                  description: Updated regular expression pattern
+                isEnabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Filter updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegexFilter'
+        '400':
+          description: Invalid input
+        '404':
+          description: Filter not found
+        '500':
+          description: Internal server error
+
+    delete:
+      tags:
+        - Whitelist / Blacklist
+      summary: Soft delete a blacklist regex filter
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Filter deleted successfully
+        '404':
+          description: Filter not found
+        '500':
+          description: Internal server error
+
 #  ######################################################################## PTY Session Filter
 #
 #  /api/v1/pty_sessions:

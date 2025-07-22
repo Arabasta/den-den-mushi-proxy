@@ -43,3 +43,19 @@ func (h *MasterHandler) PutApiV1WhitelistRegexId(c *gin.Context, id int) {
 func (h *MasterHandler) DeleteApiV1WhitelistRegexId(c *gin.Context, id int) {
 	h.WhiteBlacklistHandler.DeleteApiV1WhitelistRegexId(c, id)
 }
+
+func (h *MasterHandler) GetApiV1BlacklistRegex(c *gin.Context) {
+	h.WhiteBlacklistHandler.GetApiV1BlacklistRegex(c)
+}
+
+func (h *MasterHandler) PostApiV1BlacklistRegex(c *gin.Context) {
+	h.WhiteBlacklistHandler.PostApiV1BlacklistRegex(c)
+}
+
+func (h *MasterHandler) PutApiV1BlacklistRegexId(c *gin.Context, id int) {
+	h.WhiteBlacklistHandler.PutApiV1BlacklistRegexId(c, id)
+}
+
+func (h *MasterHandler) DeleteApiV1BlacklistRegexId(c *gin.Context, id int) {
+	h.WhiteBlacklistHandler.DeleteApiV1BlacklistRegexId(c, id)
+}

@@ -4,9 +4,12 @@
 api.ts
 api/make-change-api.ts
 api/ptytoken-api.ts
+api/whitelist-blacklist-api.ts
 base.ts
 common.ts
 configuration.ts
+docs/ApiV1WhitelistRegexIdPutRequest.md
+docs/ApiV1WhitelistRegexPostRequest.md
 docs/ChangeRequestSessionsResponse.md
 docs/Connection.md
 docs/ConnectionPurpose.md
@@ -21,12 +24,16 @@ docs/ProxyLoadBalancer.md
 docs/PtySession.md
 docs/PtySessionState.md
 docs/PtySessionSummary.md
+docs/RegexFilter.md
 docs/ServerInfo.md
 docs/StartRequest.md
 docs/StartRole.md
 docs/TokenResponse.md
+docs/WhitelistBlacklistApi.md
 git_push.sh
 index.ts
+models/api-v1-whitelist-regex-id-put-request.ts
+models/api-v1-whitelist-regex-post-request.ts
 models/change-request-sessions-response.ts
 models/connection-purpose.ts
 models/connection-status.ts
@@ -40,6 +47,7 @@ models/proxy-load-balancer.ts
 models/pty-session-state.ts
 models/pty-session-summary.ts
 models/pty-session.ts
+models/regex-filter.ts
 models/server-info.ts
 models/start-request.ts
 models/start-role.ts

@@ -14,7 +14,17 @@
 
 
 
-export * from './api/make-change-api';
-export * from './api/ptytoken-api';
-export * from './api/whitelist-blacklist-api';
+/**
+ * 
+ * @export
+ * @interface ApiV1WhitelistRegexPostRequest
+ */
+export interface ApiV1WhitelistRegexPostRequest {
+    /**
+     * The regular expression pattern
+     * @type {string}
+     * @memberof ApiV1WhitelistRegexPostRequest
+     */
+    'pattern': string;
+}
 

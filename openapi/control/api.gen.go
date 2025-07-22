@@ -208,6 +208,20 @@ type TokenResponse struct {
 	Token string `json:"token"`
 }
 
+// PostApiV1BlacklistRegexJSONBody defines parameters for PostApiV1BlacklistRegex.
+type PostApiV1BlacklistRegexJSONBody struct {
+	// Pattern The regular expression pattern
+	Pattern string `json:"pattern"`
+}
+
+// PutApiV1BlacklistRegexIdJSONBody defines parameters for PutApiV1BlacklistRegexId.
+type PutApiV1BlacklistRegexIdJSONBody struct {
+	IsEnabled *bool `json:"isEnabled,omitempty"`
+
+	// Pattern Updated regular expression pattern
+	Pattern string `json:"pattern"`
+}
+
 // GetApiV1ChangeRequestsParams defines parameters for GetApiV1ChangeRequests.
 type GetApiV1ChangeRequestsParams struct {
 	TicketIds         *[]string  `form:"ticket_ids,omitempty" json:"ticket_ids,omitempty"`
@@ -236,6 +250,12 @@ type PutApiV1WhitelistRegexIdJSONBody struct {
 	// Pattern Updated regular expression pattern
 	Pattern string `json:"pattern"`
 }
+
+// PostApiV1BlacklistRegexJSONRequestBody defines body for PostApiV1BlacklistRegex for application/json ContentType.
+type PostApiV1BlacklistRegexJSONRequestBody PostApiV1BlacklistRegexJSONBody
+
+// PutApiV1BlacklistRegexIdJSONRequestBody defines body for PutApiV1BlacklistRegexId for application/json ContentType.
+type PutApiV1BlacklistRegexIdJSONRequestBody PutApiV1BlacklistRegexIdJSONBody
 
 // PostApiV1PtyTokenJoinJSONRequestBody defines body for PostApiV1PtyTokenJoin for application/json ContentType.
 type PostApiV1PtyTokenJoinJSONRequestBody = JoinRequest
@@ -322,6 +342,22 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// GetApiV1BlacklistRegex request
+	GetApiV1BlacklistRegex(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostApiV1BlacklistRegexWithBody request with any body
+	PostApiV1BlacklistRegexWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostApiV1BlacklistRegex(ctx context.Context, body PostApiV1BlacklistRegexJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteApiV1BlacklistRegexId request
+	DeleteApiV1BlacklistRegexId(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutApiV1BlacklistRegexIdWithBody request with any body
+	PutApiV1BlacklistRegexIdWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutApiV1BlacklistRegexId(ctx context.Context, id int, body PutApiV1BlacklistRegexIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetApiV1ChangeRequests request
 	GetApiV1ChangeRequests(ctx context.Context, params *GetApiV1ChangeRequestsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -350,6 +386,78 @@ type ClientInterface interface {
 	PutApiV1WhitelistRegexIdWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PutApiV1WhitelistRegexId(ctx context.Context, id int, body PutApiV1WhitelistRegexIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) GetApiV1BlacklistRegex(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1BlacklistRegexRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostApiV1BlacklistRegexWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostApiV1BlacklistRegexRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostApiV1BlacklistRegex(ctx context.Context, body PostApiV1BlacklistRegexJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostApiV1BlacklistRegexRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteApiV1BlacklistRegexId(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteApiV1BlacklistRegexIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutApiV1BlacklistRegexIdWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutApiV1BlacklistRegexIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutApiV1BlacklistRegexId(ctx context.Context, id int, body PutApiV1BlacklistRegexIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutApiV1BlacklistRegexIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) GetApiV1ChangeRequests(ctx context.Context, params *GetApiV1ChangeRequestsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -482,6 +590,154 @@ func (c *Client) PutApiV1WhitelistRegexId(ctx context.Context, id int, body PutA
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewGetApiV1BlacklistRegexRequest generates requests for GetApiV1BlacklistRegex
+func NewGetApiV1BlacklistRegexRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/blacklist/regex")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostApiV1BlacklistRegexRequest calls the generic PostApiV1BlacklistRegex builder with application/json body
+func NewPostApiV1BlacklistRegexRequest(server string, body PostApiV1BlacklistRegexJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostApiV1BlacklistRegexRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostApiV1BlacklistRegexRequestWithBody generates requests for PostApiV1BlacklistRegex with any type of body
+func NewPostApiV1BlacklistRegexRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/blacklist/regex")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteApiV1BlacklistRegexIdRequest generates requests for DeleteApiV1BlacklistRegexId
+func NewDeleteApiV1BlacklistRegexIdRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/blacklist/regex/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutApiV1BlacklistRegexIdRequest calls the generic PutApiV1BlacklistRegexId builder with application/json body
+func NewPutApiV1BlacklistRegexIdRequest(server string, id int, body PutApiV1BlacklistRegexIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutApiV1BlacklistRegexIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutApiV1BlacklistRegexIdRequestWithBody generates requests for PutApiV1BlacklistRegexId with any type of body
+func NewPutApiV1BlacklistRegexIdRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/blacklist/regex/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
 }
 
 // NewGetApiV1ChangeRequestsRequest generates requests for GetApiV1ChangeRequests
@@ -932,6 +1188,22 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// GetApiV1BlacklistRegexWithResponse request
+	GetApiV1BlacklistRegexWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1BlacklistRegexResponse, error)
+
+	// PostApiV1BlacklistRegexWithBodyWithResponse request with any body
+	PostApiV1BlacklistRegexWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1BlacklistRegexResponse, error)
+
+	PostApiV1BlacklistRegexWithResponse(ctx context.Context, body PostApiV1BlacklistRegexJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1BlacklistRegexResponse, error)
+
+	// DeleteApiV1BlacklistRegexIdWithResponse request
+	DeleteApiV1BlacklistRegexIdWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteApiV1BlacklistRegexIdResponse, error)
+
+	// PutApiV1BlacklistRegexIdWithBodyWithResponse request with any body
+	PutApiV1BlacklistRegexIdWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutApiV1BlacklistRegexIdResponse, error)
+
+	PutApiV1BlacklistRegexIdWithResponse(ctx context.Context, id int, body PutApiV1BlacklistRegexIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutApiV1BlacklistRegexIdResponse, error)
+
 	// GetApiV1ChangeRequestsWithResponse request
 	GetApiV1ChangeRequestsWithResponse(ctx context.Context, params *GetApiV1ChangeRequestsParams, reqEditors ...RequestEditorFn) (*GetApiV1ChangeRequestsResponse, error)
 
@@ -960,6 +1232,93 @@ type ClientWithResponsesInterface interface {
 	PutApiV1WhitelistRegexIdWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutApiV1WhitelistRegexIdResponse, error)
 
 	PutApiV1WhitelistRegexIdWithResponse(ctx context.Context, id int, body PutApiV1WhitelistRegexIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutApiV1WhitelistRegexIdResponse, error)
+}
+
+type GetApiV1BlacklistRegexResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]RegexFilter
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApiV1BlacklistRegexResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApiV1BlacklistRegexResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostApiV1BlacklistRegexResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *RegexFilter
+}
+
+// Status returns HTTPResponse.Status
+func (r PostApiV1BlacklistRegexResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostApiV1BlacklistRegexResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteApiV1BlacklistRegexIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteApiV1BlacklistRegexIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteApiV1BlacklistRegexIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutApiV1BlacklistRegexIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RegexFilter
+}
+
+// Status returns HTTPResponse.Status
+func (r PutApiV1BlacklistRegexIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutApiV1BlacklistRegexIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type GetApiV1ChangeRequestsResponse struct {
@@ -1115,6 +1474,58 @@ func (r PutApiV1WhitelistRegexIdResponse) StatusCode() int {
 	return 0
 }
 
+// GetApiV1BlacklistRegexWithResponse request returning *GetApiV1BlacklistRegexResponse
+func (c *ClientWithResponses) GetApiV1BlacklistRegexWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1BlacklistRegexResponse, error) {
+	rsp, err := c.GetApiV1BlacklistRegex(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetApiV1BlacklistRegexResponse(rsp)
+}
+
+// PostApiV1BlacklistRegexWithBodyWithResponse request with arbitrary body returning *PostApiV1BlacklistRegexResponse
+func (c *ClientWithResponses) PostApiV1BlacklistRegexWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1BlacklistRegexResponse, error) {
+	rsp, err := c.PostApiV1BlacklistRegexWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostApiV1BlacklistRegexResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostApiV1BlacklistRegexWithResponse(ctx context.Context, body PostApiV1BlacklistRegexJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1BlacklistRegexResponse, error) {
+	rsp, err := c.PostApiV1BlacklistRegex(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostApiV1BlacklistRegexResponse(rsp)
+}
+
+// DeleteApiV1BlacklistRegexIdWithResponse request returning *DeleteApiV1BlacklistRegexIdResponse
+func (c *ClientWithResponses) DeleteApiV1BlacklistRegexIdWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteApiV1BlacklistRegexIdResponse, error) {
+	rsp, err := c.DeleteApiV1BlacklistRegexId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteApiV1BlacklistRegexIdResponse(rsp)
+}
+
+// PutApiV1BlacklistRegexIdWithBodyWithResponse request with arbitrary body returning *PutApiV1BlacklistRegexIdResponse
+func (c *ClientWithResponses) PutApiV1BlacklistRegexIdWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutApiV1BlacklistRegexIdResponse, error) {
+	rsp, err := c.PutApiV1BlacklistRegexIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutApiV1BlacklistRegexIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutApiV1BlacklistRegexIdWithResponse(ctx context.Context, id int, body PutApiV1BlacklistRegexIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutApiV1BlacklistRegexIdResponse, error) {
+	rsp, err := c.PutApiV1BlacklistRegexId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutApiV1BlacklistRegexIdResponse(rsp)
+}
+
 // GetApiV1ChangeRequestsWithResponse request returning *GetApiV1ChangeRequestsResponse
 func (c *ClientWithResponses) GetApiV1ChangeRequestsWithResponse(ctx context.Context, params *GetApiV1ChangeRequestsParams, reqEditors ...RequestEditorFn) (*GetApiV1ChangeRequestsResponse, error) {
 	rsp, err := c.GetApiV1ChangeRequests(ctx, params, reqEditors...)
@@ -1208,6 +1619,100 @@ func (c *ClientWithResponses) PutApiV1WhitelistRegexIdWithResponse(ctx context.C
 		return nil, err
 	}
 	return ParsePutApiV1WhitelistRegexIdResponse(rsp)
+}
+
+// ParseGetApiV1BlacklistRegexResponse parses an HTTP response from a GetApiV1BlacklistRegexWithResponse call
+func ParseGetApiV1BlacklistRegexResponse(rsp *http.Response) (*GetApiV1BlacklistRegexResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetApiV1BlacklistRegexResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []RegexFilter
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostApiV1BlacklistRegexResponse parses an HTTP response from a PostApiV1BlacklistRegexWithResponse call
+func ParsePostApiV1BlacklistRegexResponse(rsp *http.Response) (*PostApiV1BlacklistRegexResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostApiV1BlacklistRegexResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest RegexFilter
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteApiV1BlacklistRegexIdResponse parses an HTTP response from a DeleteApiV1BlacklistRegexIdWithResponse call
+func ParseDeleteApiV1BlacklistRegexIdResponse(rsp *http.Response) (*DeleteApiV1BlacklistRegexIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteApiV1BlacklistRegexIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePutApiV1BlacklistRegexIdResponse parses an HTTP response from a PutApiV1BlacklistRegexIdWithResponse call
+func ParsePutApiV1BlacklistRegexIdResponse(rsp *http.Response) (*PutApiV1BlacklistRegexIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutApiV1BlacklistRegexIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RegexFilter
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseGetApiV1ChangeRequestsResponse parses an HTTP response from a GetApiV1ChangeRequestsWithResponse call
@@ -1384,6 +1889,18 @@ func ParsePutApiV1WhitelistRegexIdResponse(rsp *http.Response) (*PutApiV1Whiteli
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Get all blacklist regex filters for healthcheck ou group
+	// (GET /api/v1/blacklist/regex)
+	GetApiV1BlacklistRegex(c *gin.Context)
+	// Add a regex to blacklist for healthcheck ou group
+	// (POST /api/v1/blacklist/regex)
+	PostApiV1BlacklistRegex(c *gin.Context)
+	// Soft delete a blacklist regex filter
+	// (DELETE /api/v1/blacklist/regex/{id})
+	DeleteApiV1BlacklistRegexId(c *gin.Context, id int)
+	// Update a blacklist regex filter
+	// (PUT /api/v1/blacklist/regex/{id})
+	PutApiV1BlacklistRegexId(c *gin.Context, id int)
 	// Get change request and associated PTY sessions
 	// (GET /api/v1/change_requests/)
 	GetApiV1ChangeRequests(c *gin.Context, params GetApiV1ChangeRequestsParams)
@@ -1415,6 +1932,88 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(c *gin.Context)
+
+// GetApiV1BlacklistRegex operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1BlacklistRegex(c *gin.Context) {
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetApiV1BlacklistRegex(c)
+}
+
+// PostApiV1BlacklistRegex operation middleware
+func (siw *ServerInterfaceWrapper) PostApiV1BlacklistRegex(c *gin.Context) {
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostApiV1BlacklistRegex(c)
+}
+
+// DeleteApiV1BlacklistRegexId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteApiV1BlacklistRegexId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteApiV1BlacklistRegexId(c, id)
+}
+
+// PutApiV1BlacklistRegexId operation middleware
+func (siw *ServerInterfaceWrapper) PutApiV1BlacklistRegexId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutApiV1BlacklistRegexId(c, id)
+}
 
 // GetApiV1ChangeRequests operation middleware
 func (siw *ServerInterfaceWrapper) GetApiV1ChangeRequests(c *gin.Context) {
@@ -1647,6 +2246,10 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		ErrorHandler:       errorHandler,
 	}
 
+	router.GET(options.BaseURL+"/api/v1/blacklist/regex", wrapper.GetApiV1BlacklistRegex)
+	router.POST(options.BaseURL+"/api/v1/blacklist/regex", wrapper.PostApiV1BlacklistRegex)
+	router.DELETE(options.BaseURL+"/api/v1/blacklist/regex/:id", wrapper.DeleteApiV1BlacklistRegexId)
+	router.PUT(options.BaseURL+"/api/v1/blacklist/regex/:id", wrapper.PutApiV1BlacklistRegexId)
 	router.GET(options.BaseURL+"/api/v1/change_requests/", wrapper.GetApiV1ChangeRequests)
 	router.POST(options.BaseURL+"/api/v1/pty_token/join", wrapper.PostApiV1PtyTokenJoin)
 	router.POST(options.BaseURL+"/api/v1/pty_token/start", wrapper.PostApiV1PtyTokenStart)
@@ -1659,53 +2262,55 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"Vh3PCDcAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
