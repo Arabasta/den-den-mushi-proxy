@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func Client(cfg *config.SqlDb, log *zap.Logger) (*gorm.DB, error) {
+func Client(cfg *config.SqlDb, sslCfg *config.Ssl, log *zap.Logger) (*gorm.DB, error) {
 	log.Info("Connecting to SQL database...")
 	log.Debug("Connection parameters",
 		zap.String("User", cfg.User),
@@ -19,6 +19,14 @@ func Client(cfg *config.SqlDb, log *zap.Logger) (*gorm.DB, error) {
 		zap.String("DBName", cfg.DBName),
 		zap.String("Params", cfg.Params),
 	)
+
+	if cfg.SSLEnabled {
+		log.Debug("SSL enabled, using CA file", zap.String("CAFile", sslCfg.CAFile))
+		if err := registerMySQLTLSCA(sslCfg.CAFile); err != nil {
+			return nil, err
+		}
+		cfg.Params += "&tls=custom"
+	}
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s",
 		cfg.User,

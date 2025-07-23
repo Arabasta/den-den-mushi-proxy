@@ -36,9 +36,9 @@ func main() {
 	var err error
 
 	if !cfg.Development.IsUsingInvDb {
-		db, err = mysql.Client(cfg.DdmDB, log)
+		db, err = mysql.Client(cfg.DdmDB, cfg.Ssl, log)
 	} else {
-		db, err = mysql.Client(cfg.InvDB, log)
+		db, err = mysql.Client(cfg.InvDB, cfg.Ssl, log)
 	}
 	if err != nil {
 		log.Fatal("Failed to connect to database", zap.Error(err))

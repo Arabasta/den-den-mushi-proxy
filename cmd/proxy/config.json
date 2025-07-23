@@ -62,16 +62,18 @@
     "params": "charset=utf8mb4&parseTime=True&loc=Local",
     "maxIdleConns": 2,
     "maxOpenConns": 10,
-    "connMaxLifetimeMinutes": 30
+    "connMaxLifetimeMinutes": 30,
+    "sslEnabled": false
   },
   "InvDB": {
     "user": "root",
-    "password": "",
-    "dbName": "Invent",
+    "port": 4506,
+    "dbName": "invent",
     "params": "charset=utf8mb4&parseTime=True&loc=Local",
     "maxIdleConns": 1,
     "maxOpenConns": 10,
-    "connMaxLifetimeMinutes": 30
+    "connMaxLifetimeMinutes": 30,
+    "sslEnabled": true
   },
   "redis": {
     "addr": "127.0.0.1",

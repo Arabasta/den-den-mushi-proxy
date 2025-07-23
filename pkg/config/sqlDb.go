@@ -17,6 +17,8 @@ type SqlDb struct {
 	MaxIdleConns           int
 	MaxOpenConns           int
 	ConnMaxLifetimeMinutes int
+
+	SSLEnabled bool
 }
 
 func BindSqlDb(v *viper.Viper, envPrefix, viperPrefix string) *SqlDb {
