@@ -13,8 +13,11 @@
     "ip": "127.0.0.1"
   },
   "development": {
-    "useInMemoryRepository": true,
-    "SshTestKeyPath": "/Users/kei/Desktop/repos/ddm-proxy-tmp/ephemeral-ssh4192716415/id_ed25519"
+    "UseSqlJtiRepo": false,
+    "UseRedis": true,
+    "SshTestKeyPath": "/Users/kei/Desktop/repos/ddm-proxy-tmp/ephemeral-ssh4192716415/id_ed25519",
+    "IsUsingInvDb": false,
+    "IsAutoMigrateEnabled": true
   },
   "logger": {
     "level": "debug",
@@ -38,12 +41,10 @@
     "TaskTimeoutSeconds": 120,
     "RetryAttempts": 3
   },
-  "token": {
-    "issuer": "control-server",
-    "audience": "OS",
-    "expectedTyp": "proxy/ws+jwt",
-    "secret": "peanut",
-    "ttl": 120
+  "JwtAudience": {
+      "ExpectedIssuer": "control-server",
+      "ExpectedAudience": "OS",
+      "ExpectedTyp": "proxy/ws+jwt"
   },
   "Websocket": {
     "PingPong": {
@@ -70,5 +71,10 @@
     "maxIdleConns": 1,
     "maxOpenConns": 10,
     "connMaxLifetimeMinutes": 30
+  },
+  "redis": {
+    "addr": "127.0.0.1",
+    "port": 6379,
+    "poolSize": 10
   }
 }

@@ -32,7 +32,6 @@
   },
   "JwtIssuer": {
     "Issuer": "control-server",
-    "Secret": "peanut",
     "ExpirySeconds": 120
   },
   "DdmDB": {
@@ -54,13 +53,8 @@
     "connMaxLifetimeMinutes": 30
   },
   "redis": {
-    "addrs": [
-      "127.0.0.1:7000",
-      "127.0.0.1:7001",
-      "127.0.0.1:7002"
-    ],
+    "addr": "127.0.0.1",
     "port": 6379,
-    "password": "secret",
     "poolSize": 10
   }
 }

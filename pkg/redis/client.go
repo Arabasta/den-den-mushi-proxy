@@ -9,14 +9,15 @@ import (
 	"time"
 )
 
-func Client(cfg config.Redis, log *zap.Logger) (*redis.ClusterClient, error) {
+func Client(cfg *config.Redis, log *zap.Logger) (*redis.Client, error) {
 	log.Info("Connecting to Redis...")
 	log.Debug("Connection parameters",
-		zap.Strings("Addrs", cfg.Addrs),
+		zap.String("Host", cfg.Addr),
+		zap.String("Port", cfg.Port),
 		zap.Int("PoolSize", cfg.PoolSize))
 
-	client := redis.NewClusterClient(&redis.ClusterOptions{
-		Addrs:    cfg.Addrs,
+	client := redis.NewClient(&redis.Options{
+		Addr:     cfg.Addr + ":" + cfg.Port,
 		Password: cfg.Password,
 		PoolSize: cfg.PoolSize,
 	})

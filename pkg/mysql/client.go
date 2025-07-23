@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func Client(cfg config.SqlDb, log *zap.Logger) (*gorm.DB, error) {
+func Client(cfg *config.SqlDb, log *zap.Logger) (*gorm.DB, error) {
 	log.Info("Connecting to SQL database...")
 	log.Debug("Connection parameters",
 		zap.String("User", cfg.User),

@@ -26,6 +26,8 @@ func Load(path string) *Config {
 
 	// env bindings
 	config.BindSsl(v)
+	config.BindRedisPassword(v)
+	config.BindJwtAudienceSecret(v)
 	cfg.DdmDB = config.BindSqlDb(v, "DDM_DB", "DdmDB")
 	cfg.InvDB = config.BindSqlDb(v, "INV_DB", "InvDB")
 

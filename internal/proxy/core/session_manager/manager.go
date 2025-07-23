@@ -19,6 +19,7 @@ type Service struct {
 }
 
 func New(ptySessionsSvc *pty_sessions.Service, connSvc *connections.Service, log *zap.Logger, cfg *config.Config) *Service {
+	log.Info("Initializing Session Manager Service...")
 	return &Service{
 		ptySessions:    make(map[string]*pseudotty.Session),
 		ptySessionsSvc: ptySessionsSvc,

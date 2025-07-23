@@ -6,6 +6,7 @@ import (
 	"embed"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -20,8 +21,8 @@ func setupSecurityHeaders(r *gin.Engine) {
 
 }
 
-func New(staticFiles embed.FS, db *gorm.DB, cfg *config.Config, log *zap.Logger) *Server {
-	deps := initDependencies(db, cfg, log)
+func New(staticFiles embed.FS, db *gorm.DB, redis *redis.Client, cfg *config.Config, log *zap.Logger) *Server {
+	deps := initDependencies(db, redis, cfg, log)
 
 	r := gin.New()
 	r.Use(

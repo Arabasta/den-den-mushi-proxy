@@ -1,8 +1,8 @@
 package jwt_service
 
 import (
-	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/internal/proxy/jwt_service/jti"
+	"den-den-mushi-Go/pkg/config"
 	"den-den-mushi-Go/pkg/token"
 	"errors"
 	"github.com/golang-jwt/jwt/v5"
@@ -14,18 +14,19 @@ type Validator struct {
 	parser *jwt.Parser
 	secret []byte
 	jti    *jti.Service
-	cfg    *config.Config
+	cfg    *config.JwtAudience
 	log    *zap.Logger
 }
 
-func NewValidator(p *jwt.Parser, jti *jti.Service, secret string, cfg *config.Config, log *zap.Logger) *Validator {
-	v := &Validator{
+func NewValidator(p *jwt.Parser, jti *jti.Service, cfg *config.JwtAudience, log *zap.Logger) *Validator {
+	log.Info("Initializing JWT Validator...")
+	return &Validator{
 		parser: p,
-		secret: []byte(secret),
+		secret: []byte(cfg.Secret),
 		jti:    jti,
 		cfg:    cfg,
-		log:    log}
-	return v
+		log:    log,
+	}
 }
 
 // ValidateClaims Validate must follow https://www.rfc-editor.org/rfc/rfc8725.html
@@ -35,18 +36,12 @@ func (v *Validator) ValidateClaims(claims *token.Claims, tok *jwt.Token) error {
 	// todo: RFC8725 3.8 validate subject against keycloak user
 
 	// check typ RFC8725 3.11 3.12
-	if !v.isExpectedTyp(tok.Header["typ"].(string), v.cfg.Token.ExpectedTyp) {
+	if !v.isExpectedTyp(tok.Header["typ"].(string), v.cfg.ExpectedTyp) {
 		v.log.Error("Token has unexpected type", zap.String("jti", claims.ID), zap.String("typ", tok.Header["typ"].(string)))
 		return errors.New("token has unexpected type")
 	}
 
-	// check replay
-	if v.jti.IsConsumed(claims.ID) {
-		v.log.Error("Token already consumed", zap.String("jti", claims.ID))
-		return errors.New("token already consumed")
-	}
-
-	if !v.jti.Consume(claims.ID) {
+	if !v.jti.ConsumeIfNotExists(claims) {
 		v.log.Error("Failed to consume token", zap.String("jti", claims.ID))
 		return errors.New("failed to consume token")
 	}

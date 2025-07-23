@@ -10,14 +10,14 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func Init(cfg config.Logger) *zap.Logger {
-	level := getLogLevel(cfg)
-	encoder := getLogEncoder(cfg)
+func Init(loggerCfg *config.Logger, appCfg *config.App) *zap.Logger {
+	level := getLogLevel(loggerCfg)
+	encoder := getLogEncoder(loggerCfg)
 
 	var cores []zapcore.Core
 
 	// stdout writer
-	if cfg.Output == "stdout" || cfg.Output == "both" {
+	if loggerCfg.Output == "stdout" || loggerCfg.Output == "both" {
 		cores = append(cores, zapcore.NewCore(
 			encoder,
 			zapcore.AddSync(os.Stdout),
@@ -26,14 +26,14 @@ func Init(cfg config.Logger) *zap.Logger {
 	}
 
 	// file writer
-	if cfg.Output == "file" || cfg.Output == "both" {
-		logPath := cfg.FilePath
+	if loggerCfg.Output == "file" || loggerCfg.Output == "both" {
+		logPath := loggerCfg.FilePath
 		logDir := filepath.Dir(logPath)
 		if err := os.MkdirAll(logDir, 0755); err != nil {
 			panic("Failed to create log directory: " + err.Error())
 		}
 
-		file, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+		file, err := os.OpenFile(loggerCfg.FilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 		if err != nil {
 			panic("Failed to open log file: " + err.Error())
 		}
@@ -46,12 +46,12 @@ func Init(cfg config.Logger) *zap.Logger {
 
 	// todo: addSync() to graylog
 
-	if cfg.Environment == "prod" {
+	if appCfg.Environment == "prod" {
 		return zap.New(
 			zapcore.NewTee(cores...),
 			zap.AddCaller(),
 			zap.AddStacktrace(zapcore.ErrorLevel))
-	} else if cfg.Environment == "dev" {
+	} else if appCfg.Environment == "dev" {
 		return zap.New(
 			zapcore.NewTee(cores...),
 			zap.AddCaller(),
@@ -62,7 +62,7 @@ func Init(cfg config.Logger) *zap.Logger {
 	}
 }
 
-func getLogLevel(cfg config.Logger) zapcore.Level {
+func getLogLevel(cfg *config.Logger) zapcore.Level {
 	var level zapcore.Level
 	if err := level.UnmarshalText([]byte(cfg.Level)); err != nil {
 		return zapcore.InfoLevel
@@ -70,7 +70,7 @@ func getLogLevel(cfg config.Logger) zapcore.Level {
 	return level
 }
 
-func getLogEncoder(cfg config.Logger) zapcore.Encoder {
+func getLogEncoder(cfg *config.Logger) zapcore.Encoder {
 	encoderCfg := zap.NewProductionEncoderConfig()
 	encoderCfg.TimeKey = "timestamp"
 	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder

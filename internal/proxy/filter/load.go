@@ -25,6 +25,7 @@ func NewLoadService(svc *regex_filters.Service, log *zap.Logger) *LoadService {
 }
 
 func (s *LoadService) StartScheduler() {
+	s.log.Info("Starting regex filters reload scheduler")
 	go func() {
 		ticker := time.NewTicker(15 * time.Second)
 		for range ticker.C {

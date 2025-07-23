@@ -12,6 +12,7 @@ type Service struct {
 }
 
 func NewService(r Repository, log *zap.Logger) *Service {
+	log.Info("Initializing Regex filters Service...")
 	return &Service{
 		repo: r,
 		log:  log,

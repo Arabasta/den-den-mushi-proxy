@@ -15,8 +15,11 @@ type Config struct {
 	Host *config.Host
 
 	Development struct {
-		UseInMemoryRepository bool
-		SshTestKeyPath        string
+		UseSqlJtiRepo        bool
+		SshTestKeyPath       string
+		UseRedis             bool
+		IsUsingInvDb         bool
+		IsAutoMigrateEnabled bool
 	}
 
 	Logger *config.Logger
@@ -27,13 +30,9 @@ type Config struct {
 
 	InvDB *config.SqlDb
 
-	Token struct {
-		Issuer      string
-		Audience    string
-		Secret      string
-		ExpectedTyp string
-		Ttl         int
-	}
+	Redis *config.Redis
+
+	JwtAudience *config.JwtAudience
 
 	Websocket struct {
 		PingPong struct {

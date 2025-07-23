@@ -14,6 +14,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/regex_filters"
 	"den-den-mushi-Go/internal/proxy/tmp/control_server_tmp"
 	"den-den-mushi-Go/internal/proxy/websocket"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -25,7 +26,7 @@ type Deps struct {
 	SessionManager   *session_manager.Service   // todo: tmp remove this
 }
 
-func initDependencies(db *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps {
+func initDependencies(db *gorm.DB, redis *redis.Client, cfg *config.Config, log *zap.Logger) *Deps {
 	connectionMethodFactory := connect.NewConnectionMethodFactory(
 		connect.NewDeps(
 			puppet.NewClient(cfg, log),
@@ -42,20 +43,20 @@ func initDependencies(db *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps {
 	sessionManager := session_manager.New(ptySessionsSvc, connectionSvc, log, cfg)
 	websocketService := websocket.NewService(connectionMethodFactory, sessionManager, log, cfg)
 
-	issuer := control_server_tmp.New(cfg, log) // todo: remove
+	issuer := control_server_tmp.New(cfg.JwtAudience, log) // todo: remove
 
-	parser := jwt_service.NewParser(cfg, log)
+	parser := jwt_service.NewParser(cfg.JwtAudience, log)
 
 	var jtiRepo jti.Repository
 
-	if cfg.App.Environment == "dev" && cfg.Development.UseInMemoryRepository {
-		jtiRepo = jti.NewInMemRepository(log)
+	if cfg.Development.UseSqlJtiRepo {
+		jtiRepo = jti.NewGormRepository(db, log)
 	} else {
-		log.Fatal("JTI repository not implemented for this environment")
+		jtiRepo = jti.NewRedisRepository(redis, log)
 	}
-	jtiService := jti.New(jtiRepo, log)
+	jtiService := jti.New(jtiRepo, log, cfg.JwtAudience, cfg.Host)
 
-	val := jwt_service.NewValidator(parser, jtiService, cfg.Token.Secret, cfg, log)
+	val := jwt_service.NewValidator(parser, jtiService, cfg.JwtAudience, log)
 
 	regexRepo := regex_filters.NewGormRepository(db, log)
 	regexFiltersSvc := regex_filters.NewService(regexRepo, log)

@@ -39,6 +39,8 @@ type ConnectionMethod interface {
 	Connect(ctx context.Context, claims *token.Claims) (*os.File, error)
 }
 
+// todo: init once and done cause they are stateless now
+
 // Create returns the correct ConnectionMethod for the requested type
 func (f *ConnectionMethodFactory) Create(t types.ConnectionMethod) ConnectionMethod {
 	switch t {

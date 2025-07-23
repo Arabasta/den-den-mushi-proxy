@@ -5,7 +5,6 @@ import (
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/server"
 	"den-den-mushi-Go/internal/control/testdata"
-	configpkg "den-den-mushi-Go/pkg/config"
 	"den-den-mushi-Go/pkg/dto/change_request"
 	"den-den-mushi-Go/pkg/dto/cyberark"
 	"den-den-mushi-Go/pkg/dto/host"
@@ -27,13 +26,7 @@ func main() {
 	_ = godotenv.Load(".env")
 	cfg := config.Load(configPath())
 
-	log := logger.Init(configpkg.Logger{
-		Level:       cfg.Logger.Level,
-		Format:      cfg.Logger.Format,
-		Output:      cfg.Logger.Output,
-		FilePath:    cfg.Logger.FilePath,
-		Environment: cfg.App.Environment,
-	})
+	log := logger.Init(cfg.Logger, cfg.App)
 	if log == nil {
 		panic("failed to initialize logger")
 	}
@@ -45,27 +38,9 @@ func main() {
 	var err error
 
 	if !cfg.Development.IsUsingInvDb {
-		db, err = mysql.Client(configpkg.SqlDb{
-			User:                   cfg.DdmDB.User,
-			Password:               cfg.DdmDB.Password,
-			Host:                   cfg.DdmDB.Host,
-			Port:                   cfg.DdmDB.Port,
-			DBName:                 cfg.DdmDB.DBName,
-			Params:                 cfg.DdmDB.Params,
-			MaxIdleConns:           cfg.DdmDB.MaxIdleConns,
-			MaxOpenConns:           cfg.DdmDB.MaxOpenConns,
-			ConnMaxLifetimeMinutes: cfg.DdmDB.ConnMaxLifetimeMinutes}, log)
+		db, err = mysql.Client(cfg.DdmDB, log)
 	} else {
-		db, err = mysql.Client(configpkg.SqlDb{
-			User:                   cfg.InvDB.User,
-			Password:               cfg.InvDB.Password,
-			Host:                   cfg.InvDB.Host,
-			Port:                   cfg.InvDB.Port,
-			DBName:                 cfg.InvDB.DBName,
-			Params:                 cfg.InvDB.Params,
-			MaxIdleConns:           cfg.InvDB.MaxIdleConns,
-			MaxOpenConns:           cfg.InvDB.MaxOpenConns,
-			ConnMaxLifetimeMinutes: cfg.InvDB.ConnMaxLifetimeMinutes}, log)
+		db, err = mysql.Client(cfg.InvDB, log)
 	}
 	if err != nil {
 		log.Fatal("Failed to connect to database", zap.Error(err))
@@ -81,14 +56,6 @@ func main() {
 		// todo: remove this, insert test data only for dev
 		testdata.CallAll(db)
 	}
-
-	//_, err = redis.Client(configpkg.Redis{
-	//	Addrs:    cfg.Redis.Addrs,
-	//	Password: cfg.Redis.Password,
-	//	PoolSize: cfg.Redis.PoolSize}, log) // todo pass redis to server
-	//if err != nil {
-	//	log.Fatal("Failed to connect to Redis cluster", zap.Error(err))
-	//}
 
 	s := server.New(db, root.Files, cfg, log)
 	if err := server.Start(s, cfg, log); err != nil {

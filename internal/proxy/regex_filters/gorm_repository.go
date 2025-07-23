@@ -13,6 +13,7 @@ type GormRepository struct {
 }
 
 func NewGormRepository(db *gorm.DB, log *zap.Logger) *GormRepository {
+	log.Info("Initializing GormRepository for regex filters")
 	return &GormRepository{
 		db:  db,
 		log: log,

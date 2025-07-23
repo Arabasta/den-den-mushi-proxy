@@ -20,6 +20,7 @@ type Service struct {
 
 func NewService(c *connect.ConnectionMethodFactory, sm *session_manager.Service, log *zap.Logger,
 	cfg *config.Config) *Service {
+	log.Info("Initializing WebSocket Service...")
 	return &Service{
 		connectionMethodFactory: c,
 		sessionManager:          sm,

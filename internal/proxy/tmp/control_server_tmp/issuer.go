@@ -1,7 +1,7 @@
 package control_server_tmp
 
 import (
-	"den-den-mushi-Go/internal/proxy/config"
+	"den-den-mushi-Go/pkg/config"
 	"den-den-mushi-Go/pkg/dto"
 	"den-den-mushi-Go/pkg/token"
 	"den-den-mushi-Go/pkg/types"
@@ -14,10 +14,10 @@ import (
 	"time"
 )
 
-// todo: move this to control server package
+// todo: remove this
 
 type Issuer struct {
-	cfg    *config.Config
+	cfg    *config.JwtAudience
 	log    *zap.Logger
 	secret []byte
 	iss    string
@@ -25,20 +25,14 @@ type Issuer struct {
 	ttl    time.Duration
 }
 
-func New(cfg *config.Config, log *zap.Logger) *Issuer {
-	log.Info("Initializing JWT Issuer",
-		zap.String("issuer", cfg.Token.Issuer),
-		zap.String("audience", cfg.Token.Audience),
-		zap.Int("ttl_seconds", cfg.Token.Ttl),
-	)
-
+func New(cfg *config.JwtAudience, log *zap.Logger) *Issuer {
 	return &Issuer{
 		cfg:    cfg,
 		log:    log,
-		secret: []byte(cfg.Token.Secret),
-		iss:    cfg.Token.Issuer,
-		aud:    cfg.Token.Audience,
-		ttl:    time.Duration(cfg.Token.Ttl) * time.Second,
+		secret: []byte(cfg.Secret),
+		iss:    cfg.ExpectedIssuer,
+		aud:    cfg.ExpectedAudience,
+		ttl:    time.Duration(120) * time.Second,
 	}
 }
 
@@ -61,7 +55,7 @@ func (i *Issuer) Mint(userID string, conn dto.Connection, jti string) (string, e
 	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims) // todo: use asymm, sign with priv
 
 	// RFC8725 3.11 explicit type
-	tok.Header["typ"] = "proxy/ws+jwt"
+	tok.Header["typ"] = i.cfg.ExpectedTyp
 
 	return tok.SignedString(i.secret)
 }
