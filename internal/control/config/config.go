@@ -13,6 +13,7 @@ type Config struct {
 		IsUsingInvDb          bool
 		IsAutoMigrateEnabled  bool
 		IsBlacklistFilter     bool
+		TargetSshPort         string
 	}
 
 	Ssl *config.Ssl

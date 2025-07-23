@@ -1,9 +1,11 @@
 package policy
 
 import (
+	"den-den-mushi-Go/internal/control/connection"
 	"den-den-mushi-Go/internal/control/pty_sessions"
 	"den-den-mushi-Go/internal/control/pty_token/request"
 	"den-den-mushi-Go/pkg/types"
+	"errors"
 	"go.uber.org/zap"
 )
 
@@ -11,12 +13,15 @@ type PtySessionPolicy[T request.Ctx] struct {
 	next Policy[T]
 
 	ptySessionService *pty_sessions.Service
+	connectionService *connection.Service
 	log               *zap.Logger
 }
 
-func NewPtySessionPolicy[T request.Ctx](ptySessionService *pty_sessions.Service, log *zap.Logger) *PtySessionPolicy[T] {
+func NewPtySessionPolicy[T request.Ctx](ptySessionService *pty_sessions.Service, connectionSvc *connection.Service,
+	log *zap.Logger) *PtySessionPolicy[T] {
 	return &PtySessionPolicy[T]{
 		ptySessionService: ptySessionService,
+		connectionService: connectionSvc,
 		log:               log,
 	}
 }
@@ -34,12 +39,32 @@ func (p *PtySessionPolicy[T]) Check(r T) error {
 		return nil
 	}
 
-	// 1. check if pty session is active
-	//ptyID := sessionAware.GetPtySessionId()
+	ptyID := sessionAware.GetPtySessionId()
 
+	// check if pty session exists
+	ptySession, err := p.ptySessionService.FindById(ptyID)
+	if err != nil || ptySession == nil {
+		p.log.Warn("Failed to find pty session", zap.String("ptyId", ptyID), zap.Error(err))
+		return errors.New("pty session not found")
+	}
+
+	// check if pty session is active
+	if ptySession.State != types.Active {
+		p.log.Warn("Pty session is not active", zap.String("ptyId", ptyID), zap.String("state", string(ptySession.State)))
+		return errors.New("pty session is not active")
+	}
+
+	// check if pty session has an active implementor if joining as implementor
 	if sessionAware.GetStartRole() == types.Implementor {
-		// 2. check if pty session as active implementor
-
+		activeImplementor, err := p.connectionService.FindActiveImplementorByPtySessionId(ptyID)
+		if err != nil {
+			p.log.Warn("Error when finding active implementor for pty session", zap.String("ptyId", ptyID), zap.Error(err))
+			return errors.New("error when finding active implementor for pty session")
+		}
+		if activeImplementor != nil {
+			p.log.Warn("Pty session already has an active implementor", zap.String("ptyId", ptyID))
+			return errors.New("pty session already has an active implementor")
+		}
 	}
 
 	if p.next != nil {

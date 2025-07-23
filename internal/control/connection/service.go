@@ -27,3 +27,7 @@ func (s *Service) FindById(id string) (*connections.Record, error) {
 	}
 	return c, nil
 }
+
+func (s *Service) FindActiveImplementorByPtySessionId(ptySessionId string) (*connections.Record, error) {
+	return s.repo.FindActiveImplementorByPtySessionId(ptySessionId)
+}

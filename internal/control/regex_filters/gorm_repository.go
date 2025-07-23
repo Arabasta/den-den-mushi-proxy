@@ -35,6 +35,10 @@ func (r *GormRepository) FindAllByFilterTypeAndOuGroup(filterType types.Filter, 
 	var models []dto.Model
 	err := r.db.Where("type = ? AND ougroup = ?", filterType, ouGroup).Find(&models).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			r.log.Debug("No regex filters found for type and OU group", zap.String("type", string(filterType)), zap.String("ou_group", ouGroup))
+			return nil, nil
+		}
 		r.log.Error("DB error while fetching regex filters by type and OU group", zap.String("type", string(filterType)), zap.String("ou_group", ouGroup), zap.Error(err))
 		return nil, err
 	}

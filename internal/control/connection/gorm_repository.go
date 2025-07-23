@@ -2,6 +2,7 @@ package connection
 
 import (
 	"den-den-mushi-Go/pkg/dto/connections"
+	"den-den-mushi-Go/pkg/types"
 	"errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -32,4 +33,25 @@ func (r *GormRepository) FindById(id string) (*connections.Record, error) {
 	}
 
 	return connections.FromModel(&m), nil
+}
+
+func (r *GormRepository) FindActiveImplementorByPtySessionId(ptySessionId string) (*connections.Record, error) {
+	var m *connections.Model
+	r.log.Debug("Finding active implementor connections",
+		zap.String("pty_session_id", ptySessionId),
+		zap.String("status", string(types.ConnectionStatusActive)),
+		zap.String("startRole", string(types.Implementor)))
+
+	err := r.db.Where("pty_session_id = ? AND Status = ? AND Start_role = ?",
+		ptySessionId, types.ConnectionStatusActive, types.Implementor).First(&m).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			r.log.Debug("No active implementor connection found for pty session", zap.String("ptySessionId", ptySessionId))
+			return nil, nil
+		}
+		r.log.Error("DB error while fetching active connections", zap.String("ptySessionId", ptySessionId), zap.Error(err))
+		return nil, err
+	}
+
+	return connections.FromModel(m), nil
 }

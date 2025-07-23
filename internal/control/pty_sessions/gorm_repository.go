@@ -3,6 +3,7 @@ package pty_sessions
 import (
 	dto "den-den-mushi-Go/pkg/dto/pty_sessions"
 	"den-den-mushi-Go/pkg/types"
+	"errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -42,6 +43,11 @@ func (r *GormRepository) FindByStartConnChangeRequestIdsAndState(changeIDs []str
 		Find(&sessions).Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			r.log.Debug("No pty sessions found for provided change request IDs and state",
+				zap.Strings("changeIDs", changeIDs), zap.String("state", string(state)))
+			return nil, nil
+		}
 		return nil, err
 	}
 	return dto.FromModels(sessions), nil
@@ -56,6 +62,11 @@ func (r *GormRepository) FindAllByChangeRequestIDAndServerIPs(changeRequestID st
 		Find(&sessions).Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			r.log.Debug("No pty sessions found for provided change request ID and server IPs",
+				zap.String("changeRequestID", changeRequestID), zap.Strings("ips", ips))
+			return nil, nil
+		}
 		return nil, err
 	}
 	return dto.FromModels(sessions), nil

@@ -11,21 +11,24 @@ import (
 )
 
 func BuildConnForStart(t types.ConnectionMethod, r wrapper.WithAuth[request.StartRequest], cr *change_request.Record,
-	f types.Filter) *dtopkg.Connection {
+	f types.Filter, port string) *dtopkg.Connection {
+	userSessionId := r.AuthCtx.UserID + "/" + uuid.NewString()
+
 	return &dtopkg.Connection{
 		Server: dtopkg.ServerInfo{
 			OSUser: r.Body.Server.OSUser,
 			IP:     r.Body.Server.IP,
-			Port:   "22", // todo: demo
+			Port:   port,
 		},
 		Type:    t,
 		Purpose: r.Body.Purpose,
 		UserSession: dtopkg.UserSession{
-			Id:        r.AuthCtx.UserID + "/" + uuid.NewString(),
+			Id:        userSessionId,
 			StartRole: types.Implementor, // always start as implementor
 		},
 		PtySession: dtopkg.PtySession{
-			IsNew: true,
+			IsNew:                true,
+			InitialUserSessionId: userSessionId,
 		},
 		ChangeRequest: func() dtopkg.ChangeRequest {
 			if r.Body.Purpose == types.Change {
@@ -51,8 +54,9 @@ func BuildConnForJoin(p *pty_sessions.Record, r wrapper.WithAuth[request.JoinReq
 			StartRole: r.Body.StartRole,
 		},
 		PtySession: dtopkg.PtySession{
-			Id:    p.ID,
-			IsNew: false, // joining existing session
+			Id:                   p.ID,
+			IsNew:                false, // joining existing session
+			InitialUserSessionId: p.StartConnUserSessionID,
 		},
 		ChangeRequest: func() dtopkg.ChangeRequest {
 			if p.StartConnectionDetails.Purpose == types.Change {

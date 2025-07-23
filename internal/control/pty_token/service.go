@@ -9,7 +9,7 @@ import (
 	"den-den-mushi-Go/internal/control/proxy_lb"
 	"den-den-mushi-Go/internal/control/pty_sessions"
 	"den-den-mushi-Go/internal/control/pty_token/request"
-	"den-den-mushi-Go/internal/control/pty_token/util"
+	"den-den-mushi-Go/pkg/dto"
 	changerequestpkg "den-den-mushi-Go/pkg/dto/change_request"
 	"den-den-mushi-Go/pkg/middleware/wrapper"
 	"den-den-mushi-Go/pkg/types"
@@ -105,7 +105,7 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 	}
 
 	s.log.Debug("Building connection for start")
-	conn := jwt.BuildConnForStart(hostConnMethod, r, cr, filter)
+	conn := jwt.BuildConnForStart(hostConnMethod, r, cr, filter, s.cfg.Development.TargetSshPort)
 
 	tok, err := s.issuer.Mint(r.AuthCtx, conn, hostType)
 	if err != nil {
@@ -129,7 +129,7 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request.JoinRequest]) (string
 		return "", "", errors.New("failed to find pty session")
 	}
 
-	crId, err := util.GetChangeRequestIDOrError(ps.StartConnectionDetails.Purpose, ps.StartConnectionDetails.ChangeRequest.Id)
+	crId, err := s.getChangeRequestIDOrError(ps.StartConnPurpose, ps.StartConnChangeRequestID)
 	if err != nil {
 		s.log.Error("Invalid connection details", zap.String("ptySessionId", r.Body.PtySessionId), zap.Error(err))
 		return "", "", err
@@ -138,9 +138,12 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request.JoinRequest]) (string
 	adapter := &request.JoinAdapter{
 		Req: r,
 		AdapterFields: request.AdapterFields{
-			Purpose:  ps.StartConnectionDetails.Purpose,
+			Purpose:  ps.StartConnPurpose,
 			ChangeID: crId,
-			Server:   ps.StartConnectionDetails.Server,
+			Server: dto.ServerInfo{
+				IP:     ps.StartConnServerIP,
+				OSUser: ps.StartConnServerOSUser,
+			},
 		},
 	}
 
@@ -177,4 +180,18 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request.JoinRequest]) (string
 
 	// todo: return X-Proxy-Host ps.ProxyHostName, to be passed to load balancer for routing
 	return tok, ps.ProxyDetails.LoadBalancerEndpoint, nil
+}
+
+func (s *Service) getChangeRequestIDOrError(p types.ConnectionPurpose, id string) (string, error) {
+	switch p {
+	case types.Change:
+		if id == "" {
+			return "", errors.New("missing change request ID for change purpose")
+		}
+		return id, nil
+	case types.Healthcheck:
+		return "", nil
+	default:
+		return "", errors.New("invalid connection purpose: " + string(p))
+	}
 }

@@ -86,7 +86,7 @@ func (h *Handler) PostApiV1PtyTokenJoin(c *gin.Context) {
 
 	token, proxy, err := h.Service.mintJoinToken(r)
 	if err != nil {
-		httpx.RespondError(c, http.StatusInternalServerError, "Failed to mint join token", err, h.Log)
+		httpx.RespondError(c, http.StatusInternalServerError, "Failed to mint join token. Reason: "+err.Error(), err, h.Log)
 		return
 	}
 

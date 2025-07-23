@@ -38,7 +38,7 @@ func (s *Service) mintStartTokenHealth(r wrapper.WithAuth[request.StartRequest])
 	//}
 
 	s.log.Debug("Building connection for start")
-	conn := jwt.BuildConnForStart(hostConnMethod, r, nil, filter)
+	conn := jwt.BuildConnForStart(hostConnMethod, r, nil, filter, s.cfg.Development.TargetSshPort)
 
 	return s.mintTokenAndGetProxyUrl(r.AuthCtx, conn, hostType)
 }
@@ -61,7 +61,7 @@ func (s *Service) mintStartTokenCR(r wrapper.WithAuth[request.StartRequest]) (st
 	//	return "", "", err
 	//}
 
-	conn := jwt.BuildConnForStart(hostConnMethod, r, cr, "")
+	conn := jwt.BuildConnForStart(hostConnMethod, r, cr, "", s.cfg.Development.TargetSshPort)
 	return s.mintTokenAndGetProxyUrl(r.AuthCtx, conn, hostType)
 }
 

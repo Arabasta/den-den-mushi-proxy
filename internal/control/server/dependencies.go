@@ -3,6 +3,7 @@ package server
 import (
 	"den-den-mushi-Go/internal/control/change_request"
 	"den-den-mushi-Go/internal/control/config"
+	"den-den-mushi-Go/internal/control/connection"
 	"den-den-mushi-Go/internal/control/host"
 	"den-den-mushi-Go/internal/control/implementor_groups"
 	"den-den-mushi-Go/internal/control/jwt"
@@ -58,25 +59,28 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 
 	whiteblacklistSvc := whiteblacklist.NewService(regexSvc, log)
 
+	connRepo := connection.NewGormRepository(ddmDb, log)
+	connectionService := connection.NewService(connRepo, log)
+
 	// policies ==================================================================================================
 
 	changePolicy := policy.NewChangePolicy[request.Ctx](impGroupsService, log)
 	healthcheckPolicy := policy.NewHealthcheckPolicy[request.Ctx](hostService, impGroupsService, log)
 	ouPolicy := policy.NewOUPolicy[request.Ctx](hostService, log)
-	ptySessionPolicy := policy.NewPtySessionPolicy[request.Ctx](ptySessionService, log)
+	ptySessionPolicy := policy.NewPtySessionPolicy[request.Ctx](ptySessionService, connectionService, log)
 
 	// policy chains ============================================================================================
 
 	changeRequestPolicyChain := policy.NewBuilder[request.Ctx]().
-		Add(changePolicy).
 		Add(ouPolicy).
 		Add(ptySessionPolicy).
+		Add(changePolicy).
 		Build()
 
 	healthcheckPolicyChain := policy.NewBuilder[request.Ctx]().
-		Add(healthcheckPolicy).
 		Add(ouPolicy).
 		Add(ptySessionPolicy).
+		Add(healthcheckPolicy).
 		Build()
 
 	if cfg.App.Environment == "dev" && cfg.Development.SkipPolicyChecks {

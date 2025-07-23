@@ -10,7 +10,8 @@
     "skipPolicyChecks": false,
     "IsUsingInvDb": false,
     "IsAutoMigrateEnabled": true,
-    "IsBlacklistFilter": false
+    "IsBlacklistFilter": false,
+    "TargetSshPort": "22"
   },
   "ssl": {
     "enabled": false

@@ -38,8 +38,10 @@ type UserSession struct {
 }
 
 type PtySession struct {
-	Id    string `json:"id,omitempty"`
-	IsNew bool   `json:"is_new,omitempty"` // true if creating new session, false if joining existing
+	Id                   string `json:"id,omitempty"`
+	IsNew                bool   `json:"is_new,omitempty"`                  // true if creating new session, false if joining existing
+	InitialUserSessionId string `json:"initial_user_session_id,omitempty"` // key for rendezvous hashing
+
 	//IsObserverEnabled bool   `json:"is_observer_enabled,omitempty"`
 	//MaxObservers      int    `json:"max_observers,omitempty"`
 	//MaxHeadlessMinutes        time.Duration `json:"max_headless_minutes,omitempty"`         // in minutes
