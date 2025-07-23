@@ -44,11 +44,11 @@ func main() {
 		log.Fatal("Failed to connect to database", zap.Error(err))
 	}
 
-	if cfg.App.Environment != "prod" && cfg.Development.IsAutoMigrateEnabled {
+	if cfg.Development.IsSMX && cfg.App.Environment != "prod" && cfg.Development.IsAutoMigrateEnabled {
 		log.Info("Running AutoMigrate for non-production environment")
 		if err := db.AutoMigrate(&pty_sessions.Model{}, &connections.Model{}, &proxy_host.Model{},
 			&jti.Model{}); err != nil {
-			log.Fatal("Failed to auto-migrate pty_sessions table", zap.Error(err))
+			log.Fatal("Failed to auto-migrate", zap.Error(err))
 		}
 	}
 

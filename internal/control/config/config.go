@@ -14,6 +14,7 @@ type Config struct {
 		IsAutoMigrateEnabled  bool
 		IsBlacklistFilter     bool
 		TargetSshPort         string
+		IsSMX                 bool
 	}
 
 	Ssl *config.Ssl

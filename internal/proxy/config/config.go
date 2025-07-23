@@ -20,6 +20,7 @@ type Config struct {
 		UseRedis             bool
 		IsUsingInvDb         bool
 		IsAutoMigrateEnabled bool
+		IsSMX                bool
 	}
 
 	Logger *config.Logger

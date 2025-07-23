@@ -5,12 +5,15 @@ import (
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/server"
 	"den-den-mushi-Go/internal/control/testdata"
+	"den-den-mushi-Go/internal/proxy/jwt_service/jti"
 	"den-den-mushi-Go/pkg/dto/change_request"
+	"den-den-mushi-Go/pkg/dto/connections"
 	"den-den-mushi-Go/pkg/dto/cyberark"
 	"den-den-mushi-Go/pkg/dto/host"
 	"den-den-mushi-Go/pkg/dto/implementor_groups"
 	"den-den-mushi-Go/pkg/dto/proxy_host"
 	"den-den-mushi-Go/pkg/dto/proxy_lb"
+	"den-den-mushi-Go/pkg/dto/pty_sessions"
 	"den-den-mushi-Go/pkg/dto/regex_filters"
 	"den-den-mushi-Go/pkg/logger"
 	"den-den-mushi-Go/pkg/mysql"
@@ -46,15 +49,44 @@ func main() {
 		log.Fatal("Failed to connect to database", zap.Error(err))
 	}
 
-	if cfg.App.Environment != "prod" && cfg.Development.IsAutoMigrateEnabled {
+	if !cfg.Development.IsSMX && cfg.App.Environment != "prod" && cfg.Development.IsAutoMigrateEnabled {
 		log.Info("Running AutoMigrate for non-production environment")
-		if err := db.AutoMigrate(&host.Model{}, &proxy_lb.Model{}, &proxy_host.Model{},
-			&change_request.Model{}, implementor_groups.Model{}, &cyberark.Model{}, &regex_filters.Model{}); err != nil {
+		if err := db.AutoMigrate(
+			&host.Model{},
+			&proxy_lb.Model{},
+			&proxy_host.Model{},
+			&change_request.Model{},
+			implementor_groups.Model{},
+			&cyberark.Model{},
+			&regex_filters.Model{},
+			&pty_sessions.Model{},
+			&connections.Model{},
+			&proxy_host.Model{},
+			&jti.Model{},
+		); err != nil {
 			log.Fatal("AutoMigrate failed", zap.Error(err))
 		}
 
-		// todo: remove this, insert test data only for dev
 		testdata.CallAll(db)
+	}
+
+	if cfg.Development.IsSMX {
+		log.Info("Running AutoMigrate for non-production environment")
+		if err := db.AutoMigrate(
+			&proxy_lb.Model{},
+			&proxy_host.Model{},
+			&regex_filters.Model{},
+			&pty_sessions.Model{},
+			&connections.Model{},
+			&proxy_host.Model{},
+			&jti.Model{},
+		); err != nil {
+			log.Fatal("AutoMigrate failed", zap.Error(err))
+		}
+
+		if cfg.Development.IsAutoMigrateEnabled {
+			testdata.CreateSMXTestData(db)
+		}
 	}
 
 	s := server.New(db, root.Files, cfg, log)

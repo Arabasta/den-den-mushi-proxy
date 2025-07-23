@@ -13,11 +13,12 @@
     "ip": "127.0.0.1"
   },
   "development": {
-    "UseSqlJtiRepo": false,
-    "UseRedis": true,
+    "isSMX": true,
+    "UseSqlJtiRepo": true,
+    "UseRedis": false,
     "SshTestKeyPath": "/Users/kei/Desktop/repos/ddm-proxy-tmp/ephemeral-ssh4192716415/id_ed25519",
-    "IsUsingInvDb": false,
-    "IsAutoMigrateEnabled": true
+    "IsUsingInvDb": true,
+    "IsAutoMigrateEnabled": false
   },
   "logger": {
     "level": "debug",

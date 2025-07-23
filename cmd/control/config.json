@@ -6,12 +6,12 @@
     "port": 55007
   },
   "development": {
-    "useInMemoryRepository": true,
+    "isSMX": true,
     "skipPolicyChecks": false,
-    "IsUsingInvDb": false,
+    "IsUsingInvDb": true,
     "IsAutoMigrateEnabled": true,
     "IsBlacklistFilter": true,
-    "TargetSshPort": "22"
+    "TargetSshPort": "64022"
   },
   "ssl": {
     "enabled": false
