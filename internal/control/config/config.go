@@ -12,6 +12,7 @@ type Config struct {
 		SkipPolicyChecks      bool
 		IsUsingInvDb          bool
 		IsAutoMigrateEnabled  bool
+		IsBlacklistFilter     bool
 	}
 
 	Ssl *config.Ssl

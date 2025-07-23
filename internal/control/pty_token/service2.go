@@ -5,6 +5,7 @@ import (
 	"den-den-mushi-Go/internal/control/pty_token/request"
 	"den-den-mushi-Go/pkg/dto"
 	changerequestpkg "den-den-mushi-Go/pkg/dto/change_request"
+	"den-den-mushi-Go/pkg/middleware"
 	"den-den-mushi-Go/pkg/middleware/wrapper"
 	"den-den-mushi-Go/pkg/types"
 	"go.uber.org/zap"
@@ -39,7 +40,7 @@ func (s *Service) mintStartTokenHealth(r wrapper.WithAuth[request.StartRequest])
 	s.log.Debug("Building connection for start")
 	conn := jwt.BuildConnForStart(hostConnMethod, r, nil, filter)
 
-	return s.mintTokenAndGetProxyUrl(r.AuthCtx.UserID, conn, hostType)
+	return s.mintTokenAndGetProxyUrl(r.AuthCtx, conn, hostType)
 }
 
 func (s *Service) mintStartTokenCR(r wrapper.WithAuth[request.StartRequest]) (string, string, error) {
@@ -61,11 +62,11 @@ func (s *Service) mintStartTokenCR(r wrapper.WithAuth[request.StartRequest]) (st
 	//}
 
 	conn := jwt.BuildConnForStart(hostConnMethod, r, cr, "")
-	return s.mintTokenAndGetProxyUrl(r.AuthCtx.UserID, conn, hostType)
+	return s.mintTokenAndGetProxyUrl(r.AuthCtx, conn, hostType)
 }
 
-func (s *Service) mintTokenAndGetProxyUrl(userID string, conn *dto.Connection, proxyType types.Proxy) (string, string, error) {
-	token, err := s.issuer.Mint(userID, conn, proxyType)
+func (s *Service) mintTokenAndGetProxyUrl(authCtx middleware.AuthContext, conn *dto.Connection, proxyType types.Proxy) (string, string, error) {
+	token, err := s.issuer.Mint(authCtx, conn, proxyType)
 	if err != nil {
 		s.log.Error("Failed to mint token", zap.Error(err))
 		return "", "", err

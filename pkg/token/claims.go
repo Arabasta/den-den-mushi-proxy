@@ -8,4 +8,5 @@ import (
 type Claims struct {
 	Connection dto.Connection `json:"connection"`
 	jwt.RegisteredClaims
+	OuGroup string `json:"ou_group,omitempty"`
 }

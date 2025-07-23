@@ -91,7 +91,12 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 			return "", "", err
 		}
 
-		filter = types.Blacklist // todo: get filter type by host type
+		if s.cfg.Development.IsBlacklistFilter {
+			filter = types.Blacklist // todo: get filter type by host type
+		} else {
+			filter = types.Whitelist
+		}
+
 		//filter, err = s.hostSvc.FindFilterTypeByHostType(hostType)
 		//if err != nil {
 		//	s.log.Error("Failed to find filter type by host type", zap.String("hostType", string(hostType)), zap.Error(err))
@@ -102,7 +107,7 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 	s.log.Debug("Building connection for start")
 	conn := jwt.BuildConnForStart(hostConnMethod, r, cr, filter)
 
-	tok, err := s.issuer.Mint(r.AuthCtx.UserID, conn, hostType)
+	tok, err := s.issuer.Mint(r.AuthCtx, conn, hostType)
 	if err != nil {
 		s.log.Error("Failed to mint token", zap.Error(err))
 		return "", "", err
@@ -164,7 +169,7 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request.JoinRequest]) (string
 	s.log.Debug("Building connection for join", zap.String("ptySessionId", r.Body.PtySessionId))
 	conn := jwt.BuildConnForJoin(ps, r)
 
-	tok, err := s.issuer.Mint(r.AuthCtx.UserID, conn, ps.ProxyDetails.ProxyType)
+	tok, err := s.issuer.Mint(r.AuthCtx, conn, ps.ProxyDetails.ProxyType)
 	if err != nil {
 		s.log.Error("Failed to mint token", zap.Error(err))
 		return "", "", err

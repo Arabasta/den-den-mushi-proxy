@@ -9,7 +9,8 @@
     "useInMemoryRepository": true,
     "skipPolicyChecks": false,
     "IsUsingInvDb": false,
-    "IsAutoMigrateEnabled": true
+    "IsAutoMigrateEnabled": true,
+    "IsBlacklistFilter": false
   },
   "ssl": {
     "enabled": false

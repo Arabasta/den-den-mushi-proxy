@@ -6,10 +6,12 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/session_manager"
 	"den-den-mushi-Go/internal/proxy/core/session_manager/connections"
 	"den-den-mushi-Go/internal/proxy/core/session_manager/pty_sessions"
+	"den-den-mushi-Go/internal/proxy/filter"
 	"den-den-mushi-Go/internal/proxy/jwt_service"
 	"den-den-mushi-Go/internal/proxy/jwt_service/jti"
 	"den-den-mushi-Go/internal/proxy/orchestrator/puppet"
 	"den-den-mushi-Go/internal/proxy/pty_util"
+	"den-den-mushi-Go/internal/proxy/regex_filters"
 	"den-den-mushi-Go/internal/proxy/tmp/control_server_tmp"
 	"den-den-mushi-Go/internal/proxy/websocket"
 	"go.uber.org/zap"
@@ -51,10 +53,14 @@ func initDependencies(db *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps {
 	} else {
 		log.Fatal("JTI repository not implemented for this environment")
 	}
-
 	jtiService := jti.New(jtiRepo, log)
 
 	val := jwt_service.NewValidator(parser, jtiService, cfg.Token.Secret, cfg, log)
+
+	regexRepo := regex_filters.NewGormRepository(db, log)
+	regexFiltersSvc := regex_filters.NewService(regexRepo, log)
+	loadSvc := filter.NewLoadService(regexFiltersSvc, log)
+	loadSvc.StartScheduler()
 
 	return &Deps{
 		WebsocketService: websocketService,

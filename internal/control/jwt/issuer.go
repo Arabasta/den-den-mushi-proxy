@@ -3,6 +3,7 @@ package jwt
 import (
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/pkg/dto"
+	"den-den-mushi-Go/pkg/middleware"
 	"den-den-mushi-Go/pkg/token"
 	"den-den-mushi-Go/pkg/types"
 	"github.com/golang-jwt/jwt/v5"
@@ -36,19 +37,20 @@ func New(cfg *config.Config, log *zap.Logger) *Issuer {
 }
 
 // Mint must follow https://www.rfc-editor.org/rfc/rfc8725.html
-func (i *Issuer) Mint(userID string, conn *dto.Connection, proxyType types.Proxy) (string, error) {
-	i.log.Debug("Minting JWT token", zap.String("user_id", userID))
+func (i *Issuer) Mint(authCtx middleware.AuthContext, conn *dto.Connection, proxyType types.Proxy) (string, error) {
+	i.log.Debug("Minting JWT token", zap.String("user_id", authCtx.UserID))
 	now := time.Now()
 	claims := token.Claims{
 		Connection: *conn,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    i.iss,
-			Subject:   userID,
+			Subject:   authCtx.UserID,
 			Audience:  proxyType.String(),
 			ExpiresAt: jwt.NewNumericDate(now.Add(i.ttl)),
 			IssuedAt:  jwt.NewNumericDate(now),
 			ID:        uuid.NewString() + strconv.FormatInt(time.Now().Unix(), 10),
 		},
+		OuGroup: authCtx.OuGroup,
 	}
 
 	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims) // todo: use asymm, sign with priv

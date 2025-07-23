@@ -30,23 +30,23 @@ func init() {
 
 	healthcheckBlockedControlHandlers = map[string]func(*HealthcheckPurpose, *Session, protocol.Packet) (string, error){
 		// for now block unhandled
-		string(constants.RightBackslash):    (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.LeftBackslash):     (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.LeftParenthesis):   (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.RightParenthesis):  (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.LeftBracket):       (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.RightBracket):      (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.LeftBrace):         (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.RightBrace):        (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.EqualSign):         (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.RightBackslash): (*HealthcheckPurpose).handleBlockedControlChar, // \
+		//string(constants.LeftBackslash):     (*HealthcheckPurpose).handleBlockedControlChar, // /
+		//string(constants.LeftParenthesis):   (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.RightParenthesis):  (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.LeftBracket):       (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.RightBracket):      (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.LeftBrace):         (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.RightBrace):        (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.EqualSign):         (*HealthcheckPurpose).handleBlockedControlChar,
 		string(constants.OutputRedirection): (*HealthcheckPurpose).handleBlockedControlChar,
 		string(constants.InputRedirection):  (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.SingleQuote):       (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.DoubleQuote):       (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.Backtick):          (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.Comma):             (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.Colon):             (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.ExclamationMark):   (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.SingleQuote):       (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.DoubleQuote):       (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.Backtick):          (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.Comma):             (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.Colon):             (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.ExclamationMark):   (*HealthcheckPurpose).handleBlockedControlChar,
 
 		// for now, block control characters that changes the line on pty without
 		// explicitly sending the command through the input handler
@@ -58,16 +58,16 @@ func init() {
 		string(constants.CtrlZ):     (*HealthcheckPurpose).handleBlockedControlChar,
 
 		// block pipe, sequential, background execution
-		string(constants.Pipe):      (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.SemiColon): (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.Ampersand): (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.Pipe):      (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.SemiColon): (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.Ampersand): (*HealthcheckPurpose).handleBlockedControlChar,
 
 		// block $ for env vars
 		// this is required as users can use env vars to bypass the filter
 		// e.g.,
 		// a=su
 		// $a
-		string(constants.DollarSign): (*HealthcheckPurpose).handleBlockedControlChar,
+		//string(constants.DollarSign): (*HealthcheckPurpose).handleBlockedControlChar,
 	}
 }
 
@@ -112,7 +112,7 @@ func (p *HealthcheckPurpose) handleEnter(s *Session, pkt protocol.Packet) (strin
 
 	s.log.Info("Handling Enter key press. Checking command: ", zap.String("line", s.line.String()))
 
-	msg, allowed := s.filter.IsValid(s.line.String())
+	msg, allowed := s.filter.IsValid(s.line.String(), s.activePrimary.Claims.OuGroup)
 	if !allowed {
 		errPkt := protocol.Packet{Header: protocol.BlockedCommand, Data: []byte(s.line.String())}
 		s.ptyOutput.Add(errPkt)

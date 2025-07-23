@@ -2,50 +2,23 @@ package filter
 
 import (
 	"den-den-mushi-Go/pkg/types"
+	"regexp"
 )
 
 type CommandFilter interface {
-	IsValid(str string) (string, bool)
+	IsValid(str string, ouGroup string) (string, bool)
+	load(patterns map[string][]regexp.Regexp)
 }
 
 var (
 	whitelistFilter = &WhitelistFilter{
-		filteredCommands: make(map[string]struct{}),
+		ouGroupRegexFiltersMap: make(map[string][]regexp.Regexp),
 	}
+
 	blacklistFilter = &BlacklistFilter{
-		filteredCommands: make(map[string]struct{}),
+		ouGroupRegexFiltersMap: make(map[string][]regexp.Regexp),
 	}
 )
-
-// hard code for now
-func init() {
-	whitelist := []string{
-		"ll",
-		"whoami",
-		"pwd",
-		"ls",
-		"ls -a",
-		"ls -t",
-		"ls -l",
-		"ls -r",
-		"ls -rt",
-		"ls -lrt",
-		"ls -al",
-	}
-
-	blacklist := []string{
-		"rm -rf",
-		"sudo",
-		"sudo su",
-		"su",
-		"su -",
-		"shutdown",
-		"reboot",
-	}
-
-	whitelistFilter.UpdateCommands(whitelist)
-	blacklistFilter.UpdateCommands(blacklist)
-}
 
 func GetFilter(filterType types.Filter) CommandFilter {
 	switch filterType {
@@ -57,3 +30,33 @@ func GetFilter(filterType types.Filter) CommandFilter {
 		return nil
 	}
 }
+
+//// hard code for now
+//func init() {
+//	whitelist := []string{
+//		"ll",
+//		"whoami",
+//		"pwd",
+//		"ls",
+//		"ls -a",
+//		"ls -t",
+//		"ls -l",
+//		"ls -r",
+//		"ls -rt",
+//		"ls -lrt",
+//		"ls -al",
+//	}
+//
+//	blacklist := []string{
+//		"rm -rf",
+//		"sudo",
+//		"sudo su",
+//		"su",
+//		"su -",
+//		"shutdown",
+//		"reboot",
+//	}
+//
+//	whitelistFilter.UpdateCommands(whitelist)
+//	blacklistFilter.UpdateCommands(blacklist)
+//}
