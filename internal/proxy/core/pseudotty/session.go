@@ -31,6 +31,7 @@ type Session struct {
 
 	// for logging all session events
 	sessionLogger session_logging.SessionLogger
+	lastInput     []byte
 
 	filter filter.CommandFilter // only for health check
 	line   *filter.LineEditor   // only for health check, tracks pty's current line

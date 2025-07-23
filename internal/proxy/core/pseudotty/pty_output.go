@@ -10,7 +10,7 @@ import (
 // readPtyLoop and add data to outbound channel
 func (s *Session) readPtyLoop() {
 	//maxBufSize := s.cfg.Proxy.Pty.MaxBufferSize
-	buf := make([]byte, 512)
+	buf := make([]byte, 4096)
 	for {
 		n, err := s.pty.Read(buf)
 		if err != nil {

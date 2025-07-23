@@ -1,8 +1,10 @@
 package pseudotty
 
 import (
+	"bytes"
 	"den-den-mushi-Go/internal/proxy/core/pseudotty/session_logging"
 	"den-den-mushi-Go/internal/proxy/protocol"
+	"den-den-mushi-Go/pkg/constants"
 	"fmt"
 	"go.uber.org/zap"
 	"os"
@@ -40,9 +42,51 @@ func (s *Session) logL(line string) {
 }
 
 func (s *Session) logPacket(pkt protocol.Packet) {
-	if pkt.Header == protocol.Resize {
-		// don't log resize events
+	//if pkt.Header == protocol.Resize {
+	// don't log resize events
+	//return
+	//}
+	switch pkt.Header {
+	case protocol.Output:
+		s.handleOutputLogging(pkt)
+	case protocol.Resize:
+		return
+	default:
+		s.logL(session_logging.FormatLogLine(pkt.Header.String(), string(pkt.Data)))
+	}
+}
+
+func (s *Session) handleOutputLogging(pkt protocol.Packet) {
+	if bytes.Equal(pkt.Data, s.lastInput) {
+		s.log.Debug("Skipping output logging for echo input", zap.ByteString("data", pkt.Data))
 		return
 	}
-	s.logL(session_logging.FormatLogLine(pkt.Header.String(), string(pkt.Data)))
+	clean := stripNonASCII(pkt.Data)
+	if len(clean) == 0 {
+		return // skip logging if nothing printable
+	}
+
+	s.logL(session_logging.FormatLogLine(pkt.Header.String(), string(clean)))
+}
+
+func (s *Session) logAndResetLineEditorIfInputEnter(pkt protocol.Packet) {
+	if bytes.Equal(pkt.Data, constants.Enter) {
+		// log to pty session log
+		s.logPacket(protocol.Packet{
+			Header: protocol.Input,
+			Data:   []byte(s.line.String()),
+		})
+		// todo: log to yirong's ai log
+		s.line.Reset()
+	}
+}
+
+func stripNonASCII(data []byte) []byte {
+	out := make([]rune, 0, len(data))
+	for _, r := range string(data) {
+		if r >= 32 && r <= 126 || r == '\n' || r == '\r' || r == '\t' {
+			out = append(out, r)
+		}
+	}
+	return []byte(string(out))
 }
