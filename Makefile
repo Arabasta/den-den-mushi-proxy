@@ -22,6 +22,10 @@ run:
 	go mod tidy
 	cd $(CMD_DIR)/$(CMD) && $(GO) run . -config ../../cmd/$(CMD)/config.json
 
+runsmx:
+	go mod tidy
+	cd $(CMD_DIR)/$(CMD) && $(GO) run . -config ../../cmd/$(CMD)/configsmx.json
+
 clean:
 	rm -rf $(BIN_DIR)
 

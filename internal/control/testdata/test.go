@@ -193,19 +193,16 @@ func createProxyLb(db *gorm.DB) {
 func createImplementorGroups(db *gorm.DB) {
 	db.Create(&[]implementor_groups.Model{
 		{
-			ID:               1,
 			MemberName:       "ddmtest",
 			GroupName:        "admin",
 			MembershipStatus: "Active",
 		},
 		{
-			ID:               2,
 			MemberName:       "ddmtest",
 			GroupName:        "devops",
 			MembershipStatus: "Active",
 		},
 		{
-			ID:               3,
 			MemberName:       "kei2",
 			GroupName:        "log",
 			MembershipStatus: "Active",

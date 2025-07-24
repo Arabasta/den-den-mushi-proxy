@@ -21,7 +21,7 @@ func NewGormRepository(db *gorm.DB, log *zap.Logger) *GormRepository {
 
 func (r *GormRepository) FindByObject(o string) (*dto.Record, error) {
 	var m dto.Model
-	err := r.db.Where("Object = ?", o).First(&m).Error
+	err := r.db.Where("OBJECTNAME = ?", o).First(&m).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.log.Debug("No CyberArk record found for object", zap.String("object", o))

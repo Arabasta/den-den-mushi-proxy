@@ -40,19 +40,19 @@ func (r *GormRepository) FindChangeRequests(filter filters.ListCR) ([]*dto.Recor
 	query := r.db.Model(&dto.Model{})
 
 	if filter.TicketIDs != nil && len(*filter.TicketIDs) > 0 {
-		query = query.Where("Ticketnumber IN ?", *filter.TicketIDs)
+		query = query.Where("TicketNumber IN ?", *filter.TicketIDs)
 	}
 
 	query = query.Where("State = ?", "Approved")
 
 	if filter.ImplementorGroups != nil {
 		for _, group := range *filter.ImplementorGroups {
-			query = query.Or("Implementorgroups LIKE ?", "%"+group+"%")
+			query = query.Or("ImplementerGroup LIKE ?", "%"+group+"%")
 		}
 	}
 
 	if filter.LOB != nil {
-		query = query.Where("Lob = ?", *filter.LOB)
+		query = query.Where("LOB = ?", *filter.LOB)
 	}
 
 	if filter.Country != nil {
@@ -61,11 +61,11 @@ func (r *GormRepository) FindChangeRequests(filter filters.ListCR) ([]*dto.Recor
 
 	// note that this is stored as text in DB
 	if filter.StartTime != nil {
-		query = query.Where("ChangeSchedStartTime >= ?", filter.StartTime.Format("2006-01-02 15:04:05"))
+		query = query.Where("ChangeSchedStartDateTime >= ?", filter.StartTime.Format("2006-01-02 15:04:05"))
 	}
 
 	if filter.EndTime != nil {
-		query = query.Where("ChangeSchedEndTime <= ?", filter.EndTime.Format("2006-01-02 15:04:05"))
+		query = query.Where("ChangeSchedEndDateTime <= ?", filter.EndTime.Format("2006-01-02 15:04:05"))
 	}
 
 	page := filter.Page

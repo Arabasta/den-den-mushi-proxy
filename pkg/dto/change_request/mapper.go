@@ -3,6 +3,7 @@ package change_request
 import (
 	"den-den-mushi-Go/pkg/util/convert"
 	"errors"
+	"fmt"
 )
 
 const timeFmt = "2006-01-02 15:04:05"
@@ -12,6 +13,8 @@ func FromModel(m *Model) (*Record, error) {
 		return nil, nil
 	}
 
+	fmt.Println("Parsing time" + m.ChangeStartTime + " to " + timeFmt)
+	fmt.Println("Parsing time" + m.ChangeEndTime + " to " + timeFmt)
 	start, ok := convert.ParseTime(m.ChangeStartTime, timeFmt)
 	end, ok := convert.ParseTime(m.ChangeEndTime, timeFmt)
 
@@ -41,7 +44,9 @@ func FromModels(models []Model) ([]*Record, error) {
 	records := make([]*Record, 0, len(models))
 	for _, m := range models {
 		record, err := FromModel(&m)
+		fmt.Println("Converted model to record:", m.CRNumber, "->", record)
 		if err != nil {
+			fmt.Println("Failed to convert model to record:", m.CRNumber, err)
 			continue
 		}
 		records = append(records, record)

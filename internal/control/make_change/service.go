@@ -39,11 +39,14 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, authCtx 
 
 	// fetch CRs using filter
 	crs, err := s.crSvc.FindChangeRequests(filter)
+	s.log.Debug("CRs fetched", zap.Int("count", len(crs)))
 	if err != nil {
+		s.log.Error("FindChangeRequests", zap.Error(err))
 		return nil, err
 	}
 
 	for _, cr := range crs {
+		s.log.Debug("Mapping CR", zap.Any("cr", cr))
 		// extract ips from cr
 		ipToUsers := cyberark.MapIPToOSUsers(cr.CyberArkObjects)
 		s.log.Debug("Mapped CyberArk object", zap.Any("object", cr.CyberArkObjects))

@@ -22,7 +22,7 @@ func NewGormRepository(db *gorm.DB, log *zap.Logger) *GormRepository {
 func (r *GormRepository) FindAllByUserId(userId string) ([]*dto.Record, error) {
 	var models []dto.Model
 	if err := r.db.Where("MemberName = ? AND GroupMembershipStatus = ?",
-		userId, "active").Find(&models).Error; err != nil {
+		userId, "Active").Find(&models).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.log.Debug("No implementor groups found for user ID", zap.String("user_id", userId))
 			return nil, nil

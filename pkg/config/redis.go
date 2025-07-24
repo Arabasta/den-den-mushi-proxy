@@ -9,6 +9,7 @@ type Redis struct {
 	Port     string
 }
 
-func BindRedisPassword(v *viper.Viper) {
+func BindRedis(v *viper.Viper) {
+	_ = v.BindEnv("redis.addr", "REDIS_ADDR")
 	_ = v.BindEnv("redis.password", "REDIS_PASSWORD")
 }
