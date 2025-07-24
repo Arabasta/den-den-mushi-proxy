@@ -67,7 +67,7 @@
     "logLevel": 4
   },
   "InvDB": {
-    "user": "root",
+    "user": "sstdbdbrw04",
     "port": 4405,
     "dbName": "invent",
     "params": "charset=utf8mb4&parseTime=True&loc=Local",
