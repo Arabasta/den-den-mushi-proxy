@@ -7,6 +7,8 @@ info:
 servers:
   - url: http://localhost:55007
     description: Local
+  - url: https://x01smxtra1a.sp.uat.dbs.corp:55007
+    description: UAT
 
 tags:
   - name: PTY Token
@@ -659,7 +661,7 @@ components:
           description: Load balancer URL for proxy group (e.g., `https://proxy.os.com`, `https://proxy.db.com`)
       required: [ token, proxyUrl ]
       example:
-        token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+        token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
         proxyUrl: https://proxy.os.com
 
     ######################################################################## Make change use case

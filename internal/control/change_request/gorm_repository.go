@@ -87,5 +87,6 @@ func (r *GormRepository) FindChangeRequests(filter filters.ListCR) ([]*dto.Recor
 		return nil, err
 	}
 
+	r.log.Debug("Fetched change requests", zap.Any("models", models))
 	return dto.FromModels(models)
 }

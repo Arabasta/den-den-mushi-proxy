@@ -8,13 +8,16 @@ type Config struct {
 	App *config.App
 
 	Development struct {
-		UseInMemoryRepository bool
-		SkipPolicyChecks      bool
-		IsUsingInvDb          bool
-		IsAutoMigrateEnabled  bool
-		IsBlacklistFilter     bool
-		TargetSshPort         string
-		IsSMX                 bool
+		UseInMemoryRepository                       bool
+		SkipPolicyChecks                            bool
+		IsUsingInvDb                                bool
+		IsAutoMigrateEnabled                        bool
+		IsBlacklistFilter                           bool
+		TargetSshPort                               string
+		IsSMX                                       bool
+		ProxyLoadbalancerEndpointForDiffProxyGroups string
+		ProxyHostIpForRejoinRouting                 string
+		ProxyHostNameJustForLookup                  string
 	}
 
 	Ssl *config.Ssl

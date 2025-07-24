@@ -10,7 +10,8 @@ import (
 )
 
 func CallAll(db *gorm.DB) {
-	//createCR(db)
+	createCR(db)
+	createImplementorGroups(db)
 	//createCyberark(db)
 	//createProxyLb(db)
 	//createProxyHost(db)
@@ -22,7 +23,7 @@ func createCR(db *gorm.DB) {
 	db.Create(&[]change_request.Model{
 		{
 			// approved CR, valid time, valid implementor groups, valid cyberark objects
-			ID:                1,
+			//	ID:                1,
 			CRNumber:          "CR202512314",
 			Country:           "SG,HK",
 			Lob:               "TechOps",
@@ -36,7 +37,7 @@ func createCR(db *gorm.DB) {
 		},
 		{
 			// unapproved CR
-			ID:                2,
+			//	ID:                2,
 			CRNumber:          "CR202512315",
 			Country:           "SG,HK",
 			Lob:               "TechOps",
@@ -50,7 +51,7 @@ func createCR(db *gorm.DB) {
 		},
 		{
 			// invalid time
-			ID:                3,
+			//	ID:                3,
 			CRNumber:          "CR202512316",
 			Country:           "SG,HK",
 			Lob:               "TechOps",
@@ -64,7 +65,7 @@ func createCR(db *gorm.DB) {
 		},
 		{
 			// invalid implementor groups
-			ID:                4,
+			//		ID:                4,
 			CRNumber:          "CR202512317",
 			Country:           "SG,HK",
 			Lob:               "TechOps",
@@ -78,7 +79,7 @@ func createCR(db *gorm.DB) {
 		},
 		{
 			// invalid cyberark objects
-			ID:                5,
+			//	ID:                5,
 			CRNumber:          "CR202512318",
 			Country:           "SG,HK",
 			Lob:               "TechOps",
@@ -92,7 +93,7 @@ func createCR(db *gorm.DB) {
 		},
 		{
 			// empty cyberark objects
-			ID:                6,
+			//			ID:                6,
 			CRNumber:          "CR202512319",
 			Country:           "SG,HK",
 			Lob:               "TechOps",
@@ -107,7 +108,7 @@ func createCR(db *gorm.DB) {
 		{
 			// approved CR, valid time, valid implementor groups, valid cyberark objects
 			// with cyberark ec2-user
-			ID:                7,
+			//	ID:                7,
 			CRNumber:          "CR202512320",
 			Country:           "SG,HK",
 			Lob:               "TechOps",
@@ -122,7 +123,7 @@ func createCR(db *gorm.DB) {
 		{
 			// approved CR, valid time, valid implementor groups, valid cyberark objects
 			// with cyberark ec2-user
-			ID:                8,
+			//		ID:                8,
 			CRNumber:          "CR202512321",
 			Country:           "SG,CN",
 			Lob:               "KEI",
@@ -193,13 +194,13 @@ func createImplementorGroups(db *gorm.DB) {
 	db.Create(&[]implementor_groups.Model{
 		{
 			ID:               1,
-			MemberName:       "kei",
+			MemberName:       "ddmtest",
 			GroupName:        "admin",
 			MembershipStatus: "Active",
 		},
 		{
 			ID:               2,
-			MemberName:       "kei",
+			MemberName:       "ddmtest",
 			GroupName:        "devops",
 			MembershipStatus: "Active",
 		},

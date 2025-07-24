@@ -49,7 +49,7 @@ func main() {
 		log.Fatal("Failed to connect to database", zap.Error(err))
 	}
 
-	if !cfg.Development.IsSMX && cfg.App.Environment != "prod" && cfg.Development.IsAutoMigrateEnabled {
+	if !cfg.Development.IsSMX {
 		log.Info("Running AutoMigrate for non-production environment")
 		if err := db.AutoMigrate(
 			&host.Model{},
@@ -66,8 +66,10 @@ func main() {
 		); err != nil {
 			log.Fatal("AutoMigrate failed", zap.Error(err))
 		}
-
-		testdata.CallAll(db)
+		if cfg.Development.IsAutoMigrateEnabled {
+			testdata.CallAll(db)
+			testdata.CreateProxyHostAndLb(db, cfg)
+		}
 	}
 
 	if cfg.Development.IsSMX {
@@ -84,7 +86,7 @@ func main() {
 		}
 
 		if cfg.Development.IsAutoMigrateEnabled {
-			testdata.CreateSMXTestData(db)
+			testdata.CreateProxyHostAndLb(db, cfg)
 		}
 	}
 

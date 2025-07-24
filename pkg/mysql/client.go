@@ -38,7 +38,7 @@ func Client(cfg *config.SqlDb, sslCfg *config.Ssl, log *zap.Logger) (*gorm.DB, e
 	)
 
 	gormCfg := &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Warn),
+		Logger: logger.Default.LogMode(cfg.LogLevel),
 	}
 
 	db, err := gorm.Open(mysql.Open(dsn), gormCfg)

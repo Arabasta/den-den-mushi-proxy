@@ -60,7 +60,7 @@ func GetAuthContext(ctx context.Context) (*AuthContext, bool) {
 
 	// todo: for demo purposes, return a mock AuthContext
 	return &AuthContext{
-		UserID:  "kei",
-		OuGroup: "admin",
+		UserID:  "ddmtest",
+		OuGroup: "ddmtestOu",
 	}, true
 }

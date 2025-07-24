@@ -6,18 +6,18 @@
     "port": 55007
   },
   "development": {
-    "isSMX": false,
+    "isSMX": true,
     "skipPolicyChecks": false,
-    "IsUsingInvDb": false,
+    "IsUsingInvDb": true,
     "IsAutoMigrateEnabled": true,
     "IsBlacklistFilter": true,
-    "TargetSshPort": "22",
+    "TargetSshPort": "64022",
     "proxyHostIpForRejoinRouting": "127.0.1",
     "proxyHostNameJustForLookup": "ddm-proxy",
     "proxyLoadbalancerEndpointForDiffProxyGroups": "localhost:45007"
   },
   "ssl": {
-    "enabled": false
+    "enabled": true
   },
   "Cors": {
     "allowOrigins": ["*"],

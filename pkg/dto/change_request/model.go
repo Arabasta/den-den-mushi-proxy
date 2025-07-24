@@ -1,8 +1,6 @@
 package change_request
 
 type Model struct {
-	ID uint `gorm:"primaryKey;column:ID;type:bigint"` // todo: tmp for dev
-
 	CRNumber          string `gorm:"column:TicketNumber"`
 	Country           string `gorm:"column:CountryImpacted"` // Comma-separated. e.g. "SG,HK"
 	Lob               string `gorm:"column:LOB"`
@@ -16,5 +14,5 @@ type Model struct {
 }
 
 func (Model) TableName() string {
-	return "changerequest"
+	return "changerequests"
 }

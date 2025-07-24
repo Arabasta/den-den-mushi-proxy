@@ -1,22 +1,23 @@
 package testdata
 
 import (
+	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/pkg/dto/proxy_host"
 	"den-den-mushi-Go/pkg/dto/proxy_lb"
 	"gorm.io/gorm"
 )
 
-func CreateSMXTestData(db *gorm.DB) {
-	createProxyLb2(db)
-	createProxyHost2(db)
+func CreateProxyHostAndLb(db *gorm.DB, cfg *config.Config) {
+	createProxyLb2(db, cfg)
+	createProxyHost2(db, cfg)
 }
 
-func createProxyLb2(db *gorm.DB) {
+func createProxyLb2(db *gorm.DB, cfg *config.Config) {
 	// create proxy load balancer
 	db.Create(&[]proxy_lb.Model{
 		{
 			// needs changing
-			LoadBalancerEndpoint: "localhost:45007",
+			LoadBalancerEndpoint: cfg.Development.ProxyLoadbalancerEndpointForDiffProxyGroups,
 
 			Type:        "OS",
 			Region:      "SG",
@@ -25,12 +26,12 @@ func createProxyLb2(db *gorm.DB) {
 	})
 }
 
-func createProxyHost2(db *gorm.DB) {
+func createProxyHost2(db *gorm.DB, cfg *config.Config) {
 	db.Create(&[]proxy_host.Model{
 		{
 			// needs changing
-			IpAddress:            "127.0.1",
-			HostName:             "ddm-proxy",
+			IpAddress:            cfg.Development.ProxyHostIpForRejoinRouting,
+			HostName:             cfg.Development.ProxyHostNameJustForLookup,
 			LoadBalancerEndpoint: "localhost:45007", // foreign key to proxy_lb
 
 			ProxyType:   "OS",

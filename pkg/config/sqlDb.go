@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/spf13/viper"
+	"gorm.io/gorm/logger"
 	"strings"
 )
 
@@ -19,6 +20,7 @@ type SqlDb struct {
 	ConnMaxLifetimeMinutes int
 
 	SSLEnabled bool
+	LogLevel   logger.LogLevel // 1 Silent  2 Error 3 Warn 4 Info
 }
 
 func BindSqlDb(v *viper.Viper, envPrefix, viperPrefix string) *SqlDb {
