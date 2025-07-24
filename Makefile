@@ -5,7 +5,7 @@ BIN_DIR := bin
 # space separated list
 BINARIES := proxy control
 
-.PHONY: all build run clean generate check-generate
+.PHONY: all build run clean generate generate-client check-generate
 
 all: build
 
@@ -25,9 +25,17 @@ run:
 clean:
 	rm -rf $(BIN_DIR)
 
-#generate:
-#	go generate ./...
-#
+generate:
+	go generate ./...
+
+generate-client:
+	rm -r ./openapi/frontend/angular
+	npx @openapitools/openapi-generator-cli generate \
+	  -i ./openapi/control/openapi.yaml \
+	  -g typescript-angular \
+	  -o ./openapi/frontend/angular \
+	  --additional-properties=npmName=@yourorg/control-api-client,npmVersion=1.0.0,providedInRoot=true
+
 #check-generate:
 #	go generate ./...
 #	git diff --exit-code || (echo "Generated code out of date"; exit 1)

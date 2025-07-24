@@ -23,14 +23,16 @@ make run CMD=control
 Docs: http://localhost:55007/swagger/control <br>
 JSON: http://localhost:55007/swagger-spec/control.json
 
-### Generate backend code
+### Generate Golang Server Stub
 [gen.go](openapi/control/gen.go)
 
-
-### Generate frontend code
 ```bash
-./scripts/openapi-cli-install.sh
-./openapi/control/gen.frontend.sh 
+make generate
+```
+
+### Generate Angular code
+```bash
+make generate-client
 ```
 ## Load Test (switch to load-test branch)
 
