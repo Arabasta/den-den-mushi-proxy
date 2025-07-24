@@ -8,8 +8,8 @@ import (
 	oapi "den-den-mushi-Go/openapi/control"
 	hostpkg "den-den-mushi-Go/pkg/dto/host"
 	ptysessionspkg "den-den-mushi-Go/pkg/dto/pty_sessions"
-	"den-den-mushi-Go/pkg/middleware"
 	"den-den-mushi-Go/pkg/util/cyberark"
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
@@ -33,15 +33,21 @@ func NewService(crSvc *change_request.Service, ptySessionsSvc *pty_sessions.Serv
 }
 
 // todo refactor garbage
-func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, authCtx *middleware.AuthContext) ([]oapi.ChangeRequestSessionsResponse, error) {
+func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, _ *gin.Context) ([]oapi.ChangeRequestSessionsResponse, error) {
 	var r []oapi.ChangeRequestSessionsResponse
-	// todo: verify user permissions ? is this needed?
+
+	// todo: verify user permissions ? is this needed? or just allow everyone to view?
+	//authCtx, ok := middleware.GetAuthContext(c.Request.Context())
+	//if !ok {
+	//	httpx.RespondError(c, http.StatusUnauthorized, "auth context missing", nil, h.Log)
+	//	return
+	//}
 
 	// fetch CRs using filter
-	crs, err := s.crSvc.FindChangeRequests(filter)
+	crs, err := s.crSvc.FindChangeRequestsByFilter(filter)
 	s.log.Debug("CRs fetched", zap.Int("count", len(crs)))
 	if err != nil {
-		s.log.Error("FindChangeRequests", zap.Error(err))
+		s.log.Error("FindChangeRequestsByFilter", zap.Error(err))
 		return nil, err
 	}
 

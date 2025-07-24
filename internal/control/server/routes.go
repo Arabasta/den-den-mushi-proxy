@@ -2,6 +2,7 @@ package server
 
 import (
 	"den-den-mushi-Go/internal/control/config"
+	"den-den-mushi-Go/internal/control/healthcheck"
 	"den-den-mushi-Go/internal/control/make_change"
 	"den-den-mushi-Go/internal/control/pty_token"
 	"den-den-mushi-Go/internal/control/whiteblacklist"
@@ -32,6 +33,10 @@ func registerProtectedRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log 
 		},
 		WhiteBlacklistHandler: &whiteblacklist.Handler{
 			Service: deps.WhiteBlacklistService,
+			Log:     log,
+		},
+		HealthcheckHandler: &healthcheck.Handler{
+			Service: deps.HealthcheckService,
 			Log:     log,
 		},
 	}

@@ -91,12 +91,18 @@ type ConnectionPurpose string
 // ConnectionStatus Status of the connection
 type ConnectionStatus string
 
+// HealthcheckSessionsResponse defines model for HealthcheckSessionsResponse.
+type HealthcheckSessionsResponse struct {
+	HostSessionDetails *[]HostSessionDetails `json:"host_session_details,omitempty"`
+}
+
 // Host defines model for Host.
 type Host struct {
-	AppCode     string `json:"app_code"`
-	Environment string `json:"environment"`
-	IpAddress   string `json:"ip_address"`
-	Name        string `json:"name"`
+	AppCode     string  `json:"app_code"`
+	Country     *string `json:"country,omitempty"`
+	Environment string  `json:"environment"`
+	IpAddress   string  `json:"ip_address"`
+	Name        string  `json:"name"`
 }
 
 // HostSessionDetails defines model for HostSessionDetails.
@@ -237,6 +243,24 @@ type GetApiV1ChangeRequestsParams struct {
 	PageSize        *int             `form:"page_size,omitempty" json:"page_size,omitempty"`
 }
 
+// GetApiV1HealthcheckParams defines parameters for GetApiV1Healthcheck.
+type GetApiV1HealthcheckParams struct {
+	Hostname    *string `form:"hostname,omitempty" json:"hostname,omitempty"`
+	Ip          *string `form:"ip,omitempty" json:"ip,omitempty"`
+	Appcode     *string `form:"appcode,omitempty" json:"appcode,omitempty"`
+	Lob         *string `form:"lob,omitempty" json:"lob,omitempty"`
+	OsType      *string `form:"os_type,omitempty" json:"os_type,omitempty"`
+	Status      *string `form:"status,omitempty" json:"status,omitempty"`
+	Environment *string `form:"environment,omitempty" json:"environment,omitempty"`
+	Country     *string `form:"country,omitempty" json:"country,omitempty"`
+	SystemType  *string `form:"system_type,omitempty" json:"system_type,omitempty"`
+
+	// PtySessionState Does not filter out hosts, field not meant for users
+	PtySessionState *PtySessionState `form:"pty_session_state,omitempty" json:"pty_session_state,omitempty"`
+	Page            *int             `form:"page,omitempty" json:"page,omitempty"`
+	PageSize        *int             `form:"page_size,omitempty" json:"page_size,omitempty"`
+}
+
 // PostApiV1WhitelistRegexJSONBody defines parameters for PostApiV1WhitelistRegex.
 type PostApiV1WhitelistRegexJSONBody struct {
 	// Pattern The regular expression pattern
@@ -361,6 +385,9 @@ type ClientInterface interface {
 	// GetApiV1ChangeRequests request
 	GetApiV1ChangeRequests(ctx context.Context, params *GetApiV1ChangeRequestsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetApiV1Healthcheck request
+	GetApiV1Healthcheck(ctx context.Context, params *GetApiV1HealthcheckParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// PostApiV1PtyTokenJoinWithBody request with any body
 	PostApiV1PtyTokenJoinWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -462,6 +489,18 @@ func (c *Client) PutApiV1BlacklistRegexId(ctx context.Context, id int, body PutA
 
 func (c *Client) GetApiV1ChangeRequests(ctx context.Context, params *GetApiV1ChangeRequestsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetApiV1ChangeRequestsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetApiV1Healthcheck(ctx context.Context, params *GetApiV1HealthcheckParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1HealthcheckRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -917,6 +956,231 @@ func NewGetApiV1ChangeRequestsRequest(server string, params *GetApiV1ChangeReque
 	return req, nil
 }
 
+// NewGetApiV1HealthcheckRequest generates requests for GetApiV1Healthcheck
+func NewGetApiV1HealthcheckRequest(server string, params *GetApiV1HealthcheckParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/healthcheck/")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Hostname != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "hostname", runtime.ParamLocationQuery, *params.Hostname); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Ip != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "ip", runtime.ParamLocationQuery, *params.Ip); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Appcode != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "appcode", runtime.ParamLocationQuery, *params.Appcode); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Lob != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "lob", runtime.ParamLocationQuery, *params.Lob); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.OsType != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "os_type", runtime.ParamLocationQuery, *params.OsType); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Environment != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "environment", runtime.ParamLocationQuery, *params.Environment); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Country != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "country", runtime.ParamLocationQuery, *params.Country); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.SystemType != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "system_type", runtime.ParamLocationQuery, *params.SystemType); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PtySessionState != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "pty_session_state", runtime.ParamLocationQuery, *params.PtySessionState); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Page != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page", runtime.ParamLocationQuery, *params.Page); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewPostApiV1PtyTokenJoinRequest calls the generic PostApiV1PtyTokenJoin builder with application/json body
 func NewPostApiV1PtyTokenJoinRequest(server string, body PostApiV1PtyTokenJoinJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -1207,6 +1471,9 @@ type ClientWithResponsesInterface interface {
 	// GetApiV1ChangeRequestsWithResponse request
 	GetApiV1ChangeRequestsWithResponse(ctx context.Context, params *GetApiV1ChangeRequestsParams, reqEditors ...RequestEditorFn) (*GetApiV1ChangeRequestsResponse, error)
 
+	// GetApiV1HealthcheckWithResponse request
+	GetApiV1HealthcheckWithResponse(ctx context.Context, params *GetApiV1HealthcheckParams, reqEditors ...RequestEditorFn) (*GetApiV1HealthcheckResponse, error)
+
 	// PostApiV1PtyTokenJoinWithBodyWithResponse request with any body
 	PostApiV1PtyTokenJoinWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1PtyTokenJoinResponse, error)
 
@@ -1337,6 +1604,28 @@ func (r GetApiV1ChangeRequestsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetApiV1ChangeRequestsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetApiV1HealthcheckResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]HealthcheckSessionsResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApiV1HealthcheckResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApiV1HealthcheckResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1533,6 +1822,15 @@ func (c *ClientWithResponses) GetApiV1ChangeRequestsWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseGetApiV1ChangeRequestsResponse(rsp)
+}
+
+// GetApiV1HealthcheckWithResponse request returning *GetApiV1HealthcheckResponse
+func (c *ClientWithResponses) GetApiV1HealthcheckWithResponse(ctx context.Context, params *GetApiV1HealthcheckParams, reqEditors ...RequestEditorFn) (*GetApiV1HealthcheckResponse, error) {
+	rsp, err := c.GetApiV1Healthcheck(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetApiV1HealthcheckResponse(rsp)
 }
 
 // PostApiV1PtyTokenJoinWithBodyWithResponse request with arbitrary body returning *PostApiV1PtyTokenJoinResponse
@@ -1741,6 +2039,32 @@ func ParseGetApiV1ChangeRequestsResponse(rsp *http.Response) (*GetApiV1ChangeReq
 	return response, nil
 }
 
+// ParseGetApiV1HealthcheckResponse parses an HTTP response from a GetApiV1HealthcheckWithResponse call
+func ParseGetApiV1HealthcheckResponse(rsp *http.Response) (*GetApiV1HealthcheckResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetApiV1HealthcheckResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []HealthcheckSessionsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParsePostApiV1PtyTokenJoinResponse parses an HTTP response from a PostApiV1PtyTokenJoinWithResponse call
 func ParsePostApiV1PtyTokenJoinResponse(rsp *http.Response) (*PostApiV1PtyTokenJoinResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -1904,6 +2228,9 @@ type ServerInterface interface {
 	// Get change request and associated PTY sessions
 	// (GET /api/v1/change_requests/)
 	GetApiV1ChangeRequests(c *gin.Context, params GetApiV1ChangeRequestsParams)
+	// Get healthcheck servers for user's OU group and associated PTY sessions
+	// (GET /api/v1/healthcheck/)
+	GetApiV1Healthcheck(c *gin.Context, params GetApiV1HealthcheckParams)
 	// Mint a join token for an existing PTY session
 	// (POST /api/v1/pty_token/join)
 	PostApiV1PtyTokenJoin(c *gin.Context)
@@ -2107,6 +2434,122 @@ func (siw *ServerInterfaceWrapper) GetApiV1ChangeRequests(c *gin.Context) {
 	siw.Handler.GetApiV1ChangeRequests(c, params)
 }
 
+// GetApiV1Healthcheck operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1Healthcheck(c *gin.Context) {
+
+	var err error
+
+	c.Set(BearerAuthScopes, []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetApiV1HealthcheckParams
+
+	// ------------- Optional query parameter "hostname" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "hostname", c.Request.URL.Query(), &params.Hostname)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter hostname: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "ip" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "ip", c.Request.URL.Query(), &params.Ip)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter ip: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "appcode" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "appcode", c.Request.URL.Query(), &params.Appcode)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter appcode: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "lob" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "lob", c.Request.URL.Query(), &params.Lob)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter lob: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "os_type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "os_type", c.Request.URL.Query(), &params.OsType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter os_type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "environment" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "environment", c.Request.URL.Query(), &params.Environment)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter environment: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "country" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "country", c.Request.URL.Query(), &params.Country)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter country: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "system_type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "system_type", c.Request.URL.Query(), &params.SystemType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter system_type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "pty_session_state" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "pty_session_state", c.Request.URL.Query(), &params.PtySessionState)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter pty_session_state: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page", c.Request.URL.Query(), &params.Page)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetApiV1Healthcheck(c, params)
+}
+
 // PostApiV1PtyTokenJoin operation middleware
 func (siw *ServerInterfaceWrapper) PostApiV1PtyTokenJoin(c *gin.Context) {
 
@@ -2251,6 +2694,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/api/v1/blacklist/regex/:id", wrapper.DeleteApiV1BlacklistRegexId)
 	router.PUT(options.BaseURL+"/api/v1/blacklist/regex/:id", wrapper.PutApiV1BlacklistRegexId)
 	router.GET(options.BaseURL+"/api/v1/change_requests/", wrapper.GetApiV1ChangeRequests)
+	router.GET(options.BaseURL+"/api/v1/healthcheck/", wrapper.GetApiV1Healthcheck)
 	router.POST(options.BaseURL+"/api/v1/pty_token/join", wrapper.PostApiV1PtyTokenJoin)
 	router.POST(options.BaseURL+"/api/v1/pty_token/start", wrapper.PostApiV1PtyTokenStart)
 	router.GET(options.BaseURL+"/api/v1/whitelist/regex", wrapper.GetApiV1WhitelistRegex)
@@ -2262,55 +2706,58 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"AP//WoV195w+AAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

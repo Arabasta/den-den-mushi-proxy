@@ -1,6 +1,7 @@
 package server
 
 import (
+	"den-den-mushi-Go/internal/control/healthcheck"
 	"den-den-mushi-Go/internal/control/make_change"
 	"den-den-mushi-Go/internal/control/pty_token"
 	"den-den-mushi-Go/internal/control/whiteblacklist"
@@ -12,6 +13,7 @@ type MasterHandler struct {
 	PtyHandler            *pty_token.Handler
 	MakeChangeHandler     *make_change.Handler
 	WhiteBlacklistHandler *whiteblacklist.Handler
+	HealthcheckHandler    *healthcheck.Handler
 }
 
 // Forwarding methods (required by oapi.ServerInterface)
@@ -58,4 +60,8 @@ func (h *MasterHandler) PutApiV1BlacklistRegexId(c *gin.Context, id int) {
 
 func (h *MasterHandler) DeleteApiV1BlacklistRegexId(c *gin.Context, id int) {
 	h.WhiteBlacklistHandler.DeleteApiV1BlacklistRegexId(c, id)
+}
+
+func (h *MasterHandler) GetApiV1Healthcheck(c *gin.Context, params oapi.GetApiV1HealthcheckParams) {
+	h.HealthcheckHandler.GetApiV1Healthcheck(c, params)
 }

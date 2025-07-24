@@ -1,6 +1,7 @@
 package host
 
 import (
+	"den-den-mushi-Go/internal/control/filters"
 	dto "den-den-mushi-Go/pkg/dto/host"
 	"errors"
 	"go.uber.org/zap"
@@ -46,5 +47,68 @@ func (r *GormRepository) FindAllByIps(ips []string) ([]*dto.Record, error) {
 		return nil, err
 	}
 
+	return dto.FromModels(models), nil
+}
+
+func (r *GormRepository) FindAllByFilter(f filters.HealthcheckPtySession) ([]*dto.Record, error) {
+	var models []dto.Model
+	query := r.db.Model(&dto.Model{})
+
+	if f.Ip != nil && len(*f.Ip) > 0 {
+		query = query.Where("IPADDRESS = ?", *f.Ip)
+	}
+
+	if f.Appcode != nil && len(*f.Appcode) > 0 {
+		query = query.Where("APPLICATION_CODE = ?", *f.Appcode)
+	}
+
+	if f.Environment != nil && len(*f.Environment) > 0 {
+		query = query.Where("ENVIRONMENT = ?", *f.Environment)
+	}
+
+	if f.Country != nil && len(*f.Country) > 0 {
+		query = query.Where("COUNTRY = ?", *f.Country)
+	}
+
+	if f.Lob != nil && len(*f.Lob) > 0 {
+		query = query.Where("LOB = ?", *f.Lob)
+	}
+
+	if f.OsType != nil && len(*f.OsType) > 0 {
+		query = query.Where("PLATFORM = ?", *f.OsType)
+	}
+
+	if f.Hostname != nil && len(*f.Hostname) > 0 {
+		query = query.Where("HOSTNAME = ?", *f.Hostname)
+	}
+
+	if f.Status != nil && len(*f.Status) > 0 {
+		query = query.Where("STATUS = ?", *f.Status)
+	}
+
+	if f.SystemType != nil && len(*f.SystemType) > 0 {
+		query = query.Where("SYSTEM_TYPE = ?", *f.SystemType)
+	}
+
+	page := f.Page
+	if page < 1 {
+		page = 1
+	}
+
+	pageSize := f.PageSize
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 20
+	}
+
+	offset := (page - 1) * pageSize
+	query = query.Offset(offset).Limit(pageSize)
+
+	err := query.Find(&models).Error
+	if err != nil {
+		r.log.Error("DB error while fetching hosts by filter", zap.Any("filter", f), zap.Error(err))
+		return nil, err
+	}
+
+	r.log.Debug("Fetched hosts", zap.Int("Count", len(models)))
 	return dto.FromModels(models), nil
 }

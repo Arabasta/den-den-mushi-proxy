@@ -4,6 +4,7 @@ README.md
 api.base.service.ts
 api.module.ts
 api/api.ts
+api/healthcheck.service.ts
 api/makeChange.service.ts
 api/pTYToken.service.ts
 api/whitelistBlacklist.service.ts

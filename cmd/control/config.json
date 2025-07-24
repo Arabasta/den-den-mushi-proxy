@@ -14,7 +14,11 @@
     "TargetSshPort": "22",
     "proxyHostIpForRejoinRouting": "127.0.1",
     "proxyHostNameJustForLookup": "ddm-proxy",
-    "proxyLoadbalancerEndpointForDiffProxyGroups": "localhost:45007"
+    "proxyLoadbalancerEndpointForDiffProxyGroups": "localhost:45007",
+    "HealthcheckOsUsers" : [
+      "ddmhealthcheck",
+      "suzuyajuuzou"
+    ]
   },
   "ssl": {
     "enabled": false

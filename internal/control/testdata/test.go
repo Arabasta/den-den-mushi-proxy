@@ -3,6 +3,7 @@ package testdata
 import (
 	"den-den-mushi-Go/pkg/dto/change_request"
 	"den-den-mushi-Go/pkg/dto/cyberark"
+	"den-den-mushi-Go/pkg/dto/host"
 	"den-den-mushi-Go/pkg/dto/implementor_groups"
 	"den-den-mushi-Go/pkg/dto/proxy_host"
 	"den-den-mushi-Go/pkg/dto/proxy_lb"
@@ -10,10 +11,10 @@ import (
 )
 
 func CallAll(db *gorm.DB) {
-	createCR(db)
-	createImplementorGroups(db)
+	//createCR(db)
+	////createImplementorGroups(db)
 	//createCyberark(db)
-	//createProxyLb(db)
+	////createProxyLb(db)
 	//createProxyHost(db)
 	//createHosts(db)
 }
@@ -210,26 +211,30 @@ func createImplementorGroups(db *gorm.DB) {
 	})
 }
 
-//func createHosts(db *gorm.DB) {
-//	// create test hosts
-//	db.Create(&[]host.Model{
-//		{
-//			IpAddress:   "127.0.0.1",
-//			HostName:    "ddm-proxy",
-//			Status:      "Active",
-//			OSType:      "Linux",
-//			Environment: "Production",
-//			Country:     "SG",
-//			Appcode:     "ddm",
-//		},
-//		{
-//			IpAddress:   "54.255.144.215",
-//			HostName:    "aws-ec2-123",
-//			Status:      "Active",
-//			OSType:      "Linux",
-//			Environment: "Production",
-//			Country:     "SG",
-//			Appcode:     "UCHIHA",
-//		},
-//	})
-//}
+func createHosts(db *gorm.DB) {
+	// create test hosts
+	db.Create(&[]host.Model{
+		{
+			IpAddress:   "127.0.0.1",
+			HostName:    "ddm-proxy",
+			Status:      "Active",
+			OSType:      "Linux",
+			Environment: "Production",
+			Country:     "SG",
+			Appcode:     "ddm",
+			SystemType:  "Db",
+			Lob:         "TechOps",
+		},
+		{
+			IpAddress:   "54.255.144.215",
+			HostName:    "aws-ec2-123",
+			Status:      "Active",
+			OSType:      "Linux",
+			Environment: "Production",
+			Country:     "SG",
+			Appcode:     "Bob",
+			SystemType:  "App",
+			Lob:         "TechOps",
+		},
+	})
+}

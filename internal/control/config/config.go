@@ -18,6 +18,7 @@ type Config struct {
 		ProxyLoadbalancerEndpointForDiffProxyGroups string
 		ProxyHostIpForRejoinRouting                 string
 		ProxyHostNameJustForLookup                  string
+		HealthcheckOsUsers                          []string
 	}
 
 	Ssl *config.Ssl

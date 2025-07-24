@@ -35,45 +35,45 @@ func (r *GormRepository) FindByTicketNumber(num string) (*dto.Record, error) {
 	return dto.FromModel(&m)
 }
 
-func (r *GormRepository) FindChangeRequests(filter filters.ListCR) ([]*dto.Record, error) {
+func (r *GormRepository) FindChangeRequestsByFilter(f filters.ListCR) ([]*dto.Record, error) {
 	var models []dto.Model
 	query := r.db.Model(&dto.Model{})
 
-	if filter.TicketIDs != nil && len(*filter.TicketIDs) > 0 {
-		query = query.Where("TicketNumber IN ?", *filter.TicketIDs)
+	if f.TicketIDs != nil && len(*f.TicketIDs) > 0 {
+		query = query.Where("TicketNumber IN ?", *f.TicketIDs)
 	}
 
 	query = query.Where("State = ?", "Approved")
 
-	if filter.ImplementorGroups != nil {
-		for _, group := range *filter.ImplementorGroups {
+	if f.ImplementorGroups != nil {
+		for _, group := range *f.ImplementorGroups {
 			query = query.Or("ImplementerGroup LIKE ?", "%"+group+"%")
 		}
 	}
 
-	if filter.LOB != nil {
-		query = query.Where("LOB = ?", *filter.LOB)
+	if f.LOB != nil {
+		query = query.Where("LOB = ?", *f.LOB)
 	}
 
-	if filter.Country != nil {
-		query = query.Where("CountryImpacted LIKE ?", "%"+*filter.Country+"%")
+	if f.Country != nil {
+		query = query.Where("CountryImpacted LIKE ?", "%"+*f.Country+"%")
 	}
 
 	// note that this is stored as text in DB
-	if filter.StartTime != nil {
-		query = query.Where("ChangeSchedStartDateTime >= ?", filter.StartTime.Format("2006-01-02 15:04:05"))
+	if f.StartTime != nil {
+		query = query.Where("ChangeSchedStartDateTime >= ?", f.StartTime.Format("2006-01-02 15:04:05"))
 	}
 
-	if filter.EndTime != nil {
-		query = query.Where("ChangeSchedEndDateTime <= ?", filter.EndTime.Format("2006-01-02 15:04:05"))
+	if f.EndTime != nil {
+		query = query.Where("ChangeSchedEndDateTime <= ?", f.EndTime.Format("2006-01-02 15:04:05"))
 	}
 
-	page := filter.Page
+	page := f.Page
 	if page < 1 {
 		page = 1
 	}
 
-	pageSize := filter.PageSize
+	pageSize := f.PageSize
 	if pageSize <= 0 || pageSize > 100 {
 		pageSize = 20
 	}
@@ -83,10 +83,14 @@ func (r *GormRepository) FindChangeRequests(filter filters.ListCR) ([]*dto.Recor
 
 	err := query.Find(&models).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			r.log.Debug("No change requests found for provided filters", zap.Any("filters", f))
+			return nil, nil
+		}
 		r.log.Error("DB error while fetching change requests", zap.Error(err))
 		return nil, err
 	}
 
-	r.log.Debug("Fetched change requests", zap.Any("models", models))
+	r.log.Debug("Fetched change requests", zap.Int("Count", len(models)))
 	return dto.FromModels(models)
 }

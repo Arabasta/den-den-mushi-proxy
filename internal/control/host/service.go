@@ -1,6 +1,7 @@
 package host
 
 import (
+	"den-den-mushi-Go/internal/control/filters"
 	dto "den-den-mushi-Go/pkg/dto/host"
 	"den-den-mushi-Go/pkg/types"
 	"go.uber.org/zap"
@@ -39,4 +40,9 @@ func (s *Service) FindAllByIps(ips []string) ([]*dto.Record, error) {
 // todo
 func (s *Service) FindFilterTypeByHostType(h types.Proxy) (types.Filter, error) {
 	return types.Blacklist, nil
+}
+
+func (s *Service) FindAllByFilter(f filters.HealthcheckPtySession) ([]*dto.Record, error) {
+	s.log.Debug("Finding hosts by filter", zap.Any("filter", f))
+	return s.repo.FindAllByFilter(f)
 }

@@ -68,7 +68,6 @@ func main() {
 		}
 		if cfg.Development.IsAutoMigrateEnabled {
 			testdata.CallAll(db)
-			testdata.CreateProxyHostAndLb(db, cfg)
 		}
 	}
 

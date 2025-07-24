@@ -9,4 +9,6 @@ type Record struct {
 	Status      string
 	Environment string
 	Country     string
+	SystemType  string
+	Lob         string
 }

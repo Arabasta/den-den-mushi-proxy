@@ -17,6 +17,8 @@ func FromModel(m *Model) *Record {
 		Status:      m.Status,
 		Environment: m.Environment,
 		Country:     m.Country,
+		SystemType:  m.SystemType,
+		Lob:         m.Lob,
 	}
 }
 

@@ -16,12 +16,10 @@ func createProxyLb2(db *gorm.DB, cfg *config.Config) {
 	// create proxy load balancer
 	db.Create(&[]proxy_lb.Model{
 		{
-			// needs changing
 			LoadBalancerEndpoint: cfg.Development.ProxyLoadbalancerEndpointForDiffProxyGroups,
-
-			Type:        "OS",
-			Region:      "SG",
-			Environment: "UAT",
+			Type:                 "OS",
+			Region:               "SG",
+			Environment:          "UAT",
 		},
 	})
 }
@@ -32,7 +30,7 @@ func createProxyHost2(db *gorm.DB, cfg *config.Config) {
 			// needs changing
 			IpAddress:            cfg.Development.ProxyHostIpForRejoinRouting,
 			HostName:             cfg.Development.ProxyHostNameJustForLookup,
-			LoadBalancerEndpoint: "localhost:45007", // foreign key to proxy_lb
+			LoadBalancerEndpoint: cfg.Development.ProxyLoadbalancerEndpointForDiffProxyGroups, // foreign key to proxy_lb
 
 			ProxyType:   "OS",
 			Status:      "Active",

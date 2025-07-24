@@ -14,5 +14,6 @@ export interface Host {
     ip_address: string;
     environment: string;
     app_code: string;
+    country?: string;
 }
 

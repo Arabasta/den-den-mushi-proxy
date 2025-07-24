@@ -54,12 +54,12 @@ func (r *GormRepository) FindByStartConnChangeRequestIdsAndState(changeIDs []str
 }
 
 func (r *GormRepository) FindAllByChangeRequestIDAndServerIPs(changeRequestID string, ips []string) ([]*dto.Record, error) {
-	var sessions []dto.Model
+	var models []dto.Model
 	err := r.db.
 		Preload("Connections").
 		Where("start_conn_cr_id = ?", changeRequestID).
 		Where("start_conn_server_ip IN ?", ips).
-		Find(&sessions).Error
+		Find(&models).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -69,5 +69,29 @@ func (r *GormRepository) FindAllByChangeRequestIDAndServerIPs(changeRequestID st
 		}
 		return nil, err
 	}
-	return dto.FromModels(sessions), nil
+	return dto.FromModels(models), nil
+}
+
+func (r *GormRepository) FindAllByStartConnServerIpsAndState(hostips []string, state *types.PtySessionState) ([]*dto.Record, error) {
+	var models []dto.Model
+
+	query := r.db.Model(&dto.Model{}).Preload("Connections")
+
+	if state != nil {
+		query = query.Where("state = ?", *state)
+	}
+
+	if len(hostips) > 0 {
+		query = query.Where("start_conn_server_ip IN ?", hostips)
+	}
+
+	if err := query.Find(&models).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			r.log.Debug("No pty sessions found for provided server IPs and state",
+				zap.Strings("hostips", hostips))
+			return nil, nil
+		}
+		return nil, err
+	}
+	return dto.FromModels(models), nil
 }

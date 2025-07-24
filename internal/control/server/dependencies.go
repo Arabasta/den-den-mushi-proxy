@@ -4,6 +4,7 @@ import (
 	"den-den-mushi-Go/internal/control/change_request"
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/connection"
+	"den-den-mushi-Go/internal/control/healthcheck"
 	"den-den-mushi-Go/internal/control/host"
 	"den-den-mushi-Go/internal/control/implementor_groups"
 	"den-den-mushi-Go/internal/control/jwt"
@@ -30,6 +31,7 @@ type Deps struct {
 	MakeChangeService        *make_change.Service
 	RegexService             *regex_filters.Service
 	WhiteBlacklistService    *whiteblacklist.Service
+	HealthcheckService       *healthcheck.Service
 }
 
 func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps {
@@ -97,7 +99,7 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 		log, cfg)
 
 	makeChangeService := make_change.NewService(changeService, ptySessionService, hostService, log)
-
+	healthcheckService := healthcheck.NewService(ptySessionService, hostService, log, cfg)
 	return &Deps{
 		Issuer:                   issuer,
 		ProxyService:             proxyLbService,
@@ -109,5 +111,6 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 		MakeChangeService:        makeChangeService,
 		RegexService:             regexSvc,
 		WhiteBlacklistService:    whiteblacklistSvc,
+		HealthcheckService:       healthcheckService,
 	}
 }
