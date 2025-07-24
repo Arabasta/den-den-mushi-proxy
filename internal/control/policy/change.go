@@ -37,11 +37,6 @@ func (p *ChangePolicy[T]) Check(r T) error {
 		return nil
 	}
 
-	// 2. check for Change ID
-	if r.GetChangeId() == "" {
-		return errors.New("changeID is empty")
-	}
-
 	// 3a. get Change Request from ctx
 	cr := r.GetChangeRequest()
 	if cr == nil {
