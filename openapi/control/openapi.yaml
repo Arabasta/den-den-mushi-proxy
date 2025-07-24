@@ -245,10 +245,34 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/HealthcheckSessionsResponse'
-        '404':
-          description: Not found
-        '500':
-          description: Internal server error
+                example:
+                    host_session_details:
+                        - host:
+                            name: healthcheck-server-1
+                            ip_address: 54.255.144.215
+                            environment: Production
+                            app_code: ABC
+                            country: SG
+                            os_users:
+                                - ec2-user
+                                - admin
+                                - healthcheck
+                            pty_sessions:
+                              - id: 15263cb6-2483-4369-9bcb-89f64b03e5f01753109108
+                                created_by: kei
+                                start_time: "2025-07-21 22:45:08.308"
+                                end_time: "2025-07-22 00:45:12.381"
+                                last_activity: "2025-07-22 00:45:12.381"
+                                purpose: healthcheck
+                                state: active
+                                connections:
+                                  - id: kei/9348e6cd-2b1d-49b2-9ae7-03a6a279bc79
+                                    user_id: kei
+                                    pty_session_id: 15263cb6-2483-4369-9bcb-89f64b03e5f01753109108
+                                    start_role: implementor
+                                    status: active
+                                    join_time: "2025-07-21 22:45:08.325"
+                                    leave_time: "2025-07-21 22:46:48.383"
 
 ######################################################################### Whitelist / Blacklist Use Case
   /api/v1/whitelist/regex:
