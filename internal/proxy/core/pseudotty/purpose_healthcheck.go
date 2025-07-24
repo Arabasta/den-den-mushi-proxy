@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// todo: move to purpose package
+// todo: very very bad need to refactor
 
 type HealthcheckPurpose struct{}
 

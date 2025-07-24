@@ -3,7 +3,7 @@ package connect
 import (
 	"context"
 	"den-den-mushi-Go/internal/proxy/config"
-	"den-den-mushi-Go/internal/proxy/orchestrator/puppet"
+	"den-den-mushi-Go/internal/proxy/integrations/puppet"
 	"den-den-mushi-Go/internal/proxy/pty_util"
 	"den-den-mushi-Go/pkg/token"
 	"den-den-mushi-Go/pkg/types"
