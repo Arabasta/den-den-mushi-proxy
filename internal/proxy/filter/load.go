@@ -66,8 +66,8 @@ func (s *LoadService) loadFilter(filterType types.Filter) error {
 	}
 
 	filter.load(groupMap)
-	s.log.Info("Loaded regex filters", zap.String("filterType", string(filterType)),
-		zap.Int("groupCount", len(groupMap)))
-	s.log.Debug("Loaded regex filters", zap.Any("groupMap", groupMap))
+	//s.log.Debug("Loaded regex filters", zap.String("filterType", string(filterType)),
+	//	zap.Int("groupCount", len(groupMap)))
+	//s.log.Debug("Loaded regex filters", zap.Any("groupMap", groupMap))
 	return nil
 }
