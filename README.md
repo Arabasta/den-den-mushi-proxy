@@ -55,3 +55,40 @@ Apache JMeter 5.6.3
 4. Run JMeter
 
 5. Open [simple_load_test.jmx](simple_load_test.jmx)
+
+# Why blacklist filter won't work
+
+
+### base64 to gzip to bash
+```bash 
+a=as
+s`555`et -- bi
+ec`123`h`bbbb`o H4sIAIzmgmgAAysuBQB5vaRlAgAAAA== |  b"$a"e64 -d -d | /usr/bi`hello`n/gzi* -d | /"$@"n/b"$a"*
+
+```
+
+equals
+```bash
+echo H4sIAIzmgmgAAysuBQB5vaRlAgAAAA== |  b"$a"e64 -d -d | /usr/bin/gzi* -d | /"$@"n/b"$a"*
+```
+
+```bash
+echo H4sIAIzmgmgAAysuBQB5vaRlAgAAAA== |  base64 -d -d | /usr/bin/gzi* -d | /bin/bas*
+```
+
+```bash
+echo H4sIAIzmgmgAAysuBQB5vaRlAgAAAA== |  base64 -d | gzip -d | bash
+```
+
+```bash
+echo ��h+.y��e% | /usr/bin/gzip -d | bash
+```
+
+```bash
+echo su% | bash
+```
+
+```bash
+su
+```
+btw users can stack base64 / gzip 100x
