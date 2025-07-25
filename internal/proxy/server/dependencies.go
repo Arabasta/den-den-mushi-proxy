@@ -59,7 +59,7 @@ func initDependencies(db *gorm.DB, redis *redis.Client, cfg *config.Config, log 
 	val := jwt_service.NewValidator(parser, jtiService, cfg.JwtAudience, log)
 
 	regexRepo := regex_filters.NewGormRepository(db, log)
-	regexFiltersSvc := regex_filters.NewService(regexRepo, log)
+	regexFiltersSvc := regex_filters.NewService(regexRepo, log, cfg)
 	loadSvc := filter.NewLoadService(regexFiltersSvc, log)
 	loadSvc.StartScheduler()
 

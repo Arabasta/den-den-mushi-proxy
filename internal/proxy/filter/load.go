@@ -27,7 +27,7 @@ func NewLoadService(svc *regex_filters.Service, log *zap.Logger) *LoadService {
 func (s *LoadService) StartScheduler() {
 	s.log.Info("Starting regex filters reload scheduler")
 	go func() {
-		ticker := time.NewTicker(15 * time.Second)
+		ticker := time.NewTicker(s.svc.Cfg.Development.RegexDbPollIntervalSeconds * time.Second)
 		for range ticker.C {
 			if err := s.loadFilters(); err != nil {
 				s.log.Error("Failed to reload filters", zap.Error(err))
