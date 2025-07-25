@@ -29,7 +29,7 @@ type Deps struct {
 func initDependencies(db *gorm.DB, redis *redis.Client, cfg *config.Config, log *zap.Logger) *Deps {
 	connectionMethodFactory := connect.NewConnectionMethodFactory(
 		connect.NewDeps(
-			puppet.NewClient(cfg, log),
+			puppet.NewClient(cfg.Puppet, log),
 			pty_util.NewBuilder(log),
 			cfg,
 			log))

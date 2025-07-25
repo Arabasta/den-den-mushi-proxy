@@ -31,17 +31,17 @@ func GenerateEphemeralKey(cfg *config.Config, log *zap.Logger) (string, string, 
 			log.Error("Failed to remove ephemeral SSH key", zap.Error(err), zap.String("keyPath", keyPath))
 			return
 		}
-		log.Info("Ephemeral SSH key removed", zap.String("keyPath", keyPath))
+		log.Debug("Ephemeral SSH key removed", zap.String("keyPath", keyPath))
 	}
 
 	// todo: remove after testing
 	if cfg.App.Environment == "dev" {
-		log.Info("Ephemeral SSH key generated",
+		log.Debug("Ephemeral SSH key generated",
 			zap.String("keyPath", keyPath),
 			zap.String("publicKey", pubKeyString),
 			zap.String("privateKey", string(keyPair.RawPrivateKey())))
 	}
 
-	log.Info("Ephemeral SSH key generated")
+	log.Debug("Ephemeral SSH key generated")
 	return keyPath, pubKeyString, cleanup, nil
 }

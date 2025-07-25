@@ -8,6 +8,7 @@ import (
 	"den-den-mushi-Go/pkg/token"
 	"go.uber.org/zap"
 	"os"
+	"time"
 )
 
 type SshOrchestratorKeyConnection struct {
@@ -17,17 +18,15 @@ type SshOrchestratorKeyConnection struct {
 	commandBuilder *pty_util.Builder
 }
 
-func (c *SshOrchestratorKeyConnection) Connect(ctx context.Context, claims *token.Claims) (*os.File, error) {
+func (c *SshOrchestratorKeyConnection) Connect(_ context.Context, claims *token.Claims) (*os.File, error) {
 	keyPath, pubKey, cleanup, err := pty_util.GenerateEphemeralKey(c.cfg, c.log)
 	if err != nil {
 		return nil, err
 	}
-	go func() {
-		<-ctx.Done()
-		cleanup()
-	}()
 
-	if err := c.puppet.PuppetKeyInject(pubKey, claims.Connection); err != nil {
+	if err := c.puppet.KeyInject(pubKey, claims.Connection); err != nil {
+		cleanup()
+		_ = c.puppet.KeyRemove(pubKey, claims.Connection)
 		return nil, err
 	}
 
@@ -35,10 +34,21 @@ func (c *SshOrchestratorKeyConnection) Connect(ctx context.Context, claims *toke
 	pty, err := pty_util.Spawn(cmd)
 	if err != nil {
 		c.log.Error("Failed to spawn pseudo terminal", zap.Error(err))
+		cleanup()
+		_ = c.puppet.KeyRemove(pubKey, claims.Connection)
 		return nil, err
 	}
 
-	// todo: add key removal
+	go func() {
+		time.Sleep(2 * time.Second)
 
-	return pty, err
+		cleanup()
+		if err := c.puppet.KeyRemove(pubKey, claims.Connection); err != nil {
+			c.log.Error("Failed to remove remote key", zap.Error(err))
+		} else {
+			c.log.Info("Ephemeral SSH key removed from server")
+		}
+	}()
+
+	return pty, nil
 }

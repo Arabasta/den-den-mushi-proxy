@@ -35,11 +35,7 @@
     "allowMaxAge": 3600
   },
   "Puppet": {
-    "Endpoints": [
-      "https://puppet-green.example.com/api/v1",
-      "https://puppet-blue.example.com/api/v1"
-    ],
-    "TaskTimeoutSeconds": 120,
+    "TaskRetrySeconds": 5,
     "RetryAttempts": 3
   },
   "JwtAudience": {

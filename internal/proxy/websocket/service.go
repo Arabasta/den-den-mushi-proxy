@@ -31,6 +31,7 @@ func NewService(c *connect.ConnectionMethodFactory, sm *session_manager.Service,
 
 // initial connection flow for websocket connections
 // todo: handle ws close with pty close and return error to client
+// todo ctx propagation to all conns
 func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Claims) {
 	conn := client.New(ws, claims, s.cfg)
 
