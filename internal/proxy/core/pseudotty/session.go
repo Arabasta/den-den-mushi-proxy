@@ -30,8 +30,9 @@ type Session struct {
 	log *zap.Logger
 
 	// for logging all session events
-	sessionLogger session_logging.SessionLogger
-	lastInput     []byte
+	sessionLogger           session_logging.SessionLogger
+	sessionLoggerForAIThing session_logging.SessionLogger
+	lastInput               []byte
 
 	filter filter.CommandFilter // only for health check
 	line   *filter.LineEditor   // only for health check, tracks pty's current line
@@ -83,6 +84,11 @@ func New(id string, pty *os.File, now time.Time, onClose func(string), log *zap.
 
 	if err := s.initSessionLogger(); err != nil {
 		s.log.Error("Failed to create session log", zap.Error(err))
+		return s, err
+	}
+
+	if err := s.initSessionLoggerForAIThing(); err != nil {
+		s.log.Error("Failed to create session logger for ai thing", zap.Error(err))
 		return s, err
 	}
 
