@@ -4,6 +4,8 @@ import (
 	"den-den-mushi-Go/pkg/dto"
 )
 
+const TaskInjectPublicKey puppetTask = "inject_public_key"
+
 type taskBody struct {
 	Environment string           `json:"environment"`
 	Task        string           `json:"task"`

@@ -4,6 +4,8 @@ import (
 	"den-den-mushi-Go/pkg/dto"
 )
 
+const TaskRemovePublicKey puppetTask = "remove_public_key"
+
 func (p *Client) KeyRemove(publicKey string, conn dto.Connection) error {
 	params := taskBody{
 		Environment: "production",
