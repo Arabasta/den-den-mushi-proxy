@@ -27,7 +27,7 @@ func (s *Service) mintStartTokenHealth(r wrapper.WithAuth[request.StartRequest])
 	//	return "", "", err
 	//}
 
-	hostConnMethod, hostType := types.SshTestKey, types.OS
+	hostConnMethod, hostType := types.LocalSshKey, types.OS
 	// todo: enable all these
 	// hostConnMethod, err := s.hostS.FindHostConnectionMethodByIp(r.Server.IP) todo: grab server conn method how?
 
@@ -51,7 +51,7 @@ func (s *Service) mintStartTokenCR(r wrapper.WithAuth[request.StartRequest]) (st
 		return "", "", err
 	}
 
-	hostConnMethod, hostType := types.SshTestKey, types.OS
+	hostConnMethod, hostType := types.LocalSshKey, types.OS
 
 	// todo: enable all these
 	// hostConnMethod, err := s.hostS.FindHostConnectionMethodByIp(r.Server.IP) todo: grab server conn method how?

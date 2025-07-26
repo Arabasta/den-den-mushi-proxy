@@ -6,29 +6,10 @@ import (
 
 const TaskInjectPublicKey puppetTask = "inject_public_key"
 
-type taskBody struct {
-	Environment string           `json:"environment"`
-	Task        string           `json:"task"`
-	Params      sshKeyTaskParams `json:"params"`
-	Scope       taskScope        `json:"scope"`
-}
-
-type sshKeyTaskParams struct {
-	PublicKey   string `json:"public_key"`
-	ServerIP    string `json:"server_ip"`
-	OSUser      string `json:"os_user"`
-	ConnPurpose string `json:"conn_purpose"`
-	ConnType    string `json:"conn_type"`
-}
-
-type taskScope struct {
-	Nodes []string `json:"nodes"`
-}
-
 func (p *Client) KeyInject(publicKey string, conn dto.Connection) error {
 	params := taskBody{
-		Environment: "production",
-		Task:        "task",
+		Environment: p.cfg.TaskEnvironment,
+		Task:        TaskInjectPublicKey,
 		Params: sshKeyTaskParams{
 			PublicKey:   publicKey,
 			ServerIP:    conn.Server.IP,

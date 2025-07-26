@@ -51,10 +51,10 @@ func (f *ConnectionMethodFactory) Create(t types.ConnectionMethod) ConnectionMet
 			commandBuilder: f.deps.commandBuilder,
 		}
 
-	case types.SshTestKey:
-		return &SshTestKeyConnection{
+	case types.LocalSshKey:
+		return &LocalSshKeyConnection{
 			log:            f.deps.log,
-			cfg:            f.deps.cfg,
+			cfg:            f.deps.cfg.SshKey,
 			commandBuilder: f.deps.commandBuilder,
 		}
 

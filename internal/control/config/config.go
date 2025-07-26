@@ -19,6 +19,7 @@ type Config struct {
 		ProxyHostIpForRejoinRouting                 string
 		ProxyHostNameJustForLookup                  string
 		HealthcheckOsUsers                          []string
+		IsLocalSshKeyIfNotIsPuppetKey               bool
 	}
 
 	Ssl *config.Ssl

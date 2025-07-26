@@ -36,6 +36,8 @@ type Config struct {
 
 	JwtAudience *config.JwtAudience
 
+	SshKey *config.SshKey
+
 	Websocket struct {
 		PingPong struct {
 			PingIntervalSeconds time.Duration

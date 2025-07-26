@@ -11,6 +11,7 @@
     "IsUsingInvDb": true,
     "IsAutoMigrateEnabled": true,
     "IsBlacklistFilter": true,
+    "IsLocalSshKeyIfNotIsPuppetKey": true,
     "TargetSshPort": "64022",
     "proxyHostIpForRejoinRouting": "127.0.1",
     "proxyHostNameJustForLookup": "ddm-proxy",

@@ -11,6 +11,25 @@ import (
 
 type puppetTask string
 
+type taskBody struct {
+	Environment string           `json:"environment"`
+	Task        puppetTask       `json:"task"`
+	Params      sshKeyTaskParams `json:"params"`
+	Scope       taskScope        `json:"scope"`
+}
+
+type sshKeyTaskParams struct {
+	PublicKey   string `json:"public_key"`
+	ServerIP    string `json:"server_ip"`
+	OSUser      string `json:"os_user"`
+	ConnPurpose string `json:"conn_purpose"`
+	ConnType    string `json:"conn_type"`
+}
+
+type taskScope struct {
+	Nodes []string `json:"nodes"`
+}
+
 func (p *Client) getPuppetTaskUrl(t puppetTask) string {
 	switch t {
 	case TaskInjectPublicKey:

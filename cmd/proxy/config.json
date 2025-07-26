@@ -16,7 +16,6 @@
     "isSMX": false,
     "UseSqlJtiRepo": true,
     "UseRedis": false,
-    "SshTestKeyPath": "/Users/kei/Desktop/repos/ddm-proxy-tmp/ephemeral-ssh4192716415/id_ed25519",
     "IsUsingInvDb": false,
     "IsAutoMigrateEnabled": true,
     "RegexDbPollIntervalSeconds": 120
@@ -77,5 +76,8 @@
   "redis": {
     "port": 6379,
     "poolSize": 10
+  },
+  "SshKey": {
+    "IsLocalSshKeyEnabled": true
   }
 }

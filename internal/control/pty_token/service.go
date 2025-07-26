@@ -53,7 +53,11 @@ func NewService(psS *pty_sessions.Service, plbS *proxy_lb.Service, hostS *host.S
 
 // todo: split into healthcheck and cr endpoints
 func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (string, string, error) {
-	hostConnMethod, hostType := types.SshTestKey, types.OS
+	hostConnMethod, hostType := types.LocalSshKey, types.OS
+
+	if !s.cfg.Development.IsLocalSshKeyIfNotIsPuppetKey {
+		hostConnMethod = types.SshOrchestratorKey
+	}
 
 	var err error
 

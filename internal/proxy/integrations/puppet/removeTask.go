@@ -8,8 +8,8 @@ const TaskRemovePublicKey puppetTask = "remove_public_key"
 
 func (p *Client) KeyRemove(publicKey string, conn dto.Connection) error {
 	params := taskBody{
-		Environment: "production",
-		Task:        "task",
+		Environment: p.cfg.TaskEnvironment,
+		Task:        TaskRemovePublicKey,
 		Params: sshKeyTaskParams{
 			PublicKey:   publicKey,
 			ServerIP:    conn.Server.IP,
