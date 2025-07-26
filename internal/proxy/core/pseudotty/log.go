@@ -96,7 +96,10 @@ func (s *Session) logAndResetLineEditorIfInputEnter(pkt protocol.Packet) {
 			Data:   []byte(s.line.String()),
 		})
 		// log to yirong's ai log todo: refactor
-		line := session_logging.FormatLogLine(pkt.Header.String(), s.line.String())
+		s.mu.RLock()
+		userId := s.activePrimary.Claims.Subject
+		s.mu.RUnlock()
+		line := session_logging.FormatInputOnlyLogLine(userId, s.line.String())
 		if s.sessionLoggerForAIThing == nil {
 			s.log.Error("Log writer is not initialized, cannot log")
 			return

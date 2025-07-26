@@ -8,7 +8,11 @@ import (
 )
 
 func FormatLogLine(header, data string) string {
-	return fmt.Sprintf("%s [%s] %s", time.Now().Format(time.TimeOnly), header, data)
+	return fmt.Sprintf("%s [%s] %s", time.Now().Format(time.DateTime), header, data)
+}
+
+func FormatInputOnlyLogLine(userId, data string) string {
+	return fmt.Sprintf("%s %s: %s", time.Now().Format(time.DateTime), userId, data)
 }
 
 func FormatHeader(claims *token.Claims) string {
