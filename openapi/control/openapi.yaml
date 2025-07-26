@@ -5,10 +5,11 @@ info:
   description: |-
     API for starting and joining PTY sessions. Currently also hosting all non-proxy related endpoints.
 servers:
-  - url: http://localhost:55007
-    description: Local
   - url: https://x01smxtra1a.sp.uat.dbs.corp:55007
     description: UAT
+  - url: http://localhost:55007
+    description: Local
+
 
 tags:
   - name: PTY Token
@@ -109,10 +110,12 @@ paths:
           - name: start_time
             in: query
             required: false
+            description: Expected format - RFC3339
             schema: { type: string, format: date-time }
           - name: end_time
             in: query
             required: false
+            description: Expected format - RFC3339
             schema: { type: string, format: date-time }
           - name: pty_session_state
             in: query
