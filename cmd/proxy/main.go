@@ -55,7 +55,7 @@ func main() {
 	var redisClient *redis.Client
 
 	if cfg.Development.UseRedis {
-		redisClient, err = redispkg.Client(cfg.Redis, log) // todo pass redis to server
+		redisClient, err = redispkg.Client(cfg.Redis, log)
 		if err != nil {
 			log.Fatal("Failed to connect to Redis cluster", zap.Error(err))
 		}
