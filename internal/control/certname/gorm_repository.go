@@ -21,6 +21,7 @@ func NewGormRepository(db *gorm.DB, log *zap.Logger) *GormRepository {
 // temporary for demo as usual todo refactor
 func (r *GormRepository) FindCertnameByIp(ip string) (*dto.Record, error) {
 	var m dto.Model
+	var certname string
 
 	var hostModel host.Model
 	hostTable := hostModel.TableName()
@@ -33,7 +34,7 @@ func (r *GormRepository) FindCertnameByIp(ip string) (*dto.Record, error) {
 		WHERE h.IPADDRESS = ?
 	`, hostTable, puppetTable)
 
-	err := r.db.Raw(query, ip).Scan(&m).Error
+	err := r.db.Raw(query, ip).Scan(&certname).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -43,5 +44,5 @@ func (r *GormRepository) FindCertnameByIp(ip string) (*dto.Record, error) {
 		r.log.Error("DB error while fetching certname", zap.String("ip", ip), zap.Error(err))
 		return nil, err
 	}
-	return dto.FromModel(&m), nil
+	return &dto.Record{Certname: certname}, nil
 }
