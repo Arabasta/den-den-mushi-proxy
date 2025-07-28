@@ -18,7 +18,7 @@
     "UseRedis": false,
     "IsUsingInvDb": false,
     "IsAutoMigrateEnabled": true,
-    "RegexDbPollIntervalSeconds": 120
+    "RegexDbPollIntervalSeconds": 10
   },
   "logger": {
     "level": "debug",

@@ -2,6 +2,7 @@ package filter
 
 import (
 	"den-den-mushi-Go/pkg/types"
+	"fmt"
 	"regexp"
 )
 
@@ -25,6 +26,7 @@ func GetFilter(filterType types.Filter) CommandFilter {
 	case types.Whitelist:
 		return whitelistFilter
 	case types.Blacklist:
+		fmt.Println("Debug: Setting up blacklist filter")
 		return blacklistFilter
 	default:
 		return nil

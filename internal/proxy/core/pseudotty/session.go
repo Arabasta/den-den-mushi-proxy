@@ -106,9 +106,11 @@ func (s *Session) Setup(claims *token.Claims) error {
 
 	err := setPurpose(s, s.startClaims.Connection.Purpose)
 	if err != nil {
+		s.log.Error("Failed to set up session", zap.String("id", s.Id), zap.Error(err))
 		return err
 	}
 
+	s.log.Debug("Session purpose", zap.String("purpose", string(s.startClaims.Connection.Purpose)))
 	if s.startClaims.Connection.Purpose == types.Healthcheck {
 		s.log.Info("Setting healthcheck filter")
 		s.filter = filter.GetFilter(s.startClaims.Connection.FilterType)

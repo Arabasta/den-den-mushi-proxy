@@ -16,8 +16,10 @@ func (b *BlacklistFilter) IsValid(cmd string, ouGroup string) (string, bool) {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
+	log.Debug("Debug: Checking command against blacklist", zap.String("cmd", cmd), zap.String("ouGroup", ouGroup))
 	blockedCmds, ok := b.ouGroupRegexFiltersMap[ouGroup]
 	if !ok {
+		log.Debug("No blacklist found for OU group", zap.String("ouGroup", ouGroup))
 		return cmd, true // no filters for this OU group
 	}
 

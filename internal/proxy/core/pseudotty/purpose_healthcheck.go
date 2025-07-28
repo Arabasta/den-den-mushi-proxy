@@ -41,7 +41,9 @@ func (p *HealthcheckPurpose) HandleInput(s *Session, pkt protocol.Packet) (strin
 func (p *HealthcheckPurpose) handleEnter(s *Session, pkt protocol.Packet) (string, error) {
 	s.log.Debug("Handling Enter key press. Checking command: ", zap.String("line", s.line.String()))
 
+	s.log.Debug("Calling filter.IsValid for command", zap.String("line", s.line.String()), zap.String("ouGroup", s.activePrimary.Claims.OuGroup))
 	msg, allowed := s.filter.IsValid(s.line.String(), s.activePrimary.Claims.OuGroup)
+	s.log.Debug("Filter result", zap.String("line", s.line.String()), zap.Bool("allowed", allowed), zap.String("message", msg))
 	if !allowed {
 		errPkt := protocol.Packet{Header: protocol.BlockedCommand, Data: []byte(s.line.String())}
 		s.ptyOutput.Add(errPkt)
@@ -56,6 +58,8 @@ func (p *HealthcheckPurpose) handleEnter(s *Session, pkt protocol.Packet) (strin
 
 		return fmt.Sprintf("\n%s [Command Blocked] %s", time.Now().Format(time.TimeOnly), msg), nil
 	}
+
+	s.log.Debug("Checked command", zap.String("line", s.line.String()), zap.Bool("allowed", allowed))
 
 	return handler.Get[protocol.Input].Handle(pkt, s.pty)
 }
