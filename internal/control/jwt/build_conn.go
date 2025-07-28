@@ -11,7 +11,7 @@ import (
 )
 
 func BuildConnForStart(t types.ConnectionMethod, r wrapper.WithAuth[request.StartRequest], cr *change_request.Record,
-	f types.Filter, port string) *dtopkg.Connection {
+	f types.Filter, port string, allowedSuOsUsers []string) *dtopkg.Connection {
 	userSessionId := r.AuthCtx.UserID + "/" + uuid.NewString()
 
 	return &dtopkg.Connection{
@@ -40,7 +40,8 @@ func BuildConnForStart(t types.ConnectionMethod, r wrapper.WithAuth[request.Star
 			}
 			return dtopkg.ChangeRequest{}
 		}(),
-		FilterType: f,
+		FilterType:       f,
+		AllowedSuOsUsers: allowedSuOsUsers,
 	}
 }
 
@@ -68,6 +69,5 @@ func BuildConnForJoin(p *pty_sessions.Record, r wrapper.WithAuth[request.JoinReq
 			}
 			return dtopkg.ChangeRequest{}
 		}(),
-		FilterType: p.StartConnectionDetails.FilterType,
-	}
+		FilterType: p.StartConnectionDetails.FilterType}
 }

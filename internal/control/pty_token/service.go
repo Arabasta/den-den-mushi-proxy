@@ -13,6 +13,7 @@ import (
 	changerequestpkg "den-den-mushi-Go/pkg/dto/change_request"
 	"den-den-mushi-Go/pkg/middleware/wrapper"
 	"den-den-mushi-Go/pkg/types"
+	"den-den-mushi-Go/pkg/util/cyberark"
 	"errors"
 	"go.uber.org/zap"
 )
@@ -74,6 +75,8 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 	var cr *changerequestpkg.Record
 	adapter := &request.StartAdapter{Req: r}
 
+	var allowedSuOsUsers []string
+
 	if r.Body.Purpose == types.Change {
 		cr, err = s.crSvc.FindByTicketNumber(r.Body.ChangeID)
 		if err != nil || cr == nil {
@@ -88,6 +91,9 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 			s.log.Warn("Change request policy check failed", zap.Error(err))
 			return "", "", err
 		}
+
+		allowedSuOsUsers = cyberark.ExtractAllOsUsers(cr.CyberArkObjects)
+		s.log.Debug("CR allowed OS users extracted", zap.Strings("allowedSuOsUsers", allowedSuOsUsers))
 	} else if r.Body.Purpose == types.Healthcheck {
 		s.log.Debug("Starting healthcheck policy check")
 		if err = s.healthCheckPolicyChain.Check(adapter); err != nil {
@@ -101,6 +107,9 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 			filter = types.Whitelist
 		}
 
+		allowedSuOsUsers = s.cfg.Development.HealthcheckOsUsers
+		s.log.Debug("Healthcheck allowed OS users", zap.Strings("allowedSuOsUsers", allowedSuOsUsers))
+
 		//filter, err = s.hostSvc.FindFilterTypeByHostType(hostType)
 		//if err != nil {
 		//	s.log.Error("Failed to find filter type by host type", zap.String("hostType", string(hostType)), zap.Error(err))
@@ -109,7 +118,7 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 	}
 
 	s.log.Debug("Building connection for start")
-	conn := jwt.BuildConnForStart(hostConnMethod, r, cr, filter, s.cfg.Development.TargetSshPort)
+	conn := jwt.BuildConnForStart(hostConnMethod, r, cr, filter, s.cfg.Development.TargetSshPort, allowedSuOsUsers)
 
 	tok, err := s.issuer.Mint(r.AuthCtx, conn, hostType)
 	if err != nil {

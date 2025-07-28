@@ -8,9 +8,9 @@ import (
 	"os"
 )
 
-type ResizeHandler struct{}
+type Resize struct{}
 
-func (h *ResizeHandler) Handle(pkt protocol.Packet, pty io.Writer) (string, error) {
+func (h *Resize) Handle(pkt protocol.Packet, pty io.Writer) (string, error) {
 	if len(pkt.Data) != 4 {
 		return "", nil
 	}

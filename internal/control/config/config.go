@@ -20,6 +20,7 @@ type Config struct {
 		ProxyHostNameJustForLookup                  string
 		HealthcheckOsUsers                          []string
 		IsLocalSshKeyIfNotIsPuppetKey               bool
+		IsTmpAuthCookieEnabled                      bool
 	}
 
 	CookieTmp struct {

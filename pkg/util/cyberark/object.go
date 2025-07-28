@@ -90,3 +90,21 @@ func MapIPToOSUsers(objects []string) map[string][]string {
 
 	return result
 }
+
+func ExtractAllOsUsers(objects []string) []string {
+	userSet := make(map[string]struct{})
+
+	for _, o := range objects {
+		user := extractOsUserFromObject(o)
+		if user != "" {
+			userSet[user] = struct{}{}
+		}
+	}
+
+	users := make([]string, 0, len(userSet))
+	for user := range userSet {
+		users = append(users, user)
+	}
+
+	return users
+}

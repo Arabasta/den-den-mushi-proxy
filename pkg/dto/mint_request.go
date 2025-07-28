@@ -23,13 +23,14 @@ type ServerInfo struct {
 }
 
 type Connection struct {
-	Server        ServerInfo              `json:"server" binding:"required" gorm:"column:start_conn_server"`
-	Type          types.ConnectionMethod  `json:"type" binding:"required"`
-	Purpose       types.ConnectionPurpose `json:"purpose" binding:"required"`
-	UserSession   UserSession             `json:"user_session"`
-	PtySession    PtySession              `json:"pty_session"`
-	ChangeRequest ChangeRequest           `json:"change_request,omitempty"`
-	FilterType    types.Filter            `json:"filter_type,omitempty"`
+	Server           ServerInfo              `json:"server" binding:"required" gorm:"column:start_conn_server"`
+	Type             types.ConnectionMethod  `json:"type" binding:"required"`
+	Purpose          types.ConnectionPurpose `json:"purpose" binding:"required"`
+	UserSession      UserSession             `json:"user_session"`
+	PtySession       PtySession              `json:"pty_session"`
+	ChangeRequest    ChangeRequest           `json:"change_request,omitempty"`
+	FilterType       types.Filter            `json:"filter_type,omitempty"`
+	AllowedSuOsUsers []string                `json:"allowed_su_os_users,omitempty"` // list of OS users that can be used for sudo, empty if not allowed
 }
 
 type UserSession struct {

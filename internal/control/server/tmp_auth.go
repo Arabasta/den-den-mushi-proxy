@@ -10,44 +10,50 @@ import (
 
 func TmpAuth(log *zap.Logger, cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenStr, err := c.Cookie(cfg.CookieTmp.Name)
-		if err != nil {
-			log.Error("cookie not found", zap.Error(err))
-			c.Redirect(http.StatusFound, cfg.CookieTmp.Redirect)
-			c.Abort()
-			return
-		}
-
-		var jwtSecret = []byte(cfg.CookieTmp.Secret)
-
-		// validate JWT with secret
-		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, jwt.ErrSignatureInvalid
+		if cfg.Development.IsTmpAuthCookieEnabled {
+			tokenStr, err := c.Cookie(cfg.CookieTmp.Name)
+			if err != nil {
+				log.Error("cookie not found", zap.Error(err))
+				c.Redirect(http.StatusFound, cfg.CookieTmp.Redirect)
+				c.Abort()
+				return
 			}
-			return jwtSecret, nil
-		})
 
-		if err != nil || !token.Valid {
-			log.Warn("invalid jwt token", zap.Error(err))
-			c.Redirect(http.StatusFound, cfg.CookieTmp.Redirect)
-			c.Abort()
-			return
+			var jwtSecret = []byte(cfg.CookieTmp.Secret)
+
+			// validate JWT with secret
+			token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, jwt.ErrSignatureInvalid
+				}
+				return jwtSecret, nil
+			})
+
+			if err != nil || !token.Valid {
+				log.Warn("invalid jwt token", zap.Error(err))
+				c.Redirect(http.StatusFound, cfg.CookieTmp.Redirect)
+				c.Abort()
+				return
+			}
+
+			if claims, ok := token.Claims.(jwt.MapClaims); ok {
+				subject := claims[cfg.CookieTmp.UserIdKey].(string)
+				// inject username into Gin context
+				c.Set("user_id", subject)
+			} else {
+				log.Warn("invalid jwt claims")
+				c.Redirect(http.StatusFound, cfg.CookieTmp.Redirect)
+				c.Abort()
+				return
+			}
+
+			//c.Set("ou_groups", "ou_group1", "ou_group2")
+
+		} else { // no cookie
+			// inject username into Gin context
+			c.Set("user_id", "ddm_adminTest")
 		}
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			subject := claims[cfg.CookieTmp.UserIdKey].(string)
-			c.Set("user_id", subject)
-		} else {
-			log.Warn("invalid jwt claims")
-			c.Redirect(http.StatusFound, cfg.CookieTmp.Redirect)
-			c.Abort()
-			return
-		}
-
-		// inject username into Gin context
-		c.Set("user_id", "subject_from_token")
-		//c.Set("ou_groups", "ou_group1", "ou_group2")
 		c.Next()
 	}
 }

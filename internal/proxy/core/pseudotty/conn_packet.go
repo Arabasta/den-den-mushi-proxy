@@ -3,9 +3,11 @@ package pseudotty
 import (
 	"den-den-mushi-Go/internal/proxy/core/core_helpers"
 	"den-den-mushi-Go/internal/proxy/core/pseudotty/session_logging"
+	"den-den-mushi-Go/internal/proxy/handler"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"den-den-mushi-Go/pkg/constants"
 	"go.uber.org/zap"
+	"slices"
 	"time"
 )
 
@@ -47,25 +49,47 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		logMsg, err = s.purpose.HandleInput(s, pkt)
 		s.logAndResetLineEditorIfInputEnter(pkt)
 	} else if pkt.Header == protocol.Sudo {
-		s.log.Debug("Handling Sudo packet", zap.String("data", string(pkt.Data)))
-
 		// packet should contain username to sudo to
-		//targetUser := string(pkt.Data)
-		//
-		//// check targetUser against initial claims
-		//if !array.Contains(targetUser, s.startClaims.Connection.ChangeRequest.OsUsers) {
-		//
-		//}
+		targetUser := string(pkt.Data)
+		s.log.Debug("Handling Sudo packet", zap.String("target OS user", targetUser))
 
-		// draw password form cyberark
+		// check targetUser against initial claims
+		if !slices.Contains(s.startClaims.Connection.AllowedSuOsUsers, targetUser) {
+			s.log.Error("Unauthorized sudo attempt", zap.String("user", targetUser),
+				zap.Strings("allowedUsers", s.startClaims.Connection.AllowedSuOsUsers))
+			return
+		}
 
-		// lock pty output
+		userPacket := protocol.Packet{
+			Header: protocol.SudoInputUser,
+			Data:   []byte(targetUser),
+		}
+
+		// draw password from cyberark
+		password := "12312333"
+		passwordPacket := protocol.Packet{
+			Header: protocol.SudoInputPassword,
+			Data:   []byte(password),
+		}
+
+		// todo lock pty output
 
 		// call SudoUsernameHandler
+		logMsg, err = handler.Get[userPacket.Header].Handle(userPacket, s.pty)
+		if err != nil {
+			s.log.Error("Failed to handle SudoUsername packet", zap.Error(err))
+			return
+		}
 
 		// call SudoPasswordHandler
+		logMsg, err = handler.Get[passwordPacket.Header].Handle(passwordPacket, s.pty)
+		if err != nil {
+			// todo unlock pty output
+			s.log.Error("Failed to handle SudoPassword packet", zap.Error(err))
+			return
+		}
 
-		// unlock pty output
+		// todo unlock pty output
 
 	} else {
 		logMsg, err = s.purpose.HandleOther(s, pkt)

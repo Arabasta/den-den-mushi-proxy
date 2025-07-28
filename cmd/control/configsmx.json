@@ -19,7 +19,8 @@
     "HealthcheckOsUsers" : [
       "ddmhealthcheck",
       "suzuyajuuzou"
-    ]
+    ],
+    "IsTmpAuthCookieEnabled": false
   },
   "ssl": {
     "enabled": true

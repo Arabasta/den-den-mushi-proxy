@@ -52,3 +52,23 @@ function sendInput(data) {
     buffer.set(inputBytes, 1);
     socketManager.getSocket().send(buffer);
 }
+
+document.getElementById('sudoButton').addEventListener('click', () => {
+    const user = prompt("Enter user to switch to:", "root");
+    if (!user) return;
+
+    const encoder = new TextEncoder();
+    const payload = encoder.encode(user);
+
+    const buffer = new Uint8Array(1 + payload.length);
+    buffer[0] = 0x11;  // Sudo header
+    buffer.set(payload, 1);
+
+    const socket = socketManager.getSocket();
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(buffer);
+        console.log(`Sent sudo request for user: ${user}`);
+    } else {
+        console.warn("WebSocket not connected.");
+    }
+});
