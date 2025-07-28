@@ -37,6 +37,11 @@ func (s *Session) readPtyLoop() {
 			return
 		}
 
+		if s.isPtyOutputLocked {
+			s.log.Warn("PTY output is locked, skipping packet")
+			continue
+		}
+
 		data := append([]byte{}, buf[:n]...)
 		pkt := protocol.Packet{
 			Header: protocol.Output,

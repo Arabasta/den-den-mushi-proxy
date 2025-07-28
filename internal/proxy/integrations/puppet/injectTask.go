@@ -11,11 +11,9 @@ func (p *Client) KeyInject(publicKey string, conn dto.Connection) error {
 		Environment: p.cfg.TaskEnvironment,
 		Task:        TaskInjectPublicKey,
 		Params: sshKeyTaskParams{
-			PublicKey:   publicKey,
-			ServerIP:    conn.Server.IP,
-			OSUser:      conn.Server.OSUser,
-			ConnPurpose: string(conn.Purpose),
-			ConnType:    string(conn.Type),
+			PublicKey:    publicKey,
+			OSUser:       conn.Server.OSUser,
+			ConnectionID: conn.UserSession.Id,
 		},
 		Scope: taskScope{
 			Nodes: []string{conn.Server.IP},

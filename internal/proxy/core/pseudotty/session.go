@@ -46,7 +46,9 @@ type Session struct {
 	connRegisterCh   chan *client.Connection
 	connDeregisterCh chan *client.Connection
 
-	ptyOutput *ds.CircularArray[protocol.Packet]
+	ptyOutput                    *ds.CircularArray[protocol.Packet]
+	isPtyOutputLocked            bool // lock to prevent output during Sudo just incase of password leak
+	tmpMuForPtyThingTillRefactor sync.RWMutex
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -79,7 +81,8 @@ func New(id string, pty *os.File, now time.Time, onClose func(string), log *zap.
 		State:   types.Created,
 		onClose: onClose,
 
-		ptyOutput: ds.NewCircularArray[protocol.Packet](500), // todo: make configurable capa and maybe track line or something
+		ptyOutput:         ds.NewCircularArray[protocol.Packet](500), // todo: make configurable capa and maybe track line or something
+		isPtyOutputLocked: false,
 	}
 
 	s.ctx, s.cancel = context.WithCancel(context.Background())

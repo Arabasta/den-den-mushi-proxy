@@ -65,16 +65,35 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 			Data:   []byte(targetUser),
 		}
 
-		// draw password from cyberark
+		// todo draw password from cyberark
 		password := "12312333"
 		passwordPacket := protocol.Packet{
 			Header: protocol.SudoInputPassword,
 			Data:   []byte(password),
 		}
 
-		// todo lock pty output
+		s.tmpMuForPtyThingTillRefactor.Lock()
+		s.isPtyOutputLocked = true
+
+		defer func() {
+			s.isPtyOutputLocked = false
+			logMsg, err = handler.Get[protocol.Input].Handle(protocol.Packet{
+				Header: protocol.Input,
+				Data:   append(constants.CtrlC, constants.Enter...),
+			}, s.pty)
+			time.Sleep(1000 * time.Millisecond)
+
+			// clear the screen just in case password leaks
+			s.log.Debug("Clearing screen after sudo operation", zap.String("target OS user", targetUser))
+			logMsg, err = handler.Get[protocol.Input].Handle(protocol.Packet{
+				Header: protocol.Input,
+				Data:   append([]byte("clear"), constants.Enter...),
+			}, s.pty)
+			s.tmpMuForPtyThingTillRefactor.Unlock()
+		}()
 
 		// call SudoUsernameHandler
+		s.log.Debug("Handling Sudo username packet", zap.String("target OS user", targetUser))
 		logMsg, err = handler.Get[userPacket.Header].Handle(userPacket, s.pty)
 		if err != nil {
 			s.log.Error("Failed to handle SudoUsername packet", zap.Error(err))
@@ -82,15 +101,12 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		}
 
 		// call SudoPasswordHandler
+		s.log.Debug("Handling Sudo password packet", zap.String("target OS user", targetUser))
 		logMsg, err = handler.Get[passwordPacket.Header].Handle(passwordPacket, s.pty)
 		if err != nil {
-			// todo unlock pty output
 			s.log.Error("Failed to handle SudoPassword packet", zap.Error(err))
 			return
 		}
-
-		// todo unlock pty output
-
 	} else {
 		logMsg, err = s.purpose.HandleOther(s, pkt)
 	}

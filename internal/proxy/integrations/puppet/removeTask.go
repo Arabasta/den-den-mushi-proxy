@@ -11,11 +11,9 @@ func (p *Client) KeyRemove(publicKey string, conn dto.Connection) error {
 		Environment: p.cfg.TaskEnvironment,
 		Task:        TaskRemovePublicKey,
 		Params: sshKeyTaskParams{
-			PublicKey:   publicKey,
-			ServerIP:    conn.Server.IP,
-			OSUser:      conn.Server.OSUser,
-			ConnPurpose: string(conn.Purpose),
-			ConnType:    string(conn.Type),
+			PublicKey:    publicKey,
+			OSUser:       conn.Server.OSUser,
+			ConnectionID: conn.UserSession.Id,
 		},
 		Scope: taskScope{
 			Nodes: []string{conn.Server.IP},

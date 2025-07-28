@@ -19,11 +19,12 @@ type taskBody struct {
 }
 
 type sshKeyTaskParams struct {
-	PublicKey   string `json:"public_key"`
-	ServerIP    string `json:"server_ip"`
-	OSUser      string `json:"os_user"`
-	ConnPurpose string `json:"conn_purpose"`
-	ConnType    string `json:"conn_type"`
+	PublicKey    string `json:"public_key"`
+	ServerIP     string `json:"server_ip"`
+	OSUser       string `json:"os_user"`
+	ConnPurpose  string `json:"conn_purpose"`
+	ConnType     string `json:"conn_type"`
+	ConnectionID string `json:"connection_id"`
 }
 
 type taskScope struct {
