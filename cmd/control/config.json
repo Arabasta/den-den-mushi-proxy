@@ -72,6 +72,6 @@
     "Name": "cookiename",
     "Redirect": "ddm.com/login",
     "UserIdKey": "username",
-    "Secret": "GOVER"
+    "Secret": ""
   }
 }

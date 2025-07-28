@@ -9,7 +9,7 @@
     "isSMX": true,
     "skipPolicyChecks": false,
     "IsUsingInvDb": true,
-    "IsAutoMigrateEnabled": true,
+    "IsAutoMigrateEnabled": false,
     "IsBlacklistFilter": true,
     "IsLocalSshKeyIfNotIsPuppetKey": true,
     "TargetSshPort": "64022",
@@ -72,6 +72,6 @@
     "Name": "cookiename",
     "Redirect": "ddm.com/login",
     "UserIdKey": "username",
-    "Secret": "GOVER"
+    "Secret": ""
   }
 }
