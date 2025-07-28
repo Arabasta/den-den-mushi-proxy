@@ -7,6 +7,7 @@ import (
 	"den-den-mushi-Go/internal/control/pty_token"
 	"den-den-mushi-Go/internal/control/whiteblacklist"
 	oapi "den-den-mushi-Go/openapi/control"
+	"den-den-mushi-Go/pkg/middleware"
 	"embed"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -17,9 +18,11 @@ import (
 func registerProtectedRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log *zap.Logger) {
 	protected := r.Group("")
 	protected.Use(
-	// todo use webseal middleware
-	//middleware.Webseal(log),
-	//middleware.SetAuthContext(),
+		// todo use webseal middleware
+		//middleware.Webseal(log),
+		TmpAuth(log, cfg),
+
+		middleware.SetAuthContext(),
 	)
 
 	m := &MasterHandler{

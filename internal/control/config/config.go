@@ -22,6 +22,13 @@ type Config struct {
 		IsLocalSshKeyIfNotIsPuppetKey               bool
 	}
 
+	CookieTmp struct {
+		Name      string
+		Redirect  string
+		UserIdKey string
+		Secret    string
+	}
+
 	Ssl *config.Ssl
 
 	Cors *config.Cors
