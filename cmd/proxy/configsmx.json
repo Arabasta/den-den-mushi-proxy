@@ -18,7 +18,8 @@
     "UseRedis": false,
     "IsUsingInvDb": true,
     "IsAutoMigrateEnabled": false,
-    "RegexDbPollIntervalSeconds": 30
+    "RegexDbPollIntervalSeconds": 30,
+    "SshPubKeyHostnameSuffix": "kei@Kes-MacBook-Pro.local"
   },
   "logger": {
     "level": "debug",

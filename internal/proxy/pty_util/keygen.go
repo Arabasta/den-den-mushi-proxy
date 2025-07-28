@@ -7,8 +7,10 @@ import (
 	"golang.org/x/crypto/ssh"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
+// t odo: put in /var/tmp
 func GenerateEphemeralKey(cfg *config.Config, log *zap.Logger) (string, string, func(), error) {
 	tmpDir, err := os.MkdirTemp("", "ephemeral-ssh")
 	if err != nil {
@@ -23,7 +25,8 @@ func GenerateEphemeralKey(cfg *config.Config, log *zap.Logger) (string, string, 
 		return "", "", nil, err
 	}
 
-	pubKeyString := string(ssh.MarshalAuthorizedKey(keyPair.PublicKey()))
+	pubKeyString := strings.Trim(string(ssh.MarshalAuthorizedKey(keyPair.PublicKey())), "\n")
+	pubKeyString += " " + cfg.Development.SshPubKeyHostnameSuffix
 
 	cleanup := func() {
 		err = os.RemoveAll(keyPath)

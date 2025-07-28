@@ -2,6 +2,7 @@ package puppet
 
 import (
 	"den-den-mushi-Go/pkg/dto"
+	"go.uber.org/zap"
 )
 
 const TaskInjectPublicKey PuppetTask = "inject_public_key"
@@ -19,6 +20,8 @@ func (p *Client) KeyInject(publicKey string, conn dto.Connection) error {
 			Nodes: []string{conn.ServerFQDNTmpTillRefactor},
 		},
 	}
+
+	p.log.Debug("Preparing to inject public key", zap.Any("params", params))
 
 	_, err := p.callPuppetTask(TaskInjectPublicKey, params)
 	return err

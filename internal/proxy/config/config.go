@@ -22,6 +22,7 @@ type Config struct {
 		IsAutoMigrateEnabled       bool
 		IsSMX                      bool
 		RegexDbPollIntervalSeconds time.Duration
+		SshPubKeyHostnameSuffix    string
 	}
 
 	Logger *config.Logger
