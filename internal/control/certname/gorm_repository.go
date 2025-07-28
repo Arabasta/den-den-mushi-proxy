@@ -27,10 +27,10 @@ func (r *GormRepository) FindCertnameByIp(ip string) (*dto.Record, error) {
 	puppetTable := m.TableName()
 
 	query := fmt.Sprintf(`
-		SELECT p.certname
+		SELECT p.CERTNAME
 		FROM %s h
-		JOIN %s p ON h.hostname = p.hostname
-		WHERE h.ip_address = ?
+		JOIN %s p ON h.HOSTNAME = p.HOSTNAME
+		WHERE h.IPADDRESS = ?
 	`, hostTable, puppetTable)
 
 	err := r.db.Raw(query, ip).Scan(&m).Error
