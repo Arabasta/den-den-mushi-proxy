@@ -4,12 +4,12 @@ import (
 	"den-den-mushi-Go/pkg/dto"
 )
 
-const TaskInjectPublicKey puppetTask = "inject_public_key"
+const TaskInjectPublicKey PuppetTask = "inject_public_key"
 
 func (p *Client) KeyInject(publicKey string, conn dto.Connection) error {
 	params := taskBody{
 		Environment: p.cfg.TaskEnvironment,
-		Task:        TaskInjectPublicKey,
+		Task:        p.cfg.InjectPublicKeyTaskName,
 		Params: sshKeyTaskParams{
 			PublicKey:    publicKey,
 			OSUser:       conn.Server.OSUser,

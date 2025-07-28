@@ -9,11 +9,11 @@ import (
 	"time"
 )
 
-type puppetTask string
+type PuppetTask string
 
 type taskBody struct {
 	Environment string           `json:"environment"`
-	Task        puppetTask       `json:"task"`
+	Task        string           `json:"task"`
 	Params      sshKeyTaskParams `json:"params"`
 	Scope       taskScope        `json:"scope"`
 }
@@ -28,19 +28,21 @@ type taskScope struct {
 	Nodes []string `json:"nodes"`
 }
 
-func (p *Client) getPuppetTaskUrl(t puppetTask) string {
+func (p *Client) getPuppetTask(t PuppetTask) string {
+	var taskName string
 	switch t {
 	case TaskInjectPublicKey:
-		return p.cfg.Endpoint + string(TaskInjectPublicKey)
+		taskName = p.cfg.InjectPublicKeyTaskName
 	case TaskRemovePublicKey:
-		return p.cfg.Endpoint + string(TaskRemovePublicKey)
+		taskName = p.cfg.RemovePublicKeyTaskName
 	default:
 		return ""
 	}
+	return taskName
 }
 
-func (p *Client) createPuppetRequest(t puppetTask, payload interface{}) (*http.Request, error) {
-	url := p.getPuppetTaskUrl(t)
+func (p *Client) createPuppetRequest(t PuppetTask, payload interface{}) (*http.Request, error) {
+	url := p.cfg.Endpoint
 	if url == "" {
 		return nil, fmt.Errorf("invalid puppet task: %s", t)
 	}
@@ -70,7 +72,7 @@ func (p *Client) createPuppetRequest(t puppetTask, payload interface{}) (*http.R
 	return req, nil
 }
 
-func (p *Client) callPuppetTask(task puppetTask, payload taskBody) (*http.Response, error) {
+func (p *Client) callPuppetTask(task PuppetTask, payload taskBody) (*http.Response, error) {
 	req, err := p.createPuppetRequest(task, payload)
 	if err != nil {
 		return nil, err

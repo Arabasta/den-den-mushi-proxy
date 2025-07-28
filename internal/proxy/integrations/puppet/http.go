@@ -14,10 +14,10 @@ func (p *Client) httpPostAndResponse(r *http.Request) (*http.Response, error) {
 	}
 	p.log.Debug("Http request successful", zap.Any("response", res))
 
-	if res.StatusCode != http.StatusOK {
-		p.log.Error("Http request failed", zap.Int("status_code", res.StatusCode))
-		return nil, fmt.Errorf("status code not 200")
-	}
+	//if true {
+	//	p.log.Error("Http request failed", zap.Int("status_code", res.StatusCode))
+	//	return nil, fmt.Errorf("status code not 200")
+	//}
 
 	//// get response
 	//respBody, err := io.ReadAll(res.Body)

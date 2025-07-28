@@ -4,12 +4,12 @@ import (
 	"den-den-mushi-Go/pkg/dto"
 )
 
-const TaskRemovePublicKey puppetTask = "remove_public_key"
+const TaskRemovePublicKey PuppetTask = "remove_public_key"
 
 func (p *Client) KeyRemove(publicKey string, conn dto.Connection) error {
 	params := taskBody{
 		Environment: p.cfg.TaskEnvironment,
-		Task:        TaskRemovePublicKey,
+		Task:        p.cfg.RemovePublicKeyTaskName,
 		Params: sshKeyTaskParams{
 			PublicKey:    publicKey,
 			OSUser:       conn.Server.OSUser,

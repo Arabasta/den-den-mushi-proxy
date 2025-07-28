@@ -6,11 +6,13 @@ import (
 )
 
 type Puppet struct {
-	Endpoint         string
-	TaskEnvironment  string
-	Token            string
-	RetryAttempts    int
-	TaskRetrySeconds time.Duration
+	Endpoint                string
+	TaskEnvironment         string
+	InjectPublicKeyTaskName string
+	RemovePublicKeyTaskName string
+	Token                   string
+	RetryAttempts           int
+	TaskRetrySeconds        time.Duration
 }
 
 func BindPuppet(v *viper.Viper) {
