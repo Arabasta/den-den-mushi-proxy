@@ -35,6 +35,8 @@
     "allowMaxAge": 3600
   },
   "Puppet": {
+    "InjectPublicKeyTaskName": "injectkey",
+    "RemovePublicKeyTaskName": "removekey",
     "TaskRetrySeconds": 5,
     "RetryAttempts": 3
   },
