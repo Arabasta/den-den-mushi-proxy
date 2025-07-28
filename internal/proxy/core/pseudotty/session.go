@@ -18,11 +18,13 @@ import (
 )
 
 type Session struct {
-	Id          string
-	pty         *os.File
+	Id  string
+	pty *os.File
+
 	startClaims *token.Claims // claims from the creator of the session, this must not be modified
-	startTime   time.Time
-	endTime     time.Time
+
+	startTime time.Time
+	endTime   time.Time
 
 	purpose Purpose
 

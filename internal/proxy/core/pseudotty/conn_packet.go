@@ -46,6 +46,27 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 
 		logMsg, err = s.purpose.HandleInput(s, pkt)
 		s.logAndResetLineEditorIfInputEnter(pkt)
+	} else if pkt.Header == protocol.Sudo {
+		s.log.Debug("Handling Sudo packet", zap.String("data", string(pkt.Data)))
+
+		// packet should contain username to sudo to
+		//targetUser := string(pkt.Data)
+		//
+		//// check targetUser against initial claims
+		//if !array.Contains(targetUser, s.startClaims.Connection.ChangeRequest.OsUsers) {
+		//
+		//}
+
+		// draw password form cyberark
+
+		// lock pty output
+
+		// call SudoUsernameHandler
+
+		// call SudoPasswordHandler
+
+		// unlock pty output
+
 	} else {
 		logMsg, err = s.purpose.HandleOther(s, pkt)
 	}

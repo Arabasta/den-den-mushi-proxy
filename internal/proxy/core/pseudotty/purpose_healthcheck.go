@@ -23,15 +23,19 @@ func (p *HealthcheckPurpose) HandleInput(s *Session, pkt protocol.Packet) (strin
 		return "", fmt.Errorf("expected Input header, got %s", string(pkt.Header))
 	}
 
-	if handlerFunc, ok := healthcheckBlockedControlHandlers[string(pkt.Data)]; ok {
-		return handlerFunc(p, s, pkt)
-	}
+	for _, b := range pkt.Data {
 
-	if bytes.Equal(pkt.Data, constants.Enter) {
-		return p.handleEnter(s, pkt)
-	}
+		if handlerFunc, ok := healthcheckBlockedControlHandlers[string([]byte{b})]; ok {
+			return handlerFunc(p, s, pkt)
+		}
 
-	return handler.Get[protocol.Input].Handle(pkt, s.pty)
+		if bytes.Equal([]byte{b}, constants.Enter) {
+			return p.handleEnter(s, pkt)
+		}
+
+		return handler.Get[protocol.Input].Handle(pkt, s.pty)
+	}
+	return "", fmt.Errorf("no valid control character found in packet data: %s", string(pkt.Data))
 }
 
 func (p *HealthcheckPurpose) handleEnter(s *Session, pkt protocol.Packet) (string, error) {

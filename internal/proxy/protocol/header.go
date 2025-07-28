@@ -26,6 +26,10 @@ func (h Header) String() string {
 		return "Resize"
 	case Sudo:
 		return "Sudo"
+	case SudoInputUser:
+		return "SudoInputUser"
+	case SudoInputPassword:
+		return "SudoInputPassword"
 	case ClientClose:
 		return "ClientClose"
 	case PtyNormalClose:
@@ -75,6 +79,12 @@ const (
 
 	// Sudo is called when the client wants to switch users. Required since "su" is blocked.
 	Sudo Header = 0x11
+
+	// SudoInputUser is used to send the username to the sudo handler
+	SudoInputUser Header = 0x20
+
+	// SudoInputPassword is used to send the password to the sudo handler
+	SudoInputPassword Header = 0x21
 
 	// ClientClose for closing the websocket connection
 	ClientClose Header = 0x12
