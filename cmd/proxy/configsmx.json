@@ -79,11 +79,5 @@
   },
   "SshKey": {
     "IsLocalSshKeyEnabled": true
-  },
-  "CookieTmp": {
-    "Name": "ddm-proxy-cookie-tmp",
-    "Redirect": "ddm.com/login",
-    "UserIdKey": "username",
-    "Secret": "ddm-proxy-secret"
   }
 }

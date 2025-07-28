@@ -67,5 +67,11 @@
   "redis": {
     "port": 6379,
     "poolSize": 10
+  },
+  "CookieTmp": {
+    "Name": "cookiename",
+    "Redirect": "ddm.com/login",
+    "UserIdKey": "username",
+    "Secret": "GOVER"
   }
 }
