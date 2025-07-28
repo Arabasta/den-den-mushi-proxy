@@ -1,6 +1,7 @@
 package server
 
 import (
+	"den-den-mushi-Go/internal/control/certname"
 	"den-den-mushi-Go/internal/control/change_request"
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/connection"
@@ -64,6 +65,9 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 	connRepo := connection.NewGormRepository(ddmDb, log)
 	connectionService := connection.NewService(connRepo, log)
 
+	certNameRepo := certname.NewGormRepository(ddmDb, log)
+	certNameSvc := certname.NewService(certNameRepo, log)
+
 	// policies ==================================================================================================
 
 	changePolicy := policy.NewChangePolicy[request.Ctx](impGroupsService, log)
@@ -94,7 +98,7 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 	}
 
 	// pass policy chains to service
-	ptyTokenService := pty_token.NewService(ptySessionService, proxyLbService, hostService, issuer, changeService,
+	ptyTokenService := pty_token.NewService(ptySessionService, proxyLbService, hostService, certNameSvc, issuer, changeService,
 		changeRequestPolicyChain, healthcheckPolicyChain,
 		log, cfg)
 

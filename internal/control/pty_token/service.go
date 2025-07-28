@@ -1,6 +1,7 @@
 package pty_token
 
 import (
+	"den-den-mushi-Go/internal/control/certname"
 	"den-den-mushi-Go/internal/control/change_request"
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/host"
@@ -21,11 +22,11 @@ import (
 type Service struct {
 	issuer *jwt.Issuer
 
-	psSvc   *pty_sessions.Service
-	plbSvc  *proxy_lb.Service
-	hostSvc *host.Service
-	crSvc   *change_request.Service
-
+	psSvc                    *pty_sessions.Service
+	plbSvc                   *proxy_lb.Service
+	hostSvc                  *host.Service
+	crSvc                    *change_request.Service
+	certNameSvc              *certname.Service
 	changeRequestPolicyChain policy.Policy[request.Ctx]
 	healthCheckPolicyChain   policy.Policy[request.Ctx]
 
@@ -33,7 +34,7 @@ type Service struct {
 	cfg *config.Config
 }
 
-func NewService(psS *pty_sessions.Service, plbS *proxy_lb.Service, hostS *host.Service,
+func NewService(psS *pty_sessions.Service, plbS *proxy_lb.Service, hostS *host.Service, certNameSvc *certname.Service,
 	issuer *jwt.Issuer, crS *change_request.Service,
 	changeRequestPolicyChain policy.Policy[request.Ctx],
 	healthCheckPolicyChain policy.Policy[request.Ctx],
@@ -43,6 +44,7 @@ func NewService(psS *pty_sessions.Service, plbS *proxy_lb.Service, hostS *host.S
 		psSvc:                    psS,
 		plbSvc:                   plbS,
 		hostSvc:                  hostS,
+		certNameSvc:              certNameSvc,
 		issuer:                   issuer,
 		changeRequestPolicyChain: changeRequestPolicyChain,
 		healthCheckPolicyChain:   healthCheckPolicyChain,
@@ -61,6 +63,13 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 	}
 
 	var err error
+
+	// find hostname by ip and then certname in puppettrusted what the heck
+	puppetTrusted, err := s.certNameSvc.FindCertnameByIp(r.Body.Server.IP)
+	if err != nil || puppetTrusted == nil || puppetTrusted.Certname == "" {
+		s.log.Error("Failed to find host certname by IP", zap.String("ip", r.Body.Server.IP), zap.Error(err))
+		return "", "", errors.New("failed to find host certname")
+	}
 
 	// todo: enable all these
 	// hostConnMethod, err := s.hostS.FindHostConnectionMethodByIp(r.Server.IP) todo: grab server conn method how?
@@ -118,7 +127,7 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 	}
 
 	s.log.Debug("Building connection for start")
-	conn := jwt.BuildConnForStart(hostConnMethod, r, cr, filter, s.cfg.Development.TargetSshPort, allowedSuOsUsers)
+	conn := jwt.BuildConnForStart(hostConnMethod, r, cr, filter, s.cfg.Development.TargetSshPort, allowedSuOsUsers, puppetTrusted.Certname)
 
 	tok, err := s.issuer.Mint(r.AuthCtx, conn, hostType)
 	if err != nil {

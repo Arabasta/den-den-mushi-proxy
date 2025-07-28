@@ -11,7 +11,7 @@ import (
 )
 
 func BuildConnForStart(t types.ConnectionMethod, r wrapper.WithAuth[request.StartRequest], cr *change_request.Record,
-	f types.Filter, port string, allowedSuOsUsers []string) *dtopkg.Connection {
+	f types.Filter, port string, allowedSuOsUsers []string, serverFQDNTmpTillRefactor string) *dtopkg.Connection {
 	userSessionId := r.AuthCtx.UserID + "/" + uuid.NewString()
 
 	return &dtopkg.Connection{
@@ -40,8 +40,9 @@ func BuildConnForStart(t types.ConnectionMethod, r wrapper.WithAuth[request.Star
 			}
 			return dtopkg.ChangeRequest{}
 		}(),
-		FilterType:       f,
-		AllowedSuOsUsers: allowedSuOsUsers,
+		FilterType:                f,
+		AllowedSuOsUsers:          allowedSuOsUsers,
+		ServerFQDNTmpTillRefactor: serverFQDNTmpTillRefactor,
 	}
 }
 
