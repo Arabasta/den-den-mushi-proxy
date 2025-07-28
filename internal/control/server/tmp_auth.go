@@ -10,50 +10,38 @@ import (
 
 func TmpAuth(log *zap.Logger, cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if cfg.Development.IsTmpAuthCookieEnabled {
-			tokenStr, err := c.Cookie(cfg.CookieTmp.Name)
-			if err != nil {
-				log.Error("cookie not found", zap.Error(err))
-				c.Redirect(http.StatusFound, cfg.CookieTmp.Redirect)
-				c.Abort()
-				return
+		var tokenStr string
+		var err error
+
+		tokenStr = c.GetHeader("Authorization")
+		if tokenStr == "" {
+			log.Error("Authorization header missing")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+		jwtSecret := []byte(cfg.CookieTmp.Secret)
+
+		// validate JWT with secret
+		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, jwt.ErrSignatureInvalid
 			}
-
-			var jwtSecret = []byte(cfg.CookieTmp.Secret)
-
-			// validate JWT with secret
-			token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-					return nil, jwt.ErrSignatureInvalid
-				}
-				return jwtSecret, nil
-			})
-
-			if err != nil || !token.Valid {
-				log.Warn("invalid jwt token", zap.Error(err))
-				c.Redirect(http.StatusFound, cfg.CookieTmp.Redirect)
-				c.Abort()
-				return
-			}
-
-			if claims, ok := token.Claims.(jwt.MapClaims); ok {
-				subject := claims[cfg.CookieTmp.UserIdKey].(string)
-				// inject username into Gin context
-				c.Set("user_id", subject)
-			} else {
-				log.Warn("invalid jwt claims")
-				c.Redirect(http.StatusFound, cfg.CookieTmp.Redirect)
-				c.Abort()
-				return
-			}
-
-			//c.Set("ou_groups", "ou_group1", "ou_group2")
-
-		} else { // no cookie
-			// inject username into Gin context
-			c.Set("user_id", "ddm_adminTest")
+			return jwtSecret, nil
+		})
+		if err != nil || !token.Valid {
+			log.Warn("invalid jwt token", zap.Error(err))
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
 		}
 
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			subject, _ := claims[cfg.CookieTmp.UserIdKey].(string)
+			c.Set("user_id", subject)
+		} else {
+			log.Warn("invalid jwt claims")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
 		c.Next()
 	}
 }
