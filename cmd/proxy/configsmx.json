@@ -63,9 +63,9 @@
     "logLevel": 4
   },
   "InvDB": {
-    "user": "sstdbdbrw04",
+    "user": "",
     "port": 4405,
-    "dbName": "invent",
+    "dbName": "",
     "params": "charset=utf8mb4&parseTime=True&loc=Local",
     "maxIdleConns": 1,
     "maxOpenConns": 10,
