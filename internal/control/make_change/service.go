@@ -32,7 +32,7 @@ func NewService(crSvc *change_request.Service, ptySessionsSvc *pty_sessions.Serv
 	}
 }
 
-// todo refactor garbage
+// todo refactor garbage, need to make it 1 query ... will do it when there are no more changes
 func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, _ *gin.Context) ([]oapi.ChangeRequestSessionsResponse, error) {
 	var r []oapi.ChangeRequestSessionsResponse
 
@@ -45,14 +45,14 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, _ *gin.C
 
 	// fetch CRs using filter
 	crs, err := s.crSvc.FindChangeRequestsByFilter(filter)
-	s.log.Debug("CRs fetched", zap.Int("count", len(crs)))
+	//s.log.Debug("CRs fetched", zap.Int("count", len(crs)))
 	if err != nil {
 		s.log.Error("FindChangeRequestsByFilter", zap.Error(err))
 		return nil, err
 	}
 
 	for _, cr := range crs {
-		s.log.Debug("Mapping CR", zap.Any("cr", cr))
+		//	s.log.Debug("Mapping CR", zap.Any("cr", cr))
 		// extract ips from cr
 		ipToUsers := cyberark.MapIPToOSUsers(cr.CyberArkObjects)
 		s.log.Debug("Mapped CyberArk object", zap.Any("object", cr.CyberArkObjects))
@@ -69,7 +69,7 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, _ *gin.C
 			s.log.Error("Failed to fetch hosts by IPs", zap.Error(err))
 			continue
 		}
-		s.log.Debug("Fetched hosts by IPs", zap.Any("hosts", hosts))
+		//	s.log.Debug("Fetched hosts by IPs", zap.Any("hosts", hosts))
 
 		hostMap := make(map[string]*hostpkg.Record)
 		for _, h := range hosts {
@@ -82,7 +82,7 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, _ *gin.C
 			s.log.Error("Failed to fetch PTY sessions", zap.Error(err))
 			continue
 		}
-		s.log.Debug("Fetched PTY sessions", zap.Any("sessions", sessions))
+		//s.log.Debug("Fetched PTY sessions", zap.Any("sessions", sessions))
 
 		// group sessions by StartConnServerIP
 		ipSessionsMap := map[string]*hostAggregate{}
@@ -135,7 +135,7 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, _ *gin.C
 		})
 	}
 
-	s.log.Debug("Returning change request sessions response", zap.Any("response", r))
+	//s.log.Debug("Returning change request sessions response", zap.Any("response", r))
 	return r, nil
 }
 

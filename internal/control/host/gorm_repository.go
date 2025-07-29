@@ -97,7 +97,7 @@ func (r *GormRepository) FindAllByFilter(f filters.HealthcheckPtySession) ([]*dt
 	}
 
 	pageSize := f.PageSize
-	if pageSize <= 0 || pageSize > 100 {
+	if pageSize <= 0 || pageSize > 1000 {
 		pageSize = 20
 	}
 
