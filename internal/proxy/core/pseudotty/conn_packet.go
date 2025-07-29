@@ -6,6 +6,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/handler"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"den-den-mushi-Go/pkg/constants"
+	"den-den-mushi-Go/pkg/util/cyberark"
 	"go.uber.org/zap"
 	"slices"
 	"time"
@@ -49,27 +50,52 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		logMsg, err = s.purpose.HandleInput(s, pkt)
 		s.logAndResetLineEditorIfInputEnter(pkt)
 	} else if pkt.Header == protocol.Sudo {
-		// packet should contain username to sudo to
-		targetUser := string(pkt.Data)
-		s.log.Debug("Handling Sudo packet", zap.String("target OS user", targetUser))
+		/// todo: refactor this garbage
+		//// packet should contain username to sudo to
+		//targetUser := string(pkt.Data)
+		//s.log.Debug("Handling Sudo packet", zap.String("target OS user", targetUser))
 
-		// check targetUser against initial claims
-		if !slices.Contains(s.startClaims.Connection.AllowedSuOsUsers, targetUser) {
-			s.log.Error("Unauthorized sudo attempt", zap.String("user", targetUser),
-				zap.Strings("allowedUsers", s.startClaims.Connection.AllowedSuOsUsers))
+		// packet should contain cyberark object to draw password for
+		cyberarkObject := string(pkt.Data)
+		s.log.Debug("Handling Sudo packet", zap.String("cyberark object", cyberarkObject))
+
+		// extract ip and os user from cyberarkObject
+		ip := cyberark.ExtractIPFromObject(cyberarkObject)
+		targetUser := cyberark.ExtractOsUserFromObject(cyberarkObject)
+
+		if s.puppetClient.Cfgtmp.PuppetTasks.CyberarkPasswordDraw.IsValidationEnabled {
+			// check ip against initial claims
+			if ip != s.startClaims.Connection.Server.IP {
+				s.log.Error("Unauthorized sudo attempt IP mismatch", zap.String("ip", ip),
+					zap.String("expectedIP", s.startClaims.Connection.Server.IP))
+				return
+			}
+
+			// check targetUser against initial claims
+			if !slices.Contains(s.startClaims.Connection.AllowedSuOsUsers, targetUser) {
+				s.log.Error("Unauthorized sudo attempt Target User Mismatch", zap.String("user", targetUser),
+					zap.Strings("allowedUsers", s.startClaims.Connection.AllowedSuOsUsers))
+				return
+			}
+		}
+
+		// draw password from cyberark
+		password, err := s.puppetClient.DrawCyberarkKey(cyberarkObject, s.startClaims.Connection.ServerFQDNTmpTillRefactor)
+		if err != nil {
+			s.log.Error("Failed to draw cyberark key", zap.Error(err), zap.String("cyberark object", cyberarkObject))
 			return
+		}
+
+		s.log.Debug("Successfully drew cyberark key, gonna su now", zap.String("cyberark object", cyberarkObject),
+			zap.String("target OS user", targetUser))
+		passwordPacket := protocol.Packet{
+			Header: protocol.SudoInputPassword,
+			Data:   []byte(password),
 		}
 
 		userPacket := protocol.Packet{
 			Header: protocol.SudoInputUser,
 			Data:   []byte(targetUser),
-		}
-
-		// todo draw password from cyberark
-		password := "12312333"
-		passwordPacket := protocol.Packet{
-			Header: protocol.SudoInputPassword,
-			Data:   []byte(password),
 		}
 
 		s.tmpMuForPtyThingTillRefactor.Lock()

@@ -6,6 +6,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/client"
 	"den-den-mushi-Go/internal/proxy/core/pseudotty/session_logging"
 	"den-den-mushi-Go/internal/proxy/filter"
+	"den-den-mushi-Go/internal/proxy/integrations/puppet"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"den-den-mushi-Go/pkg/ds"
 	"den-den-mushi-Go/pkg/token"
@@ -60,9 +61,12 @@ type Session struct {
 	once    sync.Once
 
 	cfg *config.Config
+
+	puppetClient *puppet.Client
 }
 
-func New(id string, pty *os.File, now time.Time, onClose func(string), log *zap.Logger, cfg *config.Config) (*Session, error) {
+func New(id string, pty *os.File, now time.Time, onClose func(string), log *zap.Logger, cfg *config.Config,
+	puppetClient *puppet.Client) (*Session, error) {
 	s := &Session{
 		Id:        id,
 		pty:       pty,
@@ -83,6 +87,7 @@ func New(id string, pty *os.File, now time.Time, onClose func(string), log *zap.
 
 		ptyOutput:         ds.NewCircularArray[protocol.Packet](500), // todo: make configurable capa and maybe track line or something
 		isPtyOutputLocked: false,
+		puppetClient:      puppetClient,
 	}
 
 	s.ctx, s.cancel = context.WithCancel(context.Background())

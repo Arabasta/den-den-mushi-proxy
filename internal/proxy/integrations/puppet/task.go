@@ -27,19 +27,6 @@ type taskScope struct {
 	Nodes []string `json:"nodes"`
 }
 
-func (p *Client) getPuppetTask(t PuppetTask) string {
-	var taskName string
-	switch t {
-	case TaskInjectPublicKey:
-		taskName = p.cfg.InjectPublicKeyTaskName
-	case TaskRemovePublicKey:
-		taskName = p.cfg.RemovePublicKeyTaskName
-	default:
-		return ""
-	}
-	return taskName
-}
-
 func (p *Client) createPuppetRequest(t PuppetTask, payload interface{}) (*http.Request, error) {
 	url := p.cfg.Endpoint
 	if url == "" {
@@ -71,7 +58,7 @@ func (p *Client) createPuppetRequest(t PuppetTask, payload interface{}) (*http.R
 	return req, nil
 }
 
-func (p *Client) callPuppetTask(task PuppetTask, payload taskBody) (*http.Response, error) {
+func (p *Client) callPuppetTask(task PuppetTask, payload interface{}) (*http.Response, error) {
 	req, err := p.createPuppetRequest(task, payload)
 	if err != nil {
 		return nil, err
@@ -79,7 +66,12 @@ func (p *Client) callPuppetTask(task PuppetTask, payload taskBody) (*http.Respon
 
 	var resp *http.Response
 	resp, err = p.httpPostAndResponse(req)
-
+	if err != nil {
+		return nil, err
+	}
+	if resp == nil {
+		return nil, fmt.Errorf("puppet returned nil response")
+	}
 	// no retry for now
 	//for i := 1; i <= p.cfg.RetryAttempts; i++ {
 	//	resp, err = p.httpPostAndResponse(req)
@@ -92,6 +84,6 @@ func (p *Client) callPuppetTask(task PuppetTask, payload taskBody) (*http.Respon
 	//	}
 	//}
 
-	p.log.Debug("Puppet task completed", zap.String("task", string(task)), zap.Any("response", resp))
+	p.log.Debug("Puppet task completed", zap.String("task", string(task)))
 	return resp, nil
 }

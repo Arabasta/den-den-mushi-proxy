@@ -91,5 +91,22 @@
   "Pty": {
     "SpawnRetryCount": 4,
     "SpawnRetryIntervalSeconds": 5
+  },
+  "PuppetTasks": {
+    "QueryJobs": {
+      "OrchestratorEndpoint": "https://orchestrator/v1/jobs",
+      "WaitBeforeQuerySeconds": 5,
+        "MaxQueryAttempts": 5,
+        "QueryIntervalSeconds": 10
+    },
+    "CyberarkPasswordDraw": {
+      "Environment": "software",
+      "TaskName": "cyberark-password-draw",
+      "CybidA": "abc",
+      "CybidB": "123",
+      "SafeA": "asd",
+      "SafeB": "qwe",
+      "IsValidationEnabled": false
+    }
   }
 }

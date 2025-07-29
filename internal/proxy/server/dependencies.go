@@ -27,9 +27,10 @@ type Deps struct {
 }
 
 func initDependencies(db *gorm.DB, redis *redis.Client, cfg *config.Config, log *zap.Logger) *Deps {
+	puppetClient := puppet.NewClient(cfg.Puppet, cfg, log)
 	connectionMethodFactory := connect.NewConnectionMethodFactory(
 		connect.NewDeps(
-			puppet.NewClient(cfg.Puppet, log),
+			puppetClient,
 			pty_util.NewBuilder(log, cfg.Ssh),
 			cfg,
 			log))
@@ -40,7 +41,7 @@ func initDependencies(db *gorm.DB, redis *redis.Client, cfg *config.Config, log 
 	connectionRepo := connections.NewGormRepository(db, log)
 	connectionSvc := connections.NewService(connectionRepo, log)
 
-	sessionManager := session_manager.New(ptySessionsSvc, connectionSvc, log, cfg)
+	sessionManager := session_manager.New(ptySessionsSvc, connectionSvc, log, cfg, puppetClient)
 	websocketService := websocket.NewService(connectionMethodFactory, sessionManager, log, cfg)
 
 	issuer := control_server_tmp.New(cfg.JwtAudience, log) // todo: remove

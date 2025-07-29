@@ -51,4 +51,22 @@ type Config struct {
 			MaxPingMissed       int
 		}
 	}
+
+	PuppetTasks struct {
+		QueryJobs struct {
+			OrchestratorEndpoint   string        `json:"OrchestratorEndpoint"`
+			WaitBeforeQuerySeconds time.Duration `json:"WaitBeforeQuerySeconds"`
+			MaxQueryAttempts       int           `json:"MaxQueryAttempts"`
+			QueryIntervalSeconds   time.Duration `json:"QueryIntervalSeconds"`
+		} `json:"QueryJobs"`
+		CyberarkPasswordDraw struct {
+			Environment         string `json:"Environment"`
+			TaskName            string `json:"TaskName"`
+			CybidA              string `json:"CybidA"`
+			CybidB              string `json:"CybidB"`
+			SafeA               string `json:"SafeA"`
+			SafeB               string `json:"SafeB"`
+			IsValidationEnabled bool
+		}
+	}
 }

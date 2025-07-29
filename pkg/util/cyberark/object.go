@@ -5,17 +5,17 @@ import (
 	"strings"
 )
 
-func IsIpInCyberarkObjects(ip string, objects []string) bool {
+func IsIpInObjects(ip string, objects []string) bool {
 	for _, o := range objects {
-		if extractIPFromCyberarkObject(o) == ip {
+		if ExtractIPFromObject(o) == ip {
 			return true
 		}
 	}
 	return false
 }
 
-// extractIPFromCyberarkObject is required as cyberark team doesn't want to give us api endpoint
-func extractIPFromCyberarkObject(o string) string {
+// ExtractIPFromObject is required as cyberark team doesn't want to give us api endpoint
+func ExtractIPFromObject(o string) string {
 	if o == "" {
 		return ""
 	}
@@ -30,16 +30,16 @@ func extractIPFromCyberarkObject(o string) string {
 	return ip
 }
 
-func IsOsUserInCyberarkObjects(osUser string, objects []string) bool {
+func IsOsUserInObjects(osUser string, objects []string) bool {
 	for _, o := range objects {
-		if extractOsUserFromObject(o) == osUser {
+		if ExtractOsUserFromObject(o) == osUser {
 			return true
 		}
 	}
 	return false
 }
 
-func extractOsUserFromObject(o string) string {
+func ExtractOsUserFromObject(o string) string {
 	if o == "" {
 		return ""
 	}
@@ -66,8 +66,8 @@ func MapIPToOSUsers(objects []string) map[string][]string {
 	ipToUsers := make(map[string]map[string]struct{})
 
 	for _, o := range objects {
-		ip := extractIPFromCyberarkObject(o)
-		user := extractOsUserFromObject(o)
+		ip := ExtractIPFromObject(o)
+		user := ExtractOsUserFromObject(o)
 		//fmt.Printf("Parsed IP=%s, User=%s, Raw=%s\n", ip, user, o)
 
 		if ip == "" || user == "" {
@@ -94,7 +94,7 @@ func ExtractAllOsUsers(objects []string) []string {
 	userSet := make(map[string]struct{})
 
 	for _, o := range objects {
-		user := extractOsUserFromObject(o)
+		user := ExtractOsUserFromObject(o)
 		if user != "" {
 			userSet[user] = struct{}{}
 		}
