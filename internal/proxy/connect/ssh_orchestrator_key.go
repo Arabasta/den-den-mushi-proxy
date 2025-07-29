@@ -18,6 +18,7 @@ type SshOrchestratorKeyConnection struct {
 	commandBuilder *pty_util.Builder
 }
 
+// todo refactor garbage
 func (c *SshOrchestratorKeyConnection) Connect(_ context.Context, claims *token.Claims) (*os.File, error) {
 	keyPath, pubKey, cleanup, err := pty_util.GenerateEphemeralKey(c.cfg, c.log)
 	if err != nil {
@@ -25,32 +26,41 @@ func (c *SshOrchestratorKeyConnection) Connect(_ context.Context, claims *token.
 		return nil, err
 	}
 
-	if err := c.puppet.KeyInject(pubKey, claims.Connection); err != nil {
-		c.log.Error("Error injecting key", zap.Error(err))
+	err = c.puppet.KeyInject(pubKey, claims.Connection)
+	// always assume success for now cause cant get any actual success response unless
+	// we query the task id
+	//if err != nil {
+	//	c.log.Error("Error injecting key", zap.Error(err))
+	//	cleanup()
+	//	if c.cfg.Ssh.IsRemoveInjectKeyEnabled {
+	//		_ = c.puppet.KeyRemove(pubKey, claims.Connection)
+	//	}
+	//	return nil, err
+	//}
+
+	c.log.Debug("Puppet Key inject called. Waiting to spawn pseudo terminal for ephemeral SSH key")
+
+	time.Sleep(c.cfg.Ssh.ConnectDelayAfterInjectSeconds * time.Second) // wait for key to be injected
+
+	var pty *os.File
+	for i := 0; i <= c.cfg.Pty.SpawnRetryCount; i++ {
+		c.log.Debug("Spawning pseudo terminal for SSH connection", zap.Int("attempt", i+1))
+		cmd := c.commandBuilder.BuildSshCmd(keyPath, claims.Connection.Server)
+
+		pty, err = pty_util.Spawn(cmd)
+		if err == nil {
+			c.log.Info("Pseudo terminal spawned successfully", zap.String("keyPath", keyPath))
+			break
+		}
+
+		time.Sleep(c.cfg.Pty.SpawnRetryIntervalSeconds * time.Second)
+	}
+	if err != nil {
 		cleanup()
 		if c.cfg.Ssh.IsRemoveInjectKeyEnabled {
 			_ = c.puppet.KeyRemove(pubKey, claims.Connection)
 		}
 		return nil, err
-	}
-
-	c.log.Debug("Puppet Key inject successful. Spawning pseudo terminal for ephemeral SSH key")
-
-	cmd := c.commandBuilder.BuildSshCmd(keyPath, claims.Connection.Server)
-
-	time.Sleep(c.cfg.Ssh.ConnectDelayAfterInjectSeconds * time.Second) // wait for key to be injected
-
-	var pty *os.File
-	for i := 0; i < c.cfg.Pty.SpawnRetryCount; i++ {
-		pty, err = pty_util.Spawn(cmd)
-		if err != nil {
-			c.log.Error("Failed to spawn pseudo terminal", zap.Error(err))
-			cleanup()
-			if c.cfg.Ssh.IsRemoveInjectKeyEnabled {
-				_ = c.puppet.KeyRemove(pubKey, claims.Connection)
-			}
-			return nil, err
-		}
 	}
 
 	go func() {

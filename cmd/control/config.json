@@ -20,7 +20,7 @@
       "ddmhealthcheck",
       "suzuyajuuzou"
     ],
-    "IsTmpAuthCookieEnabled": true
+    "IsTmpAuthCookieEnabled": false
   },
   "ssl": {
     "enabled": false

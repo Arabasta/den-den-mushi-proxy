@@ -44,7 +44,7 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 			return
 		}
 
-		s.log.Info("Establishing pty connection", zap.String("type", string(claims.Connection.Type)))
+		s.log.Debug("Establishing pty connection", zap.String("type", string(claims.Connection.Type)))
 		pty, err := connMethod.Connect(ctx, claims)
 		if err != nil {
 			s.log.Error("Failed to connect to pseudo terminal", zap.Error(err),
@@ -54,7 +54,7 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 			return
 		}
 
-		s.log.Info("Connected to pty ", zap.String("type", string(claims.Connection.Type)))
+		s.log.Debug("Connected to pty ", zap.String("type", string(claims.Connection.Type)))
 
 		ptySessionId, err := s.sessionManager.CreatePtySession(pty, claims, s.log)
 		if err != nil {
@@ -63,7 +63,7 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 			return
 		}
 
-		s.log.Info("Registering websocket connection to pty session")
+		s.log.Debug("Registering websocket connection to pty session")
 		err = s.sessionManager.AttachConn(conn, ptySessionId)
 		if err != nil {
 			s.log.Error("Failed to attach websocket connection to pty session", zap.Error(err))
@@ -88,6 +88,6 @@ func (s *Service) closeWs(ws *websocket.Conn) {
 	if err := ws.Close(); err != nil {
 		s.log.Warn("Failed to close websocket", zap.Error(err))
 	} else {
-		s.log.Info("Closed websocket")
+		s.log.Debug("Closed websocket")
 	}
 }

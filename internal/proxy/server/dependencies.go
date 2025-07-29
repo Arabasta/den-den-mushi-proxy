@@ -30,7 +30,7 @@ func initDependencies(db *gorm.DB, redis *redis.Client, cfg *config.Config, log 
 	connectionMethodFactory := connect.NewConnectionMethodFactory(
 		connect.NewDeps(
 			puppet.NewClient(cfg.Puppet, log),
-			pty_util.NewBuilder(log),
+			pty_util.NewBuilder(log, cfg.Ssh),
 			cfg,
 			log))
 

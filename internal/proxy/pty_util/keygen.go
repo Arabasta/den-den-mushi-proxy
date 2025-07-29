@@ -3,6 +3,7 @@ package pty_util
 import (
 	"den-den-mushi-Go/internal/proxy/config"
 	"github.com/charmbracelet/keygen"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
 	"os"
@@ -20,14 +21,15 @@ func GenerateEphemeralKey(cfg *config.Config, log *zap.Logger) (string, string, 
 
 	var keyPath string
 	var keyPair *keygen.KeyPair
+	uniqueSuffix := uuid.NewString()
 
 	if cfg.Ssh.IsRSAKeyPair {
 		log.Debug("Generating RSA key pair for ephemeral SSH key")
-		keyPath = filepath.Join(cfg.Ssh.EphemeralKeyPath, "id_rsa")
+		keyPath = filepath.Join(cfg.Ssh.EphemeralKeyPath, "id_rsa_"+uniqueSuffix)
 		keyPair, err = keygen.New(keyPath, keygen.WithKeyType(keygen.RSA), keygen.WithWrite())
 	} else {
 		log.Debug("Generating Ed25519 key pair for ephemeral SSH key")
-		keyPath = filepath.Join(cfg.Ssh.EphemeralKeyPath, "id_ed25519")
+		keyPath = filepath.Join(cfg.Ssh.EphemeralKeyPath, "id_ed25519_"+uniqueSuffix)
 		keyPair, err = keygen.New(keyPath, keygen.WithKeyType(keygen.Ed25519), keygen.WithWrite())
 	}
 
@@ -41,12 +43,9 @@ func GenerateEphemeralKey(cfg *config.Config, log *zap.Logger) (string, string, 
 
 	cleanup := func() {
 		if cfg.Ssh.IsCleanupEnabled {
-			err = os.RemoveAll(keyPath)
-			if err != nil {
-				log.Error("Failed to remove ephemeral SSH key", zap.Error(err), zap.String("keyPath", keyPath))
-				return
-			}
-			log.Debug("Ephemeral SSH key removed", zap.String("keyPath", keyPath))
+			os.Remove(keyPath)
+			os.Remove(keyPath + ".pub")
+			log.Debug("Ephemeral SSH key pair removed", zap.String("keyPath", keyPath))
 		}
 	}
 

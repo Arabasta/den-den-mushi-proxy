@@ -9,6 +9,7 @@ type Ssh struct {
 	IsLocalSshKeyEnabled bool
 	LocalSshKeyPath      string
 
+	SshCommand                     string
 	PubKeyHostnameSuffix           string
 	EphemeralKeyPath               string
 	IsRemoveInjectKeyEnabled       bool

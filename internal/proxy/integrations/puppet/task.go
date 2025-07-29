@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"go.uber.org/zap"
 	"net/http"
-	"time"
 )
 
 type PuppetTask string
@@ -79,16 +78,19 @@ func (p *Client) callPuppetTask(task PuppetTask, payload taskBody) (*http.Respon
 	}
 
 	var resp *http.Response
-	for i := 1; i <= p.cfg.RetryAttempts; i++ {
-		resp, err = p.httpPostAndResponse(req)
-		if err != nil {
-			p.log.Error(fmt.Sprintf("Failed to send Puppet request. Attempt %d of %d", i, p.cfg.RetryAttempts), zap.Error(err))
-			if i == p.cfg.RetryAttempts {
-				return nil, err
-			}
-			time.Sleep(p.cfg.TaskRetrySeconds * time.Second)
-		}
-	}
+	resp, err = p.httpPostAndResponse(req)
+
+	// no retry for now
+	//for i := 1; i <= p.cfg.RetryAttempts; i++ {
+	//	resp, err = p.httpPostAndResponse(req)
+	//	if err != nil {
+	//		p.log.Error(fmt.Sprintf("Failed to send Puppet request. Attempt %d of %d", i, p.cfg.RetryAttempts), zap.Error(err))
+	//		if i == p.cfg.RetryAttempts {
+	//			return nil, err
+	//		}
+	//		time.Sleep(p.cfg.TaskRetrySeconds * time.Second)
+	//	}
+	//}
 
 	p.log.Debug("Puppet task completed", zap.String("task", string(task)), zap.Any("response", resp))
 	return resp, nil

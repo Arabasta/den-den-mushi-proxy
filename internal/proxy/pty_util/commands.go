@@ -1,6 +1,7 @@
 package pty_util
 
 import (
+	"den-den-mushi-Go/pkg/config"
 	"den-den-mushi-Go/pkg/dto"
 	"fmt"
 	"go.uber.org/zap"
@@ -10,10 +11,11 @@ import (
 
 type Builder struct {
 	log *zap.Logger
+	cfg *config.Ssh
 }
 
-func NewBuilder(log *zap.Logger) *Builder {
-	return &Builder{log: log}
+func NewBuilder(log *zap.Logger, cfg *config.Ssh) *Builder {
+	return &Builder{log: log, cfg: cfg}
 }
 
 func (b *Builder) BuildSshCmd(privateKeyPath string, s dto.ServerInfo) *exec.Cmd {
@@ -28,10 +30,10 @@ func (b *Builder) BuildSshCmd(privateKeyPath string, s dto.ServerInfo) *exec.Cmd
 		"-tt",
 	}
 
-	cmd := exec.Command("ssh", args...)
+	cmd := exec.Command(b.cfg.SshCommand, args...)
 	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
 
-	b.log.Info("Created SSH command", zap.String("command", cmd.String()))
+	b.log.Debug("Created SSH command", zap.String("command", cmd.String()))
 	return cmd
 }
 
