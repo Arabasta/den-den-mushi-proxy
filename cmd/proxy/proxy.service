@@ -1,0 +1,11 @@
+[Unit]
+Description=Proxy Service for Den Den Mushi
+
+[Service]
+ExecStart=/usr/proxy/proxy --config /usr/config.json
+WorkingDirectory=/usr/proxy
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
