@@ -74,7 +74,7 @@ func (r *GormRepository) FindChangeRequestsByFilter(f filters.ListCR) ([]*dto.Re
 	}
 
 	pageSize := f.PageSize
-	if pageSize <= 0 || pageSize > 100 {
+	if pageSize <= 0 || pageSize > 100000 {
 		pageSize = 20
 	}
 

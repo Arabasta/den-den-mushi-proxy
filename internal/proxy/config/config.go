@@ -22,7 +22,11 @@ type Config struct {
 		IsAutoMigrateEnabled       bool
 		IsSMX                      bool
 		RegexDbPollIntervalSeconds time.Duration
-		SshPubKeyHostnameSuffix    string
+	}
+
+	Pty struct {
+		SpawnRetryCount           int
+		SpawnRetryIntervalSeconds time.Duration
 	}
 
 	Logger *config.Logger
@@ -37,7 +41,7 @@ type Config struct {
 
 	JwtAudience *config.JwtAudience
 
-	SshKey *config.SshKey
+	Ssh *config.Ssh
 
 	Websocket struct {
 		PingPong struct {

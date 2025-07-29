@@ -35,9 +35,10 @@ func (r *GormRepository) FindByIp(ip string) (*dto.Record, error) {
 	return dto.FromModel(&m), nil
 }
 
-func (r *GormRepository) FindAllByIps(ips []string) ([]*dto.Record, error) {
+func (r *GormRepository) FindAllLinuxOsByIps(ips []string) ([]*dto.Record, error) {
 	var models []dto.Model
-	err := r.db.Where("IpAddress IN ?", ips).Find(&models).Error
+
+	err := r.db.Where("IpAddress IN ? AND PLATFORM = ?", ips, "LINUX").Find(&models).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.log.Debug("No hosts found for provided IPs", zap.Strings("ips", ips))

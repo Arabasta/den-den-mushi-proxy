@@ -8,11 +8,17 @@ type Model struct {
 	Description       string `gorm:"column:ChangeDescription"`
 	ChangeStartTime   string `gorm:"column:ChangeSchedStartDateTime"` // 2025-06-24 23:00:00
 	ChangeEndTime     string `gorm:"column:ChangeSchedEndDateTime"`   // 2025-06-25 01:00:00
-	ImplementorGroups string `gorm:"column:ImplementorGroup"`         // Comma-separated. e.g. "Group1,Group2,Group3"
+	ImplementorGroups string `gorm:"column:ImplementerGroup"`         // Comma-separated. e.g. "Group1,Group2,Group3"
 	State             string `gorm:"column:State"`                    // Approved, Reopen, etc
 	CyberArkObjects   string `gorm:"column:CyberarkObjects"`          // Comma-separated. e.g. "Object1,Object2,Object3"
 }
 
+var tableName = "changerequests"
+
 func (Model) TableName() string {
-	return "changerequests"
+	return tableName
+}
+
+func SetTableName(name string) {
+	tableName = name
 }

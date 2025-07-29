@@ -4,6 +4,12 @@ type Model struct {
 	Certname string `gorm:"CERTNAME"`
 }
 
+var tableName = "puppet_trusted"
+
 func (Model) TableName() string {
-	return "puppet_trusted"
+	return tableName
+}
+
+func SetTableName(name string) {
+	tableName = name
 }

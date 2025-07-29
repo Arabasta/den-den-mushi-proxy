@@ -10,35 +10,47 @@ import (
 	"strings"
 )
 
-// t odo: put in /var/tmp
 func GenerateEphemeralKey(cfg *config.Config, log *zap.Logger) (string, string, func(), error) {
-	tmpDir, err := os.MkdirTemp("", "ephemeral-ssh")
+	err := os.MkdirAll(cfg.Ssh.EphemeralKeyPath, 0700)
 	if err != nil {
-		log.Error("Failed to create temporary directory for ephemeral SSH key", zap.Error(err))
+		log.Error("Failed to create directory for ephemeral SSH key", zap.String("path", cfg.Ssh.EphemeralKeyPath),
+			zap.Error(err))
 		return "", "", nil, err
 	}
 
-	keyPath := filepath.Join(tmpDir, "id_ed25519")
-	keyPair, err := keygen.New(keyPath, keygen.WithKeyType(keygen.Ed25519), keygen.WithWrite())
+	var keyPath string
+	var keyPair *keygen.KeyPair
+
+	if cfg.Ssh.IsRSAKeyPair {
+		log.Debug("Generating RSA key pair for ephemeral SSH key")
+		keyPath = filepath.Join(cfg.Ssh.EphemeralKeyPath, "id_rsa")
+		keyPair, err = keygen.New(keyPath, keygen.WithKeyType(keygen.RSA), keygen.WithWrite())
+	} else {
+		log.Debug("Generating Ed25519 key pair for ephemeral SSH key")
+		keyPath = filepath.Join(cfg.Ssh.EphemeralKeyPath, "id_ed25519")
+		keyPair, err = keygen.New(keyPath, keygen.WithKeyType(keygen.Ed25519), keygen.WithWrite())
+	}
+
 	if err != nil {
 		log.Error("Failed to generate ephemeral SSH key", zap.Error(err), zap.String("keyPath", keyPath))
 		return "", "", nil, err
 	}
 
 	pubKeyString := strings.Trim(string(ssh.MarshalAuthorizedKey(keyPair.PublicKey())), "\n")
-	pubKeyString += " " + cfg.Development.SshPubKeyHostnameSuffix
+	pubKeyString += " " + cfg.Ssh.PubKeyHostnameSuffix
 
 	cleanup := func() {
-		err = os.RemoveAll(keyPath)
-		if err != nil {
-			log.Error("Failed to remove ephemeral SSH key", zap.Error(err), zap.String("keyPath", keyPath))
-			return
+		if cfg.Ssh.IsCleanupEnabled {
+			err = os.RemoveAll(keyPath)
+			if err != nil {
+				log.Error("Failed to remove ephemeral SSH key", zap.Error(err), zap.String("keyPath", keyPath))
+				return
+			}
+			log.Debug("Ephemeral SSH key removed", zap.String("keyPath", keyPath))
 		}
-		log.Debug("Ephemeral SSH key removed", zap.String("keyPath", keyPath))
 	}
 
-	// todo: remove after testing
-	if cfg.App.Environment == "dev" {
+	if cfg.Ssh.IsLogPrivateKey {
 		log.Debug("Ephemeral SSH key generated",
 			zap.String("keyPath", keyPath),
 			zap.String("publicKey", pubKeyString),

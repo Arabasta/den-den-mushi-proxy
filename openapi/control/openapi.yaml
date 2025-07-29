@@ -128,7 +128,7 @@ paths:
             schema: { type: integer, minimum: 1, default: 1 }
           - name: page_size
             in: query
-            schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+            schema: { type: integer, minimum: 1, maximum: 1000, default: 20 }
       responses:
           '200':
             description: List change request details and their associated PTY sessions
@@ -238,7 +238,7 @@ paths:
           schema: { type: integer, minimum: 1, default: 1 }
         - name: page_size
           in: query
-          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+          schema: { type: integer, minimum: 1, maximum: 1000, default: 20 }
       responses:
         '200':
           description: List healthcheck host details and their associated PTY sessions

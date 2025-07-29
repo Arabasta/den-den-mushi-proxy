@@ -11,7 +11,7 @@ import (
 )
 
 type LocalSshKeyConnection struct {
-	cfg            *config.SshKey
+	cfg            *config.Ssh
 	log            *zap.Logger
 	commandBuilder *pty_util.Builder
 }

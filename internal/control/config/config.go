@@ -21,6 +21,7 @@ type Config struct {
 		HealthcheckOsUsers                          []string
 		IsLocalSshKeyIfNotIsPuppetKey               bool
 		IsTmpAuthCookieEnabled                      bool
+		EmailSuffix                                 string
 	}
 
 	CookieTmp struct {

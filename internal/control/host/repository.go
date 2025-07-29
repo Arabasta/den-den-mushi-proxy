@@ -8,6 +8,6 @@ import (
 // todo: add context to all service and repos
 type Repository interface {
 	FindByIp(ip string) (*dto.Record, error)
-	FindAllByIps(ips []string) ([]*dto.Record, error)
+	FindAllLinuxOsByIps(ips []string) ([]*dto.Record, error)
 	FindAllByFilter(f filters.HealthcheckPtySession) ([]*dto.Record, error)
 }

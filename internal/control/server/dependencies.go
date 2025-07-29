@@ -48,7 +48,7 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 	changeRepo := change_request.NewGormRepository(ddmDb, log)
 	changeService := change_request.NewService(changeRepo, log)
 
-	impGroupsRepo := implementor_groups.NewGormRepository(ddmDb, log)
+	impGroupsRepo := implementor_groups.NewGormRepository(ddmDb, log, cfg)
 	impGroupsService := implementor_groups.NewService(impGroupsRepo, log)
 
 	ptySessionRepo := pty_sessions.NewGormRepository(ddmDb, log)
@@ -89,8 +89,8 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 		Add(healthcheckPolicy).
 		Build()
 
-	if cfg.App.Environment == "dev" && cfg.Development.SkipPolicyChecks {
-		log.Info("Using noop policy in development mode")
+	if cfg.Development.SkipPolicyChecks {
+		log.Info("Using noop policy")
 		changeRequestPolicyChain = policy.NewBuilder[request.Ctx]().
 			Add(policy.NewNoopPolicy[request.Ctx](log)).Build()
 		healthcheckPolicyChain = policy.NewBuilder[request.Ctx]().

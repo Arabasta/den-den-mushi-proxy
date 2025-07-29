@@ -33,8 +33,8 @@ func (s *Service) FindTypeByIp(ip string) (types.Proxy, error) {
 	return "OS", nil
 }
 
-func (s *Service) FindAllByIps(ips []string) ([]*dto.Record, error) {
-	return s.repo.FindAllByIps(ips)
+func (s *Service) FindAllLinuxOsByIps(ips []string) ([]*dto.Record, error) {
+	return s.repo.FindAllLinuxOsByIps(ips)
 }
 
 // todo

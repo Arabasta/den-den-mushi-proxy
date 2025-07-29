@@ -25,9 +25,9 @@ func NewGormRepository(db *gorm.DB, log *zap.Logger, cfg *config.Config) *GormRe
 func (r *GormRepository) FindAllByUserId(userId string) ([]*dto.Record, error) {
 	var models []dto.Model
 
-	email := userId +
+	email := userId + "@%"
 
-	if err := r.db.Where("MemberEmail = ? AND GroupMembershipStatus = ?",
+	if err := r.db.Where("MemberEmail LIKE ? AND GroupMembershipStatus = ?",
 		email, "Active").Find(&models).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.log.Debug("No implementor groups found for user ID", zap.String("user_id", userId))

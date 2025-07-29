@@ -44,8 +44,8 @@ export class MakeChangeService extends BaseService {
      * @param implementorGroups 
      * @param lob 
      * @param country 
-     * @param startTime 
-     * @param endTime 
+     * @param startTime Expected format - RFC3339
+     * @param endTime Expected format - RFC3339
      * @param ptySessionState Does not filter out CRs, field not for users
      * @param page 
      * @param pageSize 

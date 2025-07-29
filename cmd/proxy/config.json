@@ -80,7 +80,16 @@
     "port": 6379,
     "poolSize": 10
   },
-  "SshKey": {
-    "IsLocalSshKeyEnabled": true
+  "Ssh": {
+    "IsLocalSshKeyEnabled": true,
+    "IsRemoveInjectKeyEnabled": true,
+    "IsRSAKeyPair": false,
+    "IsCleanupEnabled": true,
+    "IsLogPrivateKey": true,
+    "ConnectDelayAfterInjectSeconds": 5
+  },
+  "Pty": {
+    "SpawnRetryCount": 3,
+    "SpawnRetryIntervalSeconds": 5
   }
 }

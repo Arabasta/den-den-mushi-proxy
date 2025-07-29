@@ -16,6 +16,12 @@ type Model struct {
 	Appcode string `gorm:"column:APPLICATION_CODE"`
 }
 
+var tableName = "slm_os"
+
 func (Model) TableName() string {
-	return "slm_os"
+	return tableName
+}
+
+func SetTableName(name string) {
+	tableName = name
 }

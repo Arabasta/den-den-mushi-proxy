@@ -64,7 +64,7 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, _ *gin.C
 		s.log.Debug("Mapped IPs to OS Users", zap.Strings("ips", ips))
 
 		// get host details
-		hosts, err := s.hostSvc.FindAllByIps(ips)
+		hosts, err := s.hostSvc.FindAllLinuxOsByIps(ips)
 		if err != nil {
 			s.log.Error("Failed to fetch hosts by IPs", zap.Error(err))
 			continue

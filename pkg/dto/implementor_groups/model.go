@@ -7,6 +7,12 @@ type Model struct {
 	MembershipStatus string `gorm:"column:GroupMembershipStatus"`
 }
 
+var tableName = "ichamp_implementer_groups"
+
 func (Model) TableName() string {
-	return "ichamp_implementer_groups"
+	return tableName
+}
+
+func SetTableName(name string) {
+	tableName = name
 }

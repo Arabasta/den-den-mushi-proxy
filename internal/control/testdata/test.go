@@ -11,7 +11,7 @@ import (
 )
 
 func CallAll(db *gorm.DB) {
-	//createCR(db)
+	createCR(db)
 	////createImplementorGroups(db)
 	//createCyberark(db)
 	////createProxyLb(db)
