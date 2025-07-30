@@ -33,7 +33,10 @@ func (r *GormRepository) Save(rec *dto.Record) (*dto.Record, error) {
 
 func (r *GormRepository) FindAllByFilterTypeAndOuGroup(filterType types.Filter, ouGroup string) (*[]dto.Record, error) {
 	var models []dto.Model
-	err := r.db.Where("type = ? AND ougroup = ?", filterType, ouGroup).Find(&models).Error
+
+	err := r.db.Where("type = ? AND ougroup = ?", filterType, ouGroup).
+		Order("CreatedAt ASC").
+		Find(&models).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.log.Debug("No regex filters found for type and OU group", zap.String("type", string(filterType)), zap.String("ou_group", ouGroup))
