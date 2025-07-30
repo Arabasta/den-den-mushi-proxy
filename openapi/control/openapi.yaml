@@ -20,12 +20,41 @@ tags:
     description: Retrieve healthcheck servers and associated PTY sessions (for user's OU Group, currently not filtered)
   - name: Whitelist / Blacklist
     description: Manage whitelists and blacklists for Healthcheck OU Group
-  - name: Audit
+  - name: Session Logs
     description: Retrieve session logs for PTY sessions and connections
   - name: Admin
     description: Administrative endpoints for managing PTY sessions and connections
 
 paths:
+  ######################################################################## Session Logs Use Case
+  /api/v1/session_logs/{pty_session_id}:
+    get:
+      tags:
+        - Session Logs
+      summary: Get logs for a specific PTY session
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: pty_session_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: PTY session logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '404':
+          description: PTY session not found
+        '500':
+          description: Internal server error
+
+
   ######################################################################## Pty Token Use Case
 
   /api/v1/pty_token/start:

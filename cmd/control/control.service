@@ -3,6 +3,7 @@ Description=Control Service for Den Den Mushi
 
 [Service]
 ExecStart=/usr/controller/control --config /usr/config.json
+
 WorkingDirectory=/usr/controller
 Restart=always
 RestartSec=10

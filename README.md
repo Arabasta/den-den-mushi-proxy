@@ -92,3 +92,8 @@ echo su% | bash
 su
 ```
 btw users can stack base64 / gzip 100x
+
+
+## Service file thing
+
+- todo: read https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files

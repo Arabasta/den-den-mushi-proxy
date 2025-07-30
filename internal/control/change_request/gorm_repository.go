@@ -68,6 +68,8 @@ func (r *GormRepository) FindChangeRequestsByFilter(f filters.ListCR) ([]*dto.Re
 		query = query.Where("ChangeSchedEndDateTime <= ?", f.EndTime.Format("2006-01-02 15:04:05"))
 	}
 
+	query = query.Order("ChangeSchedStartDateTime ASC")
+
 	page := f.Page
 	if page < 1 {
 		page = 1
