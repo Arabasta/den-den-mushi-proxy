@@ -136,6 +136,21 @@ func createCR(db *gorm.DB) {
 			State:             "Approved",
 			CyberArkObjects:   "54.255.144.215-ec2-user-x123,127.0.0.1-rootabc-w123,127.0.0.1-root-w123",
 		},
+		{
+			// approved CR, valid time, valid implementor groups, valid cyberark objects
+			// with cyberark ec2-user
+			// for testing CR endtime thing
+			CRNumber:          "CR202512322",
+			Country:           "SG,CN",
+			Lob:               "asdasd",
+			Summary:           "System update and patching",
+			Description:       "Patching EC2 instances in SG and HK region.",
+			ChangeStartTime:   "2025-07-30 11:00:00",
+			ChangeEndTime:     "2025-07-30 11:51:00",
+			ImplementorGroups: "kei",
+			State:             "Approved",
+			CyberArkObjects:   "54.255.144.215-ec2-user-x123,127.0.0.1-rootabc-w123,127.0.0.1-root-w123",
+		},
 	})
 
 }

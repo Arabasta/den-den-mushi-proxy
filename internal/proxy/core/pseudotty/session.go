@@ -23,6 +23,7 @@ type Session struct {
 	pty *os.File
 
 	startClaims *token.Claims // claims from the creator of the session, this must not be modified
+	crEndTime   *time.Time
 
 	startTime time.Time
 	endTime   time.Time
@@ -112,6 +113,10 @@ func (s *Session) Setup(claims *token.Claims) error {
 	s.log.Debug("Setting up session", zap.String("id", s.Id))
 	s.startClaims = claims
 
+	if s.startClaims.Connection.Purpose == types.Change {
+		s.crEndTime = &s.startClaims.Connection.ChangeRequest.EndTime
+	}
+
 	err := setPurpose(s, s.startClaims.Connection.Purpose)
 	if err != nil {
 		s.log.Error("Failed to set up session", zap.String("id", s.Id), zap.Error(err))
@@ -130,6 +135,11 @@ func (s *Session) Setup(claims *token.Claims) error {
 	}
 
 	s.log.Info("Initializing conn loop and pty reader")
+
+	if s.crEndTime != nil {
+		go s.monitorCrEndTime()
+	}
+
 	go s.connLoop()
 	go s.readPtyLoop()
 

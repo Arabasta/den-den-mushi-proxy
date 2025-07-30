@@ -38,6 +38,8 @@ func (h Header) String() string {
 		return "PtyErrorClose"
 	case PtyConnectionSuccess:
 		return "PtyConnectionSuccess"
+	case PtyCRTimeout:
+		return "PtyCRTimeout"
 	case ParseError:
 		return "ParseError"
 	default:
@@ -86,7 +88,7 @@ const (
 	// SudoInputPassword is used to send the password to the sudo handler
 	SudoInputPassword Header = 0x21
 
-	// ClientClose for closing the websocket connection
+	// ClientClose for closing the websocket connection, currently unused
 	ClientClose Header = 0x12
 
 	// PtyNormalClose is used when the pty session ends normally
@@ -95,8 +97,14 @@ const (
 	// PtyErrorClose is used when the pty session ends with an error
 	PtyErrorClose Header = 0x14
 
-	// PtyConnectionSuccess
+	// PtyConnectionSuccess is sent to the client when the websocket connection successfully attaches to a pty session
 	PtyConnectionSuccess Header = 0x15
+
+	// PtyCRTimeout is sent to the client when the pty session is closed when CR EndTime is reached
+	PtyCRTimeout Header = 0x16
+
+	// PtyCRTimeoutWarning is sent to the client in intervals when the pty session is about to close due to CR EndTime
+	PtyCRTimeoutWarning Header = 0x17
 
 	// ParseError indicates an error in parsing the header
 	ParseError Header = 0xff

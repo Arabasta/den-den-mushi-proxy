@@ -53,6 +53,11 @@ func (s *Session) addConn(c *client.Connection) {
 			Data:   []byte(s.Id),
 		})
 	} else {
+		core_helpers.SendToConn(c, protocol.Packet{
+			Header: protocol.PtyConnectionSuccess,
+			Data:   []byte(s.Id),
+		})
+
 		// is joining existing pty session
 		ptyLastPackets := s.ptyOutput.GetAll()
 		for i := range ptyLastPackets {

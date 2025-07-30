@@ -45,6 +45,12 @@ const socketManager = {
                 case 0x15: // pty connection success
                     term.write(`\r\n\x1b[32mConnected to terminal session.\r\nSessionId: ${new TextDecoder().decode(payload)}\x1b[0m\r\n`);
                     break;
+                case 0x16: // pty CR timeout
+                    term.write(`\r\n\x1b[33mCR end time reached, bye bye.\r\nSessionId: ${new TextDecoder().decode(payload)}\x1b[0m\r\n`);
+                    break;
+                case 0x17: // CR timeout warning
+                    showToast("CR session will end in " + new TextDecoder().decode(payload) + " minutes");
+                    break;
                 default:
                     console.warn("Unknown header:", header);
             }

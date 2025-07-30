@@ -69,7 +69,7 @@ func main() {
 			log.Fatal("AutoMigrate failed", zap.Error(err))
 		}
 		if cfg.Development.IsAutoMigrateEnabled {
-			//testdata.CallAll(db)
+			testdata.CallAll(db)
 		}
 	}
 
