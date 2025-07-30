@@ -6,28 +6,33 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 	"net/http"
+	"strings"
 )
 
 func TmpAuth(log *zap.Logger, cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if cfg.Development.IsTmpAuthCookieEnabled {
-			var tokenStr string
-			var err error
-
-			tokenStr = c.GetHeader("Authorization")
-			if tokenStr == "" {
+			authHeader := c.GetHeader("Authorization")
+			if authHeader == "" {
 				log.Error("Authorization header missing")
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 				return
 			}
-			jwtSecret := []byte(cfg.CookieTmp.Secret)
+
+			// extract token from Authorization header, Bearer optional for now for backward compatibility
+			var tokenStr string
+			if strings.HasPrefix(authHeader, "Bearer ") {
+				tokenStr = strings.TrimSpace(authHeader[7:])
+			} else {
+				tokenStr = strings.TrimSpace(authHeader)
+			}
 
 			// validate JWT with secret
 			token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, jwt.ErrSignatureInvalid
 				}
-				return jwtSecret, nil
+				return []byte(cfg.CookieTmp.Secret), nil
 			})
 			if err != nil || !token.Valid {
 				log.Warn("invalid jwt token", zap.Error(err))
