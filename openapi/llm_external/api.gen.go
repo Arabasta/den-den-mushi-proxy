@@ -35,6 +35,12 @@ type GetPtySessionResponse struct {
 	TicketId *string `json:"ticket_id,omitempty"`
 }
 
+// GetApiV1PtySessionsParams defines parameters for GetApiV1PtySessions.
+type GetApiV1PtySessionsParams struct {
+	// ChangeRequestId ID of the change request
+	ChangeRequestId string `form:"change_request_id" json:"change_request_id"`
+}
+
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
 
@@ -108,12 +114,12 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// GetApiV1PtySessionChangeRequestId request
-	GetApiV1PtySessionChangeRequestId(ctx context.Context, changeRequestId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetApiV1PtySessions request
+	GetApiV1PtySessions(ctx context.Context, params *GetApiV1PtySessionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) GetApiV1PtySessionChangeRequestId(ctx context.Context, changeRequestId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1PtySessionChangeRequestIdRequest(c.Server, changeRequestId)
+func (c *Client) GetApiV1PtySessions(ctx context.Context, params *GetApiV1PtySessionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1PtySessionsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -124,23 +130,16 @@ func (c *Client) GetApiV1PtySessionChangeRequestId(ctx context.Context, changeRe
 	return c.Client.Do(req)
 }
 
-// NewGetApiV1PtySessionChangeRequestIdRequest generates requests for GetApiV1PtySessionChangeRequestId
-func NewGetApiV1PtySessionChangeRequestIdRequest(server string, changeRequestId string) (*http.Request, error) {
+// NewGetApiV1PtySessionsRequest generates requests for GetApiV1PtySessions
+func NewGetApiV1PtySessionsRequest(server string, params *GetApiV1PtySessionsParams) (*http.Request, error) {
 	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "change_request_id", runtime.ParamLocationPath, changeRequestId)
-	if err != nil {
-		return nil, err
-	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/pty_session/%s", pathParam0)
+	operationPath := fmt.Sprintf("/api/v1/pty_sessions")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -148,6 +147,24 @@ func NewGetApiV1PtySessionChangeRequestIdRequest(server string, changeRequestId 
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "change_request_id", runtime.ParamLocationQuery, params.ChangeRequestId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -201,18 +218,18 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// GetApiV1PtySessionChangeRequestIdWithResponse request
-	GetApiV1PtySessionChangeRequestIdWithResponse(ctx context.Context, changeRequestId string, reqEditors ...RequestEditorFn) (*GetApiV1PtySessionChangeRequestIdResponse, error)
+	// GetApiV1PtySessionsWithResponse request
+	GetApiV1PtySessionsWithResponse(ctx context.Context, params *GetApiV1PtySessionsParams, reqEditors ...RequestEditorFn) (*GetApiV1PtySessionsResponse, error)
 }
 
-type GetApiV1PtySessionChangeRequestIdResponse struct {
+type GetApiV1PtySessionsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *[]GetPtySessionResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r GetApiV1PtySessionChangeRequestIdResponse) Status() string {
+func (r GetApiV1PtySessionsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -220,31 +237,31 @@ func (r GetApiV1PtySessionChangeRequestIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1PtySessionChangeRequestIdResponse) StatusCode() int {
+func (r GetApiV1PtySessionsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-// GetApiV1PtySessionChangeRequestIdWithResponse request returning *GetApiV1PtySessionChangeRequestIdResponse
-func (c *ClientWithResponses) GetApiV1PtySessionChangeRequestIdWithResponse(ctx context.Context, changeRequestId string, reqEditors ...RequestEditorFn) (*GetApiV1PtySessionChangeRequestIdResponse, error) {
-	rsp, err := c.GetApiV1PtySessionChangeRequestId(ctx, changeRequestId, reqEditors...)
+// GetApiV1PtySessionsWithResponse request returning *GetApiV1PtySessionsResponse
+func (c *ClientWithResponses) GetApiV1PtySessionsWithResponse(ctx context.Context, params *GetApiV1PtySessionsParams, reqEditors ...RequestEditorFn) (*GetApiV1PtySessionsResponse, error) {
+	rsp, err := c.GetApiV1PtySessions(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetApiV1PtySessionChangeRequestIdResponse(rsp)
+	return ParseGetApiV1PtySessionsResponse(rsp)
 }
 
-// ParseGetApiV1PtySessionChangeRequestIdResponse parses an HTTP response from a GetApiV1PtySessionChangeRequestIdWithResponse call
-func ParseGetApiV1PtySessionChangeRequestIdResponse(rsp *http.Response) (*GetApiV1PtySessionChangeRequestIdResponse, error) {
+// ParseGetApiV1PtySessionsResponse parses an HTTP response from a GetApiV1PtySessionsWithResponse call
+func ParseGetApiV1PtySessionsResponse(rsp *http.Response) (*GetApiV1PtySessionsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetApiV1PtySessionChangeRequestIdResponse{
+	response := &GetApiV1PtySessionsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -265,8 +282,8 @@ func ParseGetApiV1PtySessionChangeRequestIdResponse(rsp *http.Response) (*GetApi
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Get all PTY sessions for a change request
-	// (GET /api/v1/pty_session/{change_request_id})
-	GetApiV1PtySessionChangeRequestId(c *gin.Context, changeRequestId string)
+	// (GET /api/v1/pty_sessions)
+	GetApiV1PtySessions(c *gin.Context, params GetApiV1PtySessionsParams)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -278,21 +295,30 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(c *gin.Context)
 
-// GetApiV1PtySessionChangeRequestId operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1PtySessionChangeRequestId(c *gin.Context) {
+// GetApiV1PtySessions operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1PtySessions(c *gin.Context) {
 
 	var err error
 
-	// ------------- Path parameter "change_request_id" -------------
-	var changeRequestId string
+	c.Set(ApiKeyAuthScopes, []string{})
 
-	err = runtime.BindStyledParameterWithOptions("simple", "change_request_id", c.Param("change_request_id"), &changeRequestId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetApiV1PtySessionsParams
+
+	// ------------- Required query parameter "change_request_id" -------------
+
+	if paramValue := c.Query("change_request_id"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument change_request_id is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "change_request_id", c.Request.URL.Query(), &params.ChangeRequestId)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter change_request_id: %w", err), http.StatusBadRequest)
 		return
 	}
-
-	c.Set(ApiKeyAuthScopes, []string{})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
@@ -301,7 +327,7 @@ func (siw *ServerInterfaceWrapper) GetApiV1PtySessionChangeRequestId(c *gin.Cont
 		}
 	}
 
-	siw.Handler.GetApiV1PtySessionChangeRequestId(c, changeRequestId)
+	siw.Handler.GetApiV1PtySessions(c, params)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -331,23 +357,23 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		ErrorHandler:       errorHandler,
 	}
 
-	router.GET(options.BaseURL+"/api/v1/pty_session/:change_request_id", wrapper.GetApiV1PtySessionChangeRequestId)
+	router.GET(options.BaseURL+"/api/v1/pty_sessions", wrapper.GetApiV1PtySessions)
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/4xT72/bOAz9VwTefXRt59riDv5m3IYhaDcEbTdsKIJAlZlYnS1pEp3VCPy/D5S95UeD",
-	"YZ9s0+Qj+fjeDpRtnTVoKECxg6BqbGV8fYe0oP4eQ9DW3GFw1gTkH85bh540xjRH/SqMSStdcYR6h1BA",
-	"IK/NBoYEfv5W1hhUhNUqoN+iX2n3+3yPkrOf+rNppNVXpKlphUF57UhbAwXM3wi7FlSjULU0GxQev3UY",
-	"SMgQrNKMKr5rqgXVOojFwxcx9YTktM/wK2KfnlFRjARUndfU3zNdIw+l0zfYlx3V/KV5ihplhR4SMLJl",
-	"gM8X5WJ+cYP9vouMVTAwqDZr+3qVcjEXa+tFOReEshVkheua5nBoUSFJ3QSG1dQw7u3te/H2hdAb2Yhy",
-	"MYcEtujDCDlL8zRnBq1DI52GAi7TPL2EBJykOq6TSaez7Sw7OG+2G8lcTWSudDVw6gaJHywKyUPPKyhY",
-	"PaXTn2Z7Cf0fi+/G2nkVm3nZIqEPUDxOnPEAe8ZeNYQE+EN7rKAg32EySfaMQoYlJ4+6jTv9k+f8UNYQ",
-	"mjizdK7RKk6dPQcmZ3eApwnbWPi3xzUU8Fe2N0s2OSU7b5O9aqT3cjrw8WEPDhiER/Iat1iJ0CmFIay7",
-	"pukZ5iq/ei2KD5bE2nam4ozrca0TB5jp+KPVBHpv/ZF2I+eHqn1cMmOha1vp+/GEQh4rLUQpyhNXse7k",
-	"ho8Yl5q4gOXwJ+3ieKMAjjf4WD5AAp1v2ElELhRZ9pLPQvtCXs5kGlzaSUqrp5Aq611xfZ3n/8KQnOLc",
-	"WiWbI6QiyxoO1jZQLPsPeJRph9N6puG82SaRHu48LIcfAQAA//8WxVooUwUAAA==",
+	"H4sIAAAAAAAC/4xT22rcPBB+FTH/f+nY3iahxXeGlrIkLUuTlpawLIo8u1ZqS4pmvI0Jfvci2e0espRc",
+	"2ZZH38x3mGdQtnXWoGGC4hlI1djK+PoRecH9DRJpa74gOWsIww/nrUPPGmOZ435FY9FKV+GEe4dQALHX",
+	"ZgNDAn9+K2sMKsZqRei36Ffa/bveowzV9/3JMtbqJ/LUtEJSXjvW1kAB8/fCrgXXKFQtzQaFx8cOiYUk",
+	"skoHVPFLcy241iQWtz/E1BOS4z7D3xN7/4CK4wmh6rzm/ibINepQOn2FfdlxHb50mKJGWaGHBIxsA8D3",
+	"s3IxP7vCftdFxlswBFBt1vYllXIxF2vrRTkXjLIVbIXrmmZ/aFEhS91QgNXcBNzr60/iwxOjN7IR5WIO",
+	"CWzR0wg5S/M0Dwpah0Y6DQWcp3l6Dgk4yXWkk0mns+0s27M3nm+QwyMkQIYJ5xUUISql099mu7xQxPKy",
+	"RUZPUNy91iFIRu0eO/T9TrqxaDUVBc8TCB/aYwUF+w6TKbsnojIsQ/EY4EjiTZ6Hh7KG0UQ+0rlGq8go",
+	"e6Aw4fMenmZs48X/Pa6hgP+y3dZk08pkp/dlFx/pvZycPpRiz0kSHtlr3GIlqFMKidZd0/QB5iK/eJmO",
+	"z5bF2namChWXI60joc2UgnHnBHpv/UGIozv78b1bBsWoa1vp+9FeIQ8jRzGT8qV5LDfB7khq0gKWw2va",
+	"xfFOReVreQsJdL4JK8XsqMiyp3xG7RN7OZMpubSTnFb3lCrrXXF5medvYUiOca6tks0BUpFlTTisLXG8",
+	"9g7CKBOH4/tBhtNbN4V0n/OwHH4HAAD//wHAso5cBQAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

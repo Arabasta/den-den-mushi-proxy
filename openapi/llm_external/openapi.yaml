@@ -8,7 +8,6 @@ servers:
   - url: http://localhost:55008
     description: Local
 
-
 tags:
   - name: PTY Session
     description: Get PTY session details
@@ -17,7 +16,7 @@ security:
   - ApiKeyAuth: []
 
 paths:
-  /api/v1/pty_session/{change_request_id}:
+  /api/v1/pty_sessions:
     get:
       tags:
         - PTY Session
@@ -26,10 +25,11 @@ paths:
         - ApiKeyAuth: [ ]
       parameters:
         - name: change_request_id
-          in: path
+          in: query
           required: true
           schema:
             type: string
+          description: ID of the change request
       responses:
         '200':
           description: PTY sessions retrieved successfully
