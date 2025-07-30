@@ -14,7 +14,7 @@ const socketManager = {
         const jwt = params.get('jwt_tmp');
 
         // connect to proxy
-        let websocketUrl = `wss://${window.location.hostname}:45007/v1/ws`;
+        let websocketUrl = `ws://${window.location.hostname}:45007/v1/ws`;
         console.log(websocketUrl);
         this.socket = new WebSocket(websocketUrl, ['X-Proxy-Session-Token', jwt]);
 
@@ -34,6 +34,7 @@ const socketManager = {
                     term.write(`\r\n\x1b[31m${new TextDecoder().decode(payload)} not allowed\x1b[0m\r\n`);
                     break;
                 case 0x07: // pty session event
+                    // note to frontend dev, should NOT use the same toast as blocked control char
                     showSideToast(new TextDecoder().decode(payload));
                     break;
                 case 0x13: // pty normal close
@@ -49,6 +50,7 @@ const socketManager = {
                     term.write(`\r\n\x1b[33mCR end time reached, bye bye.\r\nSessionId: ${new TextDecoder().decode(payload)}\x1b[0m\r\n`);
                     break;
                 case 0x17: // CR timeout warning
+                    // note to frontend dev, should NOT use the same toast as blocked control char
                     showToast("CR session will end in " + new TextDecoder().decode(payload) + " minutes");
                     break;
                 default:
