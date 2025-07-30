@@ -5,8 +5,6 @@ info:
   description: |-
     API for starting and joining PTY sessions. Currently also hosting all non-proxy related endpoints.
 servers:
-  - url: https://x01smxtra1a.sp.uat.dbs.corp:55007
-    description: UAT
   - url: http://localhost:55007
     description: Local
 

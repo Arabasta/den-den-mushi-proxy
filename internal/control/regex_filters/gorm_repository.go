@@ -35,7 +35,7 @@ func (r *GormRepository) FindAllByFilterTypeAndOuGroup(filterType types.Filter, 
 	var models []dto.Model
 
 	err := r.db.Where("type = ? AND ougroup = ?", filterType, ouGroup).
-		Order("CreatedAt ASC").
+		Order("CreatedAt DESC").
 		Find(&models).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
