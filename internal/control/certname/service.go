@@ -19,8 +19,5 @@ func NewService(repo Repository, log *zap.Logger) *Service {
 
 func (s *Service) FindCertnameByIp(ip string) (*dto.Record, error) {
 	s.log.Debug("Looking up certname by IP", zap.String("ip", ip))
-	//return s.repo.FindCertnameByIp(ip)
-	return &dto.Record{
-		Certname: "example-certname", // Placeholder for actual certname
-	}, nil
+	return s.repo.FindCertnameByIp(ip)
 }
