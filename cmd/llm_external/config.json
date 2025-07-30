@@ -15,7 +15,7 @@
   "Cors": {
     "allowOrigins": ["*"],
     "allowMethods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    "allowHeaders": ["Authorization", "Content-Type", "X-Requested-With"],
+    "allowHeaders": ["Authorization", "Content-Type", "X-Requested-With", "X-API-Key"],
     "exposeHeaders": [],
     "allowCredentials": true,
     "allowMaxAge": 3600
