@@ -22,7 +22,7 @@ func NewGormRepository(db *gorm.DB, log *zap.Logger) *GormRepository {
 
 func (r *GormRepository) FindByIp(ip string) (*dto.Record, error) {
 	var m dto.Model
-	err := r.db.Where("IpAddress = ?", ip).First(&m).Error
+	err := r.db.Where("IPADDRESS = ?", ip).First(&m).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		r.log.Debug("No host found for IP", zap.String("ip", ip))
 		return nil, nil
@@ -38,7 +38,7 @@ func (r *GormRepository) FindByIp(ip string) (*dto.Record, error) {
 func (r *GormRepository) FindAllLinuxOsByIps(ips []string) ([]*dto.Record, error) {
 	var models []dto.Model
 
-	err := r.db.Where("IpAddress IN ? AND PLATFORM = ?", ips, "Linux").Find(&models).Error
+	err := r.db.Where("IPADDRESS IN ? AND PLATFORM = ?", ips, "Linux").Find(&models).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.log.Debug("No hosts found for provided IPs", zap.Strings("ips", ips))
@@ -110,6 +110,5 @@ func (r *GormRepository) FindAllByFilter(f filters.HealthcheckPtySession) ([]*dt
 		return nil, err
 	}
 
-	r.log.Debug("Fetched hosts", zap.Int("Count", len(models)))
 	return dto.FromModels(models), nil
 }
