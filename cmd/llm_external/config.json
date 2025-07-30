@@ -1,0 +1,55 @@
+{
+  "app": {
+    "name": "den-den-mushi-llm-external",
+    "environment": "dev",
+    "version": "1.0.0",
+    "port": 55008
+  },
+  "development": {
+    "isSMX": false,
+    "IsUsingInvDb": false
+  },
+  "ssl": {
+    "enabled": false
+  },
+  "Cors": {
+    "allowOrigins": ["*"],
+    "allowMethods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    "allowHeaders": ["Authorization", "Content-Type", "X-Requested-With"],
+    "exposeHeaders": [],
+    "allowCredentials": true,
+    "allowMaxAge": 3600
+  },
+  "Logger": {
+    "level": "debug",
+    "format": "console",
+    "output": "both",
+    "filePath": "./log/ddm-llm-external.log"
+  },
+  "DdmDB": {
+    "user": "root",
+    "port": 3306,
+    "dbName": "DenDenMushi",
+    "params": "charset=utf8mb4&parseTime=True&loc=Local",
+    "maxIdleConns": 2,
+    "maxOpenConns": 10,
+    "connMaxLifetimeMinutes": 30,
+    "sslEnabled": false,
+    "logLevel": 4
+  },
+  "InvDB": {
+    "user": "",
+    "port": 4405,
+    "dbName": "",
+    "params": "charset=utf8mb4&parseTime=True&loc=Local",
+    "maxIdleConns": 1,
+    "maxOpenConns": 10,
+    "connMaxLifetimeMinutes": 30,
+    "sslEnabled": true,
+    "logLevel": 4
+  },
+  "Api": {
+    "IsKeyAuthEnabled": true,
+    "KeyHeader": "X-API-Key"
+  }
+}

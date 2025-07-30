@@ -3,7 +3,7 @@ CMD_DIR := cmd
 BIN_DIR := bin
 
 # space separated list
-BINARIES := proxy control
+BINARIES := proxy control llm_external
 
 .PHONY: all build run clean generate generate-client check-generate
 
