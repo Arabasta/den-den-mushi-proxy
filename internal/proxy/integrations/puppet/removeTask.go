@@ -16,7 +16,7 @@ func (p *Client) KeyRemove(publicKey string, conn dto.Connection) error {
 			ConnectionID: conn.UserSession.Id,
 		},
 		Scope: taskScope{
-			Nodes: []string{p.cfg.TaskNode},
+			Nodes: []string{conn.ServerFQDNTmpTillRefactor},
 		},
 	}
 
