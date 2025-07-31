@@ -48,7 +48,7 @@ func (p *Client) DrawCyberarkKey(object string, serverFQDN string) (string, erro
 
 	p.log.Debug("Calling puppet task to draw key with params", zap.Any("params", params))
 
-	resp, err := p.callPuppetTask(TaskCyberarkDrawKey, params)
+	resp, err := p.callPuppetTask2(TaskCyberarkDrawKey, params)
 	if err != nil {
 		return "", fmt.Errorf("failed to call puppet task to draw cyberark key: %w", err)
 	}

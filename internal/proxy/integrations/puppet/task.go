@@ -64,8 +64,7 @@ func (p *Client) callPuppetTask(task PuppetTask, payload interface{}) (*http.Res
 		return nil, err
 	}
 
-	var resp *http.Response
-	resp, err = p.httpPostAndResponse(req)
+	resp, err := p.httpPostAndResponse(req)
 	if err != nil {
 		return nil, err
 	}
