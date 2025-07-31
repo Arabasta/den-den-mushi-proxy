@@ -19,6 +19,9 @@ func (p *Client) createPuppetRequest2(t PuppetTask, payload taskBody2) (*http.Re
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal payload: %w", err)
 	}
+	if len(body) == 0 {
+		return nil, fmt.Errorf("empty request body for task: %s", t)
+	}
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
 	if err != nil {
