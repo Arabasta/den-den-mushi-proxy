@@ -38,7 +38,8 @@
     "InjectPublicKeyTaskName": "injectkey",
     "RemovePublicKeyTaskName": "removekey",
     "TaskRetrySeconds": 5,
-    "RetryAttempts": 1
+    "RetryAttempts": 1,
+    "TaskNode": "xxx01sssmmm"
   },
   "JwtAudience": {
       "ExpectedIssuer": "control-server",

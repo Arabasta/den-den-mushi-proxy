@@ -7,19 +7,19 @@ import (
 	"den-den-mushi-Go/pkg/types"
 )
 
+// todo: refactor this garbage
 type AdapterFields struct {
 	Purpose                types.ConnectionPurpose
 	ChangeID               string
 	Server                 dto.ServerInfo
 	CR                     *changerequestpkg.Record
-	UserID                 string
+	UserOuGroup            string
 	UsersImplementorGroups []*implementor_groups.Record
 }
 
 func (a *AdapterFields) GetPurpose() types.ConnectionPurpose        { return a.Purpose }
 func (a *AdapterFields) GetChangeId() string                        { return a.ChangeID }
 func (a *AdapterFields) GetServerInfo() dto.ServerInfo              { return a.Server }
-func (a *AdapterFields) GetUserId() string                          { return a.UserID }
 func (a *AdapterFields) GetChangeRequest() *changerequestpkg.Record { return a.CR }
 func (a *AdapterFields) GetUsersImplementorGroups() []*implementor_groups.Record {
 	return a.UsersImplementorGroups

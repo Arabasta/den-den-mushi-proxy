@@ -23,6 +23,7 @@ func setupSecurityHeaders(r *gin.Engine) {
 func New(ddmDb *gorm.DB, staticFiles embed.FS, cfg *config.Config, log *zap.Logger) *Server {
 	deps := initDependencies(ddmDb, cfg, log)
 
+	gin.SetMode(gin.DebugMode)
 	r := gin.New()
 	r.Use(
 		middleware.RequestLogger(log),

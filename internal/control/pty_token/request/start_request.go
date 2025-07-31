@@ -20,3 +20,6 @@ type StartAdapter struct {
 	AdapterFields
 	Req wrapper.WithAuth[StartRequest]
 }
+
+func (s *StartAdapter) GetUserId() string      { return s.Req.AuthCtx.UserID }
+func (s *StartAdapter) GetUserOuGroup() string { return s.Req.AuthCtx.OuGroup }

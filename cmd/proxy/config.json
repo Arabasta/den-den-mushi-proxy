@@ -38,7 +38,8 @@
     "InjectPublicKeyTaskName": "injectkey",
     "RemovePublicKeyTaskName": "removekey",
     "TaskRetrySeconds": 5,
-    "RetryAttempts": 1
+    "RetryAttempts": 1,
+    "TaskNode": "xxx01sssmmm"
   },
   "JwtAudience": {
       "ExpectedIssuer": "control-server",
@@ -86,7 +87,7 @@
     "IsCleanupEnabled": true,
     "IsLogPrivateKey": true,
     "ConnectDelayAfterInjectSeconds": 5,
-    "SshCommand": "/usr/bin/ssh"
+    "SshCommand": "ssh"
   },
   "Pty": {
     "SpawnRetryCount": 4,
@@ -106,7 +107,7 @@
       "CybidB": "123",
       "SafeA": "asd",
       "SafeB": "qwe",
-      "IsValidationEnabled": false
+      "IsValidationEnabled": true
     }
   }
 }

@@ -17,6 +17,8 @@ func (w *WhitelistFilter) IsValid(cmd string, ouGroup string) (string, bool) {
 	w.mu.RLock()
 	defer w.mu.RUnlock()
 
+	ouGroup = "default"
+
 	allowedCmds, ok := w.ouGroupRegexFiltersMap[ouGroup]
 	if !ok {
 		return cmd, false // no filters for this OU group

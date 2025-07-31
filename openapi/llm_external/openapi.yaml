@@ -5,6 +5,8 @@ info:
   description: |-
     API for AI team to pull PTY session details
 servers:
+  - url: https://x01smxtra1a.sp.uat.dbs.corp:55007
+    description: UAT
   - url: http://localhost:55008
     description: Local
 

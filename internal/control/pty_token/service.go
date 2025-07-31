@@ -82,7 +82,18 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 
 	var filter types.Filter
 	var cr *changerequestpkg.Record
-	adapter := &request.StartAdapter{Req: r}
+
+	adapter := &request.StartAdapter{
+		Req: r,
+		AdapterFields: request.AdapterFields{
+			Purpose:  r.Body.Purpose,
+			ChangeID: r.Body.ChangeID,
+			Server: dto.ServerInfo{
+				IP:     r.Body.Server.IP,
+				OSUser: r.Body.Server.OSUser,
+			},
+		},
+	}
 
 	var allowedSuOsUsers []string
 
@@ -111,19 +122,24 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 		}
 
 		if s.cfg.Development.IsBlacklistFilter {
-			filter = types.Blacklist // todo: get filter type by host type
+			filter = types.Blacklist // todo: get filter type by host type or OU group?
 		} else {
 			filter = types.Whitelist
 		}
 
+		// todo: this guy should be from db, each perso n has their own os user
 		allowedSuOsUsers = s.cfg.Development.HealthcheckOsUsers
 		s.log.Debug("Healthcheck allowed OS users", zap.Strings("allowedSuOsUsers", allowedSuOsUsers))
 
+		// todo: this should be by OU group what they want idk
 		//filter, err = s.hostSvc.FindFilterTypeByHostType(hostType)
 		//if err != nil {
 		//	s.log.Error("Failed to find filter type by host type", zap.String("hostType", string(hostType)), zap.Error(err))
 		//	return "", "", err
 		//}
+	} else {
+		s.log.Error("Invalid connection purpose", zap.String("purpose", string(r.Body.Purpose)))
+		return "", "", errors.New("invalid connection purpose")
 	}
 
 	s.log.Debug("Building connection for start")
@@ -168,7 +184,6 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request.JoinRequest]) (string
 			},
 		},
 	}
-
 	if adapter.Purpose == types.Change {
 		cr, err := s.crSvc.FindByTicketNumber(adapter.ChangeID)
 		if err != nil || cr == nil {
@@ -189,6 +204,9 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request.JoinRequest]) (string
 			s.log.Warn("Health check policy check failed", zap.Error(err))
 			return "", "", err
 		}
+	} else {
+		s.log.Error("Invalid connection purpose", zap.String("purpose", string(adapter.Purpose)))
+		return "", "", errors.New("invalid connection purpose")
 	}
 
 	s.log.Debug("Building connection for join", zap.String("ptySessionId", r.Body.PtySessionId))

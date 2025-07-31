@@ -12,6 +12,7 @@ type Ctx interface {
 	GetChangeId() string
 	GetServerInfo() dto.ServerInfo
 	GetUserId() string
+	GetUserOuGroup() string
 	GetChangeRequest() *changerequestpkg.Record
 	GetUsersImplementorGroups() []*implementor_groups.Record
 }

@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type AuthContext struct {
@@ -14,34 +15,22 @@ type contextKey string
 
 const authCtxKey contextKey = "authContext"
 
-var validOuGroups = map[string]bool{
-	"ougroup1": true,
-	"ougroup2": true,
-	"ougroup3": true,
-}
-
 func SetAuthContext() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userID, _ := c.Get("user_id")
+		userID, ok := c.Get("user_id")
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing user_id in context"})
+			return
+		}
 
-		//ouGroups, ok2 := c.Get("ou_groups")
-		//if !ok1 || !ok2 {
-		//	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing auth context"})
-		//	return
-		//}
-		//
-		//// we only need the health check OU group
-		//ouGroup := ""
-		//for _, o := range ouGroups.([]string) {
-		//	if _, exists := validOuGroups[o]; exists {
-		//		ouGroup = o
-		//		break
-		//	}
-		//}
+		ouGroup, ok := c.Get("ou_group")
+		if !ok {
+			ouGroup = ""
+		}
 
 		auth := &AuthContext{
 			UserID:  userID.(string),
-			OuGroup: "ddmtestOu",
+			OuGroup: ouGroup.(string),
 		}
 
 		ctx := WithAuthContext(c.Request.Context(), auth)
@@ -57,10 +46,4 @@ func WithAuthContext(ctx context.Context, auth *AuthContext) context.Context {
 func GetAuthContext(ctx context.Context) (*AuthContext, bool) {
 	val, ok := ctx.Value(authCtxKey).(*AuthContext)
 	return val, ok
-
-	//// todo: for demo purposes, return a mock AuthContext
-	//return &AuthContext{
-	//	UserID:  "ddmtest",
-	//	OuGroup: "ddmtestOu",
-	//}, true
 }

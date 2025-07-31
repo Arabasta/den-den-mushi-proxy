@@ -16,7 +16,7 @@ func (h *SudoUsername) Handle(pkt protocol.Packet, pty io.Writer) (string, error
 	}
 	time.Sleep(250 * time.Millisecond)
 
-	suCommand := "su " + string(pkt.Data)
+	suCommand := "su - " + string(pkt.Data)
 	if _, err := pty.Write(append([]byte(suCommand), constants.Enter...)); err != nil {
 		return "", err
 	}

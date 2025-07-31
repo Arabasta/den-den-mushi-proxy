@@ -26,7 +26,8 @@ func (r *GormRepository) FindByTicketNumber(num string) (*dto.Record, error) {
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.log.Debug("No change request found for ID", zap.String("id", num))
-			return nil, nil
+			// must return err
+			return nil, errors.New(num + " not found")
 		}
 		r.log.Error("DB error while fetching change request", zap.String("id", num), zap.Error(err))
 		return nil, err

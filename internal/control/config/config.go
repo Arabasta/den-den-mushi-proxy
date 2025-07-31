@@ -25,10 +25,11 @@ type Config struct {
 	}
 
 	CookieTmp struct {
-		Name      string
-		Redirect  string
-		UserIdKey string
-		Secret    string
+		Name       string
+		Redirect   string
+		UserIdKey  string
+		OuGroupKey string
+		Secret     string
 	}
 
 	Ssl *config.Ssl
@@ -44,4 +45,12 @@ type Config struct {
 	InvDB *config.SqlDb
 
 	Redis *config.Redis
+
+	OuGroup struct {
+		IsValidationEnabled bool `json:"IsValidationEnabled"`
+		Prefix              struct {
+			L1   string `json:"L1"`
+			L2L3 string `json:"L2_L3"`
+		} `json:"Prefix_V1"`
+	} `json:"OuGroup"`
 }

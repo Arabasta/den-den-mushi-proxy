@@ -66,35 +66,36 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 	connectionService := connection.NewService(connRepo, log)
 
 	certNameRepo := certname.NewGormRepository(ddmDb, log)
-	certNameSvc := certname.NewService(certNameRepo, log)
+	certNameSvc := certname.NewService(certNameRepo, log, cfg)
 
-	// policies ==================================================================================================
+	//// policy chains ============================================================================================
 
+	var changeRequestPolicyChain policy.Policy[request.Ctx]
+	var healthcheckPolicyChain policy.Policy[request.Ctx]
+
+	// policies for change request
+	ptySessionPolicyCR := policy.NewPtySessionPolicy[request.Ctx](ptySessionService, connectionService, log)
+	ouPolicyCR := policy.NewOUPolicy[request.Ctx](hostService, log)
 	changePolicy := policy.NewChangePolicy[request.Ctx](impGroupsService, log)
-	healthcheckPolicy := policy.NewHealthcheckPolicy[request.Ctx](hostService, impGroupsService, log)
-	ouPolicy := policy.NewOUPolicy[request.Ctx](hostService, log)
-	ptySessionPolicy := policy.NewPtySessionPolicy[request.Ctx](ptySessionService, connectionService, log)
 
-	// policy chains ============================================================================================
+	ptySessionPolicyCR.SetNext(ouPolicyCR)
+	ouPolicyCR.SetNext(changePolicy)
+	changeRequestPolicyChain = ptySessionPolicyCR
 
-	changeRequestPolicyChain := policy.NewBuilder[request.Ctx]().
-		Add(ouPolicy).
-		Add(ptySessionPolicy).
-		Add(changePolicy).
-		Build()
+	// policies for health check
+	ptySessionPolicyHC := policy.NewPtySessionPolicy[request.Ctx](ptySessionService, connectionService, log)
+	ouPolicyHC := policy.NewOUPolicy[request.Ctx](hostService, log)
+	healthcheckPolicy := policy.NewHealthcheckPolicy[request.Ctx](hostService, impGroupsService, log, cfg)
 
-	healthcheckPolicyChain := policy.NewBuilder[request.Ctx]().
-		Add(ouPolicy).
-		Add(ptySessionPolicy).
-		Add(healthcheckPolicy).
-		Build()
+	ptySessionPolicyHC.SetNext(healthcheckPolicy)
+	healthcheckPolicy.SetNext(ouPolicyHC)
+	healthcheckPolicyChain = ptySessionPolicyHC
 
 	if cfg.Development.SkipPolicyChecks {
-		log.Info("Using noop policy")
-		changeRequestPolicyChain = policy.NewBuilder[request.Ctx]().
-			Add(policy.NewNoopPolicy[request.Ctx](log)).Build()
-		healthcheckPolicyChain = policy.NewBuilder[request.Ctx]().
-			Add(policy.NewNoopPolicy[request.Ctx](log)).Build()
+		log.Info("Skip policy checks enabled. Using noop policy")
+		noopPolicy := policy.NewNoopPolicy[request.Ctx](log)
+		changeRequestPolicyChain = noopPolicy
+		healthcheckPolicyChain = noopPolicy
 	}
 
 	// pass policy chains to service

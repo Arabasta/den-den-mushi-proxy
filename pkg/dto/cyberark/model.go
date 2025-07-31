@@ -8,12 +8,6 @@ type Model struct {
 	Ip       string `gorm:"column:IP"`
 }
 
-var tableName = "cyberarkobject_map"
-
 func (Model) TableName() string {
-	return tableName
-}
-
-func SetTableName(name string) {
-	tableName = name
+	return "CYBERARKOBJECT_MAP"
 }

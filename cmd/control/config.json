@@ -7,7 +7,7 @@
   },
   "development": {
     "isSMX": false,
-    "skipPolicyChecks": true,
+    "skipPolicyChecks": false,
     "IsUsingInvDb": false,
     "IsAutoMigrateEnabled": true,
     "IsBlacklistFilter": true,
@@ -74,5 +74,12 @@
     "Redirect": "ddm.com/login",
     "UserIdKey": "username",
     "Secret": ""
+  },
+  "OuGroup": {
+    "IsValidationEnabled": true,
+    "Prefix": {
+      "L1": "ddm_L1",
+      "L2_L3": "ddm_L2_L3"
+    }
   }
 }

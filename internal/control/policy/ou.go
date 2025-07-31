@@ -25,10 +25,12 @@ func (p *OUPolicy[T]) SetNext(n Policy[T]) {
 }
 
 func (p *OUPolicy[T]) Check(r T) error {
-	// 1. check if server is OU? what the hell this?
+	p.log.Debug("Checking OU policy.... This doesnt do anythign for now")
 
 	if p.next != nil {
+		p.log.Debug("OuPolicy Check called, checking next policy")
 		return p.next.Check(r)
 	}
+	p.log.Debug("OUPolicy Check called, but no next policy set")
 	return nil
 }

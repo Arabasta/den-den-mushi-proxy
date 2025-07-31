@@ -40,9 +40,17 @@ func TmpAuth(log *zap.Logger, cfg *config.Config) gin.HandlerFunc {
 				return
 			}
 
+			// set the cl
 			if claims, ok := token.Claims.(jwt.MapClaims); ok {
 				subject, _ := claims[cfg.CookieTmp.UserIdKey].(string)
 				c.Set("user_id", subject)
+
+				// each user should only have 1 ou group, this is handled by the auth service
+				ouGroup, _ := claims[cfg.CookieTmp.OuGroupKey].(string)
+				if ouGroup == "" {
+					log.Debug("ou_group claim is empty")
+				}
+				c.Set("ou_group", ouGroup)
 			} else {
 				log.Warn("invalid jwt claims")
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
@@ -50,8 +58,10 @@ func TmpAuth(log *zap.Logger, cfg *config.Config) gin.HandlerFunc {
 			}
 		} else {
 			log.Debug("TmpAuth middleware is disabled")
-			c.Set("user_id", "tmp_user")
+			c.Set("user_id", "ddmtest")
+			c.Set("ou_group", "ddm_L1_admin_group")
 		}
+
 		c.Next()
 	}
 }

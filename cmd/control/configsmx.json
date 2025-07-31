@@ -74,5 +74,12 @@
     "Redirect": "ddm.com/login",
     "UserIdKey": "username",
     "Secret": ""
+  },
+  "OuGroup": {
+    "IsValidationEnabled": true,
+    "Prefix_V1": {
+      "L1": "L1",
+      "L2_L3": "L2_L3"
+    }
   }
 }

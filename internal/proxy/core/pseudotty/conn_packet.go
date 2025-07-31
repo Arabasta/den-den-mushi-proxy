@@ -50,6 +50,7 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		logMsg, err = s.purpose.HandleInput(s, pkt)
 		s.logAndResetLineEditorIfInputEnter(pkt)
 	} else if pkt.Header == protocol.Sudo {
+		s.logPacket(pkt)
 		/// todo: refactor this garbage
 		//// packet should contain username to sudo to
 		//targetUser := string(pkt.Data)
@@ -66,6 +67,7 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		if s.puppetClient.Cfgtmp.PuppetTasks.CyberarkPasswordDraw.IsValidationEnabled {
 			// check ip against initial claims
 			if ip != s.startClaims.Connection.Server.IP {
+				s.logL(session_logging.FormatLogLine(pkt.Header.String(), "Unauthorized sudo attempt IP mismatch"))
 				s.log.Error("Unauthorized sudo attempt IP mismatch", zap.String("ip", ip),
 					zap.String("expectedIP", s.startClaims.Connection.Server.IP))
 				return
@@ -73,6 +75,7 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 
 			// check targetUser against initial claims
 			if !slices.Contains(s.startClaims.Connection.AllowedSuOsUsers, targetUser) {
+				s.logL(session_logging.FormatLogLine(pkt.Header.String(), "Unauthorized sudo attempt Target User Mismatch"))
 				s.log.Error("Unauthorized sudo attempt Target User Mismatch", zap.String("user", targetUser),
 					zap.Strings("allowedUsers", s.startClaims.Connection.AllowedSuOsUsers))
 				return
@@ -82,6 +85,7 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		// draw password from cyberark
 		password, err := s.puppetClient.DrawCyberarkKey(cyberarkObject, s.startClaims.Connection.ServerFQDNTmpTillRefactor)
 		if err != nil {
+			s.logL(session_logging.FormatLogLine(pkt.Header.String(), "Failed to draw cyberark key"))
 			s.log.Error("Failed to draw cyberark key", zap.Error(err), zap.String("cyberark object", cyberarkObject))
 			return
 		}
@@ -102,6 +106,7 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		s.isPtyOutputLocked = true
 
 		defer func() {
+			s.logL(session_logging.FormatLogLine(pkt.Header.String(), "Sudo Operation for "+targetUser+" complete"))
 			s.isPtyOutputLocked = false
 			logMsg, err = handler.Get[protocol.Input].Handle(protocol.Packet{
 				Header: protocol.Input,
@@ -122,6 +127,7 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		s.log.Debug("Handling Sudo username packet", zap.String("target OS user", targetUser))
 		logMsg, err = handler.Get[userPacket.Header].Handle(userPacket, s.pty)
 		if err != nil {
+			s.logL(session_logging.FormatLogLine(pkt.Header.String(), "Failed to handle SudoUsername packet"))
 			s.log.Error("Failed to handle SudoUsername packet", zap.Error(err))
 			return
 		}
@@ -130,6 +136,7 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		s.log.Debug("Handling Sudo password packet", zap.String("target OS user", targetUser))
 		logMsg, err = handler.Get[passwordPacket.Header].Handle(passwordPacket, s.pty)
 		if err != nil {
+			s.logL(session_logging.FormatLogLine(pkt.Header.String(), "Failed to handle SudoPassword packet"))
 			s.log.Error("Failed to handle SudoPassword packet", zap.Error(err))
 			return
 		}

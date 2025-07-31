@@ -13,12 +13,6 @@ type Model struct {
 	CyberArkObjects   string `gorm:"column:CyberarkObjects"`          // Comma-separated. e.g. "Object1,Object2,Object3"
 }
 
-var tableName = "changerequests"
-
 func (Model) TableName() string {
-	return tableName
-}
-
-func SetTableName(name string) {
-	tableName = name
+	return "CHANGEREQUESTS"
 }

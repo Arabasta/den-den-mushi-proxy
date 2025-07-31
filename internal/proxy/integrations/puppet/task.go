@@ -44,8 +44,6 @@ func (p *Client) createPuppetRequest(t PuppetTask, payload interface{}) (*http.R
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// set headers todo: check if header ok
-	//req.Header.Set("Authorization", "token "+p.cfg.Token)
 	req.Header.Set("Content-Type", "application/json")
 
 	var payloadMap map[string]interface{}
@@ -71,17 +69,6 @@ func (p *Client) callPuppetTask(task PuppetTask, payload interface{}) (*http.Res
 	if resp == nil {
 		return nil, fmt.Errorf("puppet returned nil response")
 	}
-	// no retry for now
-	//for i := 1; i <= p.cfg.RetryAttempts; i++ {
-	//	resp, err = p.httpPostAndResponse(req)
-	//	if err != nil {
-	//		p.log.Error(fmt.Sprintf("Failed to send Puppet request. Attempt %d of %d", i, p.cfg.RetryAttempts), zap.Error(err))
-	//		if i == p.cfg.RetryAttempts {
-	//			return nil, err
-	//		}
-	//		time.Sleep(p.cfg.TaskRetrySeconds * time.Second)
-	//	}
-	//}
 
 	p.log.Debug("Puppet task completed", zap.String("task", string(task)))
 	return resp, nil

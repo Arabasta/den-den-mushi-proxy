@@ -22,3 +22,6 @@ func (j *JoinAdapter) GetPtySessionId() string {
 func (j *JoinAdapter) GetStartRole() types.StartRole {
 	return j.Req.Body.StartRole
 }
+
+func (j *JoinAdapter) GetUserId() string      { return j.Req.AuthCtx.UserID }
+func (j *JoinAdapter) GetUserOuGroup() string { return j.Req.AuthCtx.OuGroup }

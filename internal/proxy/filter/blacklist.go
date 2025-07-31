@@ -16,6 +16,8 @@ func (b *BlacklistFilter) IsValid(cmd string, ouGroup string) (string, bool) {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
+	ouGroup = "default"
+
 	log.Debug("Debug: Checking command against blacklist", zap.String("cmd", cmd), zap.String("ouGroup", ouGroup))
 	blockedCmds, ok := b.ouGroupRegexFiltersMap[ouGroup]
 	if !ok {
@@ -44,13 +46,3 @@ func (b *BlacklistFilter) load(patterns map[string][]regexp.Regexp) {
 		b.ouGroupRegexFiltersMap[ouGroup] = regexList
 	}
 }
-
-//func (b *BlacklistFilter) UpdateCommands(newBlocked []string) {
-//	b.mu.Lock()
-//	defer b.mu.Unlock()
-//
-//	b.ouGroupRegexFiltersMap = make(map[string]struct{})
-//	for _, cmd := range newBlocked {
-//		b.ouGroupRegexFiltersMap[cmd] = struct{}{}
-//	}
-//}

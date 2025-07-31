@@ -20,4 +20,7 @@ func (p *NoopPolicy[T]) SetNext(n Policy[T]) {
 	p.next = n
 }
 
-func (p *NoopPolicy[T]) Check(_ T) error { return nil }
+func (p *NoopPolicy[T]) Check(_ T) error {
+	p.log.Debug("Noop Policy enabled. Skipping checks...")
+	return nil
+}

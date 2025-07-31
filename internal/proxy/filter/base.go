@@ -19,6 +19,10 @@ var (
 	blacklistFilter = &BlacklistFilter{
 		ouGroupRegexFiltersMap: make(map[string][]regexp.Regexp),
 	}
+
+	changeFilter = &ChangeBlacklistFilter{
+		ouGroupRegexFiltersMap: make(map[string][]regexp.Regexp),
+	}
 )
 
 func GetFilter(filterType types.Filter) CommandFilter {
@@ -33,32 +37,6 @@ func GetFilter(filterType types.Filter) CommandFilter {
 	}
 }
 
-//// hard code for now
-//func init() {
-//	whitelist := []string{
-//		"ll",
-//		"whoami",
-//		"pwd",
-//		"ls",
-//		"ls -a",
-//		"ls -t",
-//		"ls -l",
-//		"ls -r",
-//		"ls -rt",
-//		"ls -lrt",
-//		"ls -al",
-//	}
-//
-//	blacklist := []string{
-//		"rm -rf",
-//		"sudo",
-//		"sudo su",
-//		"su",
-//		"su -",
-//		"shutdown",
-//		"reboot",
-//	}
-//
-//	whitelistFilter.UpdateCommands(whitelist)
-//	blacklistFilter.UpdateCommands(blacklist)
-//}
+func GetChangeFilter() CommandFilter {
+	return changeFilter
+}

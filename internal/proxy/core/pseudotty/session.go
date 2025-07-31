@@ -132,6 +132,12 @@ func (s *Session) Setup(claims *token.Claims) error {
 			s.log.Error("Failed to register initial connection", zap.Error(err))
 			return err
 		}
+	} else if s.startClaims.Connection.Purpose == types.Change {
+		s.log.Info("Setting change request filter")
+		s.filter = filter.GetChangeFilter()
+	} else {
+		s.log.Error("Unknown purpose for session", zap.String("purpose", string(s.startClaims.Connection.Purpose)))
+		return errors.New("unknown purpose for session")
 	}
 
 	s.log.Info("Initializing conn loop and pty reader")

@@ -14,7 +14,6 @@ import (
 	"den-den-mushi-Go/pkg/dto/proxy_host"
 	"den-den-mushi-Go/pkg/dto/proxy_lb"
 	"den-den-mushi-Go/pkg/dto/pty_sessions"
-	"den-den-mushi-Go/pkg/dto/puppet_trusted"
 	"den-den-mushi-Go/pkg/dto/regex_filters"
 	"den-den-mushi-Go/pkg/logger"
 	"den-den-mushi-Go/pkg/mysql"
@@ -24,7 +23,6 @@ import (
 	"gorm.io/gorm"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 func main() {
@@ -38,7 +36,7 @@ func main() {
 	defer func() {
 		_ = log.Sync()
 	}()
-	setTableNames(cfg)
+
 	var db *gorm.DB
 	var err error
 
@@ -58,7 +56,7 @@ func main() {
 			&proxy_lb.Model{},
 			&proxy_host.Model{},
 			&change_request.Model{},
-			implementor_groups.Model{},
+			&implementor_groups.Model{},
 			&cyberark.Model{},
 			&regex_filters.Model{},
 			&pty_sessions.Model{},
@@ -69,7 +67,7 @@ func main() {
 			log.Fatal("AutoMigrate failed", zap.Error(err))
 		}
 		if cfg.Development.IsAutoMigrateEnabled {
-			//	testdata.CallAll(db)
+			//testdata.CallAll(db)
 		}
 	}
 
@@ -113,14 +111,4 @@ func configPath() string {
 	}
 
 	return finalPath
-}
-
-func setTableNames(cfg *config.Config) {
-	if cfg.App.Environment == "prod" {
-		host.SetTableName(strings.ToUpper(host.Model{}.TableName()))
-		change_request.SetTableName(strings.ToUpper(change_request.Model{}.TableName()))
-		implementor_groups.SetTableName(strings.ToUpper(implementor_groups.Model{}.TableName()))
-		cyberark.SetTableName(strings.ToUpper(cyberark.Model{}.TableName()))
-		puppet_trusted.SetTableName(strings.ToUpper(puppet_trusted.Model{}.TableName()))
-	}
 }

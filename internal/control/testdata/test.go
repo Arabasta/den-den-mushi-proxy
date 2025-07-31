@@ -11,8 +11,8 @@ import (
 )
 
 func CallAll(db *gorm.DB) {
-	createCR(db)
-	////createImplementorGroups(db)
+	//createCR(db)
+	createImplementorGroups(db)
 	//createCyberark(db)
 	////createProxyLb(db)
 	//createProxyHost(db)
@@ -212,16 +212,19 @@ func createImplementorGroups(db *gorm.DB) {
 			MemberName:       "ddmtest",
 			GroupName:        "admin",
 			MembershipStatus: "Active",
+			MemberEmail:      "ddmtest@asdads.com",
 		},
 		{
 			MemberName:       "ddmtest",
 			GroupName:        "devops",
 			MembershipStatus: "Active",
+			MemberEmail:      "ddmtest@asdads.com",
 		},
 		{
 			MemberName:       "kei2",
 			GroupName:        "log",
 			MembershipStatus: "Active",
+			MemberEmail:      "kei2@123213123123123.com",
 		},
 	})
 }

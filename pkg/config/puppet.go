@@ -13,6 +13,7 @@ type Puppet struct {
 	Token                   string
 	RetryAttempts           int
 	TaskRetrySeconds        time.Duration
+	TaskNode                string
 }
 
 func BindPuppet(v *viper.Viper) {

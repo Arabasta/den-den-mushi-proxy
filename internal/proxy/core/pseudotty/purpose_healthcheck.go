@@ -35,7 +35,7 @@ func (p *HealthcheckPurpose) HandleInput(s *Session, pkt protocol.Packet) (strin
 
 		return handler.Get[protocol.Input].Handle(pkt, s.pty)
 	}
-	return "", fmt.Errorf("no valid control character found in packet data: %s", string(pkt.Data))
+	return "", nil
 }
 
 func (p *HealthcheckPurpose) handleEnter(s *Session, pkt protocol.Packet) (string, error) {

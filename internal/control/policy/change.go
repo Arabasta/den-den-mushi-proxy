@@ -28,9 +28,10 @@ func (p *ChangePolicy[T]) SetNext(n Policy[T]) {
 }
 
 func (p *ChangePolicy[T]) Check(r T) error {
+	p.log.Debug("Checking change policy...")
 	// 1. skip non-change requests
 	if r.GetPurpose() != types.Change {
-		p.log.Warn("Skipping non-change request", zap.String("purpose", string(r.GetPurpose())))
+		p.log.Debug("Skipping non-change request", zap.String("purpose", string(r.GetPurpose())))
 		if p.next != nil {
 			return p.next.Check(r)
 		}

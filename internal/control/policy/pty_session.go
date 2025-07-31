@@ -31,8 +31,10 @@ func (p *PtySessionPolicy[T]) SetNext(n Policy[T]) {
 }
 
 func (p *PtySessionPolicy[T]) Check(r T) error {
+	p.log.Debug("Checking PtySession Policy...")
 	sessionAware, isJoin := any(r).(request.HasJoinRequestFields)
 	if !isJoin {
+		p.log.Error("Not a join request, why are you calling this?")
 		if p.next != nil {
 			return p.next.Check(r)
 		}
@@ -42,6 +44,7 @@ func (p *PtySessionPolicy[T]) Check(r T) error {
 	ptyID := sessionAware.GetPtySessionId()
 
 	// check if pty session exists
+	p.log.Debug("Checking if pty session exists", zap.String("ptyId", ptyID))
 	ptySession, err := p.ptySessionService.FindById(ptyID)
 	if err != nil || ptySession == nil {
 		p.log.Warn("Failed to find pty session", zap.String("ptyId", ptyID), zap.Error(err))
@@ -49,6 +52,7 @@ func (p *PtySessionPolicy[T]) Check(r T) error {
 	}
 
 	// check if pty session is active
+	p.log.Debug("Checking if pty session is active", zap.String("ptyId", ptyID), zap.String("state", string(ptySession.State)))
 	if ptySession.State != types.Active {
 		p.log.Warn("Pty session is not active", zap.String("ptyId", ptyID), zap.String("state", string(ptySession.State)))
 		return errors.New("pty session is not active")
@@ -56,6 +60,7 @@ func (p *PtySessionPolicy[T]) Check(r T) error {
 
 	// check if pty session has an active implementor if joining as implementor
 	if sessionAware.GetStartRole() == types.Implementor {
+		p.log.Debug("Starting as Implementor... Checking if pty session has an active implementor", zap.String("ptyId", ptyID))
 		activeImplementor, err := p.connectionService.FindActiveImplementorByPtySessionId(ptyID)
 		if err != nil {
 			p.log.Warn("Error when finding active implementor for pty session", zap.String("ptyId", ptyID), zap.Error(err))
