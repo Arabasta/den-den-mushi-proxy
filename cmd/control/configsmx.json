@@ -73,6 +73,7 @@
     "Name": "cookiename",
     "Redirect": "ddm.com/login",
     "UserIdKey": "username",
+    "OuGroupKey": "ou",
     "Secret": ""
   },
   "OuGroup": {
