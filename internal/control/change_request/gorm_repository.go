@@ -46,7 +46,7 @@ func (r *GormRepository) FindChangeRequestsByFilter(f filters.ListCR) ([]*dto.Re
 
 	query = query.Where("State = ?", "Approved")
 
-	if f.ImplementorGroups != nil {
+	if f.ImplementorGroups != nil && len(*f.ImplementorGroups) > 0 {
 		for _, group := range *f.ImplementorGroups {
 			query = query.Or("ImplementerGroup LIKE ?", "%"+group+"%")
 		}

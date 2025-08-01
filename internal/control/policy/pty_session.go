@@ -34,7 +34,6 @@ func (p *PtySessionPolicy[T]) Check(r T) error {
 	p.log.Debug("Checking PtySession Policy...")
 	sessionAware, isJoin := any(r).(request.HasJoinRequestFields)
 	if !isJoin {
-		p.log.Error("Not a join request, why are you calling this?")
 		if p.next != nil {
 			return p.next.Check(r)
 		}
@@ -42,6 +41,8 @@ func (p *PtySessionPolicy[T]) Check(r T) error {
 	}
 
 	ptyID := sessionAware.GetPtySessionId()
+
+	// todo move validation logic to validators package
 
 	// check if pty session exists
 	p.log.Debug("Checking if pty session exists", zap.String("ptyId", ptyID))

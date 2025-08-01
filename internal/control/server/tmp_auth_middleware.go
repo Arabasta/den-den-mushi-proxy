@@ -36,7 +36,7 @@ func TmpAuth(log *zap.Logger, cfg *config.Config) gin.HandlerFunc {
 			})
 			if err != nil || !token.Valid {
 				log.Warn("invalid jwt token", zap.Error(err))
-				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authorisation failed. Please try logging in again."})
 				return
 			}
 

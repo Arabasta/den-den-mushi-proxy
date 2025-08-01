@@ -36,6 +36,11 @@ func (h *Handler) GetApiV1ChangeRequests(c *gin.Context, params oapi.GetApiV1Cha
 		httpx.RespondError(c, http.StatusInternalServerError, "failed to retrieve change requests", err, h.Log)
 		return
 	}
+	if len(results) == 0 {
+		h.Log.Debug("No change requests found for the given filter", zap.Any("filter", r))
+		c.JSON(http.StatusOK, []oapi.ChangeRequestSessionsResponse{})
+		return
+	}
 
 	c.JSON(http.StatusOK, results)
 }

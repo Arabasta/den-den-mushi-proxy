@@ -7,6 +7,8 @@ import (
 	"den-den-mushi-Go/pkg/types"
 )
 
+//  todo refactor this garbage
+
 type Ctx interface {
 	GetPurpose() types.ConnectionPurpose
 	GetChangeId() string
@@ -15,6 +17,7 @@ type Ctx interface {
 	GetUserOuGroup() string
 	GetChangeRequest() *changerequestpkg.Record
 	GetUsersImplementorGroups() []*implementor_groups.Record
+	GetStartRole() types.StartRole
 }
 
 type HasJoinRequestFields interface {

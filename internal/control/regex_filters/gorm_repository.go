@@ -23,6 +23,8 @@ func NewGormRepository(db *gorm.DB, log *zap.Logger) *GormRepository {
 func (r *GormRepository) Save(rec *dto.Record) (*dto.Record, error) {
 	m := dto.ToModel(rec)
 
+	rec.OuGroup = "default" // todo: for now just save to default OU group
+
 	err := r.db.Save(m).Error
 	if err != nil {
 		r.log.Error("Failed to save regex filter", zap.Error(err))
@@ -34,6 +36,7 @@ func (r *GormRepository) Save(rec *dto.Record) (*dto.Record, error) {
 func (r *GormRepository) FindAllByFilterTypeAndOuGroup(filterType types.Filter, ouGroup string) (*[]dto.Record, error) {
 	var models []dto.Model
 
+	ouGroup = "default" // todo: for now just return default only
 	err := r.db.Where("type = ? AND ougroup = ?", filterType, ouGroup).
 		Order("CreatedAt DESC").
 		Find(&models).Error

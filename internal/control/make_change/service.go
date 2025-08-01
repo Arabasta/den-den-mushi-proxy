@@ -4,11 +4,14 @@ import (
 	"den-den-mushi-Go/internal/control/change_request"
 	"den-den-mushi-Go/internal/control/filters"
 	"den-den-mushi-Go/internal/control/host"
+	"den-den-mushi-Go/internal/control/implementor_groups"
 	"den-den-mushi-Go/internal/control/pty_sessions"
 	oapi "den-den-mushi-Go/openapi/control"
 	hostpkg "den-den-mushi-Go/pkg/dto/host"
 	ptysessionspkg "den-den-mushi-Go/pkg/dto/pty_sessions"
+	"den-den-mushi-Go/pkg/middleware"
 	"den-den-mushi-Go/pkg/util/cyberark"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -17,31 +20,45 @@ type Service struct {
 	crSvc          *change_request.Service
 	ptySessionsSvc *pty_sessions.Service
 	hostSvc        *host.Service
+	impGrpSvc      *implementor_groups.Service
 
 	log *zap.Logger
 }
 
 func NewService(crSvc *change_request.Service, ptySessionsSvc *pty_sessions.Service,
-	hostSvc *host.Service, log *zap.Logger) *Service {
+	hostSvc *host.Service, impGrpSvc *implementor_groups.Service, log *zap.Logger) *Service {
 	log.Info("Initializing Make Change Service")
 	return &Service{
 		crSvc:          crSvc,
 		ptySessionsSvc: ptySessionsSvc,
 		hostSvc:        hostSvc,
+		impGrpSvc:      impGrpSvc,
 		log:            log,
 	}
 }
 
-// todo refactor garbage, need to make it 1 query ... will do it when there are no more changes
-func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, _ *gin.Context) ([]oapi.ChangeRequestSessionsResponse, error) {
+// todo refactor garbage, need to make it 1 query ... will do it when there are no more changes or maybe not
+// todo return cyberark objects
+func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.Context) ([]oapi.ChangeRequestSessionsResponse, error) {
 	var r []oapi.ChangeRequestSessionsResponse
 
-	// todo: verify user permissions ? is this needed? or just allow everyone to view?
-	//authCtx, ok := middleware.GetAuthContext(c.Request.Context())
-	//if !ok {
-	//	httpx.RespondError(c, http.StatusUnauthorized, "auth context missing", nil, h.Log)
-	//	return
-	//}
+	// only show crs for user's implementor groups
+	authCtx, ok := middleware.GetAuthContext(c.Request.Context())
+	if !ok {
+		s.log.Error("Auth context missing in request")
+		return nil, errors.New("auth context missing in request")
+	}
+	userImplGroups, err := s.impGrpSvc.FindAllByUserId(authCtx.UserID)
+	if err != nil {
+		s.log.Error("Failed to fetch user implementor groups", zap.Error(err))
+		return nil, err
+	}
+	s.log.Debug("implementor groups for user", zap.Any("groups", userImplGroups))
+	impGroups := make([]string, 0)
+	for _, group := range userImplGroups {
+		impGroups = append(impGroups, group.GroupName)
+	}
+	filter.ImplementorGroups = &impGroups
 
 	// fetch CRs using filter
 	crs, err := s.crSvc.FindChangeRequestsByFilter(filter)
@@ -144,9 +161,6 @@ type hostAggregate struct {
 }
 
 func convertToPtySessionSummaries(sessions []*ptysessionspkg.Record) *[]oapi.PtySessionSummary {
-	if len(sessions) == 0 {
-		return nil
-	}
 	out := make([]oapi.PtySessionSummary, 0, len(sessions))
 	for _, s := range sessions {
 		var conns []oapi.Connection

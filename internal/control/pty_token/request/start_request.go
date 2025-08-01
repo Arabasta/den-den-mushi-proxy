@@ -23,3 +23,10 @@ type StartAdapter struct {
 
 func (s *StartAdapter) GetUserId() string      { return s.Req.AuthCtx.UserID }
 func (s *StartAdapter) GetUserOuGroup() string { return s.Req.AuthCtx.OuGroup }
+func (s *StartAdapter) GetRequest() wrapper.WithAuth[StartRequest] {
+	return s.Req
+}
+
+func (s *StartAdapter) GetStartRole() types.StartRole {
+	return types.Implementor
+}

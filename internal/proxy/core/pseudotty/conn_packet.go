@@ -6,6 +6,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/handler"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"den-den-mushi-Go/pkg/constants"
+	"den-den-mushi-Go/pkg/types"
 	"den-den-mushi-Go/pkg/util/cyberark"
 	"go.uber.org/zap"
 	"slices"
@@ -49,7 +50,7 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 
 		logMsg, err = s.purpose.HandleInput(s, pkt)
 		s.logAndResetLineEditorIfInputEnter(pkt)
-	} else if pkt.Header == protocol.Sudo {
+	} else if pkt.Header == protocol.Sudo && s.startClaims.Connection.Purpose == types.Change {
 		s.logPacket(pkt)
 		/// todo: refactor this garbage
 		//// packet should contain username to sudo to

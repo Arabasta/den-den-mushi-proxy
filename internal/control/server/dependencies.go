@@ -11,6 +11,7 @@ import (
 	"den-den-mushi-Go/internal/control/jwt"
 	"den-den-mushi-Go/internal/control/make_change"
 	"den-den-mushi-Go/internal/control/policy"
+	"den-den-mushi-Go/internal/control/policy/validators"
 	"den-den-mushi-Go/internal/control/proxy_lb"
 	"den-den-mushi-Go/internal/control/pty_sessions"
 	"den-den-mushi-Go/internal/control/pty_token"
@@ -68,27 +69,29 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 	certNameRepo := certname.NewGormRepository(ddmDb, log)
 	certNameSvc := certname.NewService(certNameRepo, log, cfg)
 
-	//// policy chains ============================================================================================
+	// validator for policy chains  ============================================================================================
+	validator := validators.NewValidator(log, cfg)
 
+	//// policy chains ============================================================================================
 	var changeRequestPolicyChain policy.Policy[request.Ctx]
 	var healthcheckPolicyChain policy.Policy[request.Ctx]
 
 	// policies for change request
 	ptySessionPolicyCR := policy.NewPtySessionPolicy[request.Ctx](ptySessionService, connectionService, log)
-	ouPolicyCR := policy.NewOUPolicy[request.Ctx](hostService, log)
+	implementorPolicyCR := policy.NewImplementorPolicy[request.Ctx](hostService, log, validator)
 	changePolicy := policy.NewChangePolicy[request.Ctx](impGroupsService, log)
 
-	ptySessionPolicyCR.SetNext(ouPolicyCR)
-	ouPolicyCR.SetNext(changePolicy)
+	ptySessionPolicyCR.SetNext(implementorPolicyCR)
+	implementorPolicyCR.SetNext(changePolicy)
 	changeRequestPolicyChain = ptySessionPolicyCR
 
 	// policies for health check
 	ptySessionPolicyHC := policy.NewPtySessionPolicy[request.Ctx](ptySessionService, connectionService, log)
-	ouPolicyHC := policy.NewOUPolicy[request.Ctx](hostService, log)
-	healthcheckPolicy := policy.NewHealthcheckPolicy[request.Ctx](hostService, impGroupsService, log, cfg)
+	implementorPolicyHC := policy.NewImplementorPolicy[request.Ctx](hostService, log, validator)
+	healthcheckPolicy := policy.NewHealthcheckPolicy[request.Ctx](hostService, impGroupsService, log, validator)
 
 	ptySessionPolicyHC.SetNext(healthcheckPolicy)
-	healthcheckPolicy.SetNext(ouPolicyHC)
+	healthcheckPolicy.SetNext(implementorPolicyHC)
 	healthcheckPolicyChain = ptySessionPolicyHC
 
 	if cfg.Development.SkipPolicyChecks {
@@ -103,7 +106,7 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 		changeRequestPolicyChain, healthcheckPolicyChain,
 		log, cfg)
 
-	makeChangeService := make_change.NewService(changeService, ptySessionService, hostService, log)
+	makeChangeService := make_change.NewService(changeService, ptySessionService, hostService, impGroupsService, log)
 	healthcheckService := healthcheck.NewService(ptySessionService, hostService, log, cfg)
 	return &Deps{
 		Issuer:                   issuer,

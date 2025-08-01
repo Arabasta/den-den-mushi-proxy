@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+// todo: refactor absolute garbage
+
 func IsServerIpInObjects(ip string, objects []string) bool {
 	if ip == "" {
 		return false

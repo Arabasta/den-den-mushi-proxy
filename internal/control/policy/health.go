@@ -1,14 +1,12 @@
 package policy
 
 import (
-	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/host"
 	"den-den-mushi-Go/internal/control/implementor_groups"
+	"den-den-mushi-Go/internal/control/policy/validators"
 	"den-den-mushi-Go/internal/control/pty_token/request"
 	"den-den-mushi-Go/pkg/types"
-	"errors"
 	"go.uber.org/zap"
-	"strings"
 )
 
 type HealthcheckPolicy[T request.Ctx] struct {
@@ -17,18 +15,16 @@ type HealthcheckPolicy[T request.Ctx] struct {
 	impGroupService *implementor_groups.Service
 	hostService     *host.Service
 	log             *zap.Logger
-	l1OuGroupPrefix string
-	cfg             *config.Config
+	v               *validators.Validator
 }
 
 func NewHealthcheckPolicy[T request.Ctx](hostService *host.Service, impGroupService *implementor_groups.Service,
-	log *zap.Logger, cfg *config.Config) *HealthcheckPolicy[T] {
+	log *zap.Logger, v *validators.Validator) *HealthcheckPolicy[T] {
 	return &HealthcheckPolicy[T]{
 		hostService:     hostService,
 		impGroupService: impGroupService,
 		log:             log,
-		l1OuGroupPrefix: cfg.OuGroup.Prefix.L1,
-		cfg:             cfg,
+		v:               v,
 	}
 }
 
@@ -37,7 +33,9 @@ func (p *HealthcheckPolicy[T]) SetNext(n Policy[T]) {
 }
 
 func (p *HealthcheckPolicy[T]) Check(r T) error {
-	// 1. skip healthcheck requests
+	p.log.Debug("Checking healthcheck policy...")
+
+	// skip healthcheck requests
 	if r.GetPurpose() != types.Healthcheck {
 		if p.next != nil {
 			return p.next.Check(r)
@@ -45,28 +43,16 @@ func (p *HealthcheckPolicy[T]) Check(r T) error {
 		return nil
 	}
 
-	// user must be in L1 OU group
-	if p.cfg.OuGroup.IsValidationEnabled {
-		ouGroup := r.GetUserOuGroup()
-		if ouGroup == "" {
-			p.log.Warn("User OU group not found", zap.String("userId", r.GetUserId()))
-			return errors.New("OU group not found")
-		}
+	// 2. get host type todo how to map?
+	// hostType, err := p.hostService.GetHostType(r.GetServerInfo().IP)
 
-		p.log.Debug("Checking user OU group for healthcheck", zap.String("userId", r.GetUserId()), zap.String("ouGroup", ouGroup))
-		if strings.HasPrefix(ouGroup, p.l1OuGroupPrefix) == false {
-			p.log.Warn("User OU group is not L1", zap.String("userId", r.GetUserId()), zap.String("ouGroup", ouGroup), zap.String("expectedPrefix", p.l1OuGroupPrefix))
-			return errors.New("OU group is not L1")
-		}
+	// 3. check if user is in host healthcheck group todo uncomment this when host type mapping is up
+	//if err := p.v.IsOuGroupTypeMatch(r.GetUserOuGroup(), hostType); err != nil {
+	//	p.log.Warn("User OU group type validation failed", zap.String("userId", r.GetUserId()), zap.Error(err))
+	//	return err
+	//}
 
-		p.log.Debug("User OU group is L1", zap.String("userId", r.GetUserId()), zap.String("ouGroup", ouGroup))
-	}
-
-	// 2. get host type
-
-	// 3. check if user is in host healthcheck group
-
-	// 4. check is os user is a valid readonly user
+	// 4. check is os user is a valid readonly user for that user?, todo implement this once we have the mapping in DB
 
 	if p.next != nil {
 		return p.next.Check(r)
