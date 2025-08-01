@@ -6,6 +6,7 @@ import (
 	"errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"strings"
 )
 
 type GormRepository struct {
@@ -47,7 +48,13 @@ func (r *GormRepository) FindChangeRequestsByFilter(f filters.ListCR) ([]*dto.Re
 	query = query.Where("State = ?", "Approved")
 
 	if f.ImplementorGroups != nil && len(*f.ImplementorGroups) > 0 {
-		query = query.Where("ImplementerGroup IN ?", *f.ImplementorGroups)
+		var likeClauses []string
+		var args []interface{}
+		for _, g := range *f.ImplementorGroups {
+			likeClauses = append(likeClauses, "ImplementerGroup LIKE ?")
+			args = append(args, "%"+g+"%")
+		}
+		query = query.Where("("+strings.Join(likeClauses, " OR ")+")", args...)
 	}
 
 	if f.LOB != nil {
@@ -64,7 +71,7 @@ func (r *GormRepository) FindChangeRequestsByFilter(f filters.ListCR) ([]*dto.Re
 	}
 
 	if f.EndTime != nil {
-		query = query.Where("ChangeSchedEndDateTime <= ?", f.EndTime.Format("2006-01-02 15:04:05"))
+		query = query.Where("ChangeSchedStartDateTime <= ?", f.EndTime.Format("2006-01-02 15:04:05"))
 	}
 
 	query = query.Order("ChangeSchedStartDateTime ASC")
