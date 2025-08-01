@@ -47,9 +47,16 @@ func (r *GormRepository) FindChangeRequestsByFilter(f filters.ListCR) ([]*dto.Re
 	query = query.Where("State = ?", "Approved")
 
 	if f.ImplementorGroups != nil && len(*f.ImplementorGroups) > 0 {
-		for _, group := range *f.ImplementorGroups {
-			query = query.Or("ImplementerGroup LIKE ?", "%"+group+"%")
-		}
+		query = query.Where(func(db *gorm.DB) *gorm.DB {
+			for i, group := range *f.ImplementorGroups {
+				if i == 0 {
+					db = db.Where("ImplementerGroup LIKE ?", "%"+group+"%")
+				} else {
+					db = db.Or("ImplementerGroup LIKE ?", "%"+group+"%")
+				}
+			}
+			return db
+		})
 	}
 
 	if f.LOB != nil {
@@ -62,11 +69,11 @@ func (r *GormRepository) FindChangeRequestsByFilter(f filters.ListCR) ([]*dto.Re
 
 	// note that this is stored as text in DB
 	if f.StartTime != nil {
-		query = query.Where("ChangeSchedStartDateTime >= ?", f.StartTime.Format("2006-01-02 15:04:05"))
+		query = query.Where("ChangeSchedStartDateTime >= ?", f.StartTime.UTC().Format("2006-01-02 15:04:05"))
 	}
 
 	if f.EndTime != nil {
-		query = query.Where("ChangeSchedEndDateTime <= ?", f.EndTime.Format("2006-01-02 15:04:05"))
+		query = query.Where("ChangeSchedEndDateTime <= ?", f.EndTime.UTC().Format("2006-01-02 15:04:05"))
 	}
 
 	query = query.Order("ChangeSchedStartDateTime ASC")
