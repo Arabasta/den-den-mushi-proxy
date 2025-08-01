@@ -47,16 +47,7 @@ func (r *GormRepository) FindChangeRequestsByFilter(f filters.ListCR) ([]*dto.Re
 	query = query.Where("State = ?", "Approved")
 
 	if f.ImplementorGroups != nil && len(*f.ImplementorGroups) > 0 {
-		query = query.Where(func(db *gorm.DB) *gorm.DB {
-			for i, group := range *f.ImplementorGroups {
-				if i == 0 {
-					db = db.Where("ImplementerGroup LIKE ?", "%"+group+"%")
-				} else {
-					db = db.Or("ImplementerGroup LIKE ?", "%"+group+"%")
-				}
-			}
-			return db
-		})
+		query = query.Where("ImplementerGroup IN ?", *f.ImplementorGroups)
 	}
 
 	if f.LOB != nil {
@@ -93,12 +84,11 @@ func (r *GormRepository) FindChangeRequestsByFilter(f filters.ListCR) ([]*dto.Re
 
 	err := query.Find(&models).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			r.log.Debug("No change requests found for provided filters", zap.Any("filters", f))
-			return nil, nil
-		}
 		r.log.Error("DB error while fetching change requests", zap.Error(err))
 		return nil, err
+	}
+	if len(models) == 0 {
+		return []*dto.Record{}, nil
 	}
 
 	r.log.Debug("Fetched change requests", zap.Int("Count", len(models)))
