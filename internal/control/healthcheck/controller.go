@@ -39,6 +39,11 @@ func (h *Handler) GetApiV1Healthcheck(c *gin.Context, params oapi.GetApiV1Health
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	if len(*results) == 0 {
+		h.Log.Debug("No hosts found for the given filter", zap.Any("filter", f))
+		c.JSON(http.StatusOK, []oapi.HealthcheckSessionsResponse{})
+		return
+	}
 
 	c.JSON(http.StatusOK, oapi.HealthcheckSessionsResponse{
 		HostSessionDetails: results,
