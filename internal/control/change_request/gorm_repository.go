@@ -66,11 +66,15 @@ func (r *GormRepository) FindChangeRequestsByFilter(f filters.ListCR) ([]*dto.Re
 	}
 
 	// note that this is stored as text in DB
-	if f.StartTime != nil {
-		query = query.Where("ChangeSchedStartDateTime >= ?", f.StartTime.Format("2006-01-02 15:04:05"))
-	}
-
-	if f.EndTime != nil {
+	if f.StartTime != nil && f.EndTime != nil {
+		query = query.Where(
+			"ChangeSchedStartDateTime <= ? AND ChangeSchedEndDateTime >= ?",
+			f.EndTime.Format("2006-01-02 15:04:05"),
+			f.StartTime.Format("2006-01-02 15:04:05"),
+		)
+	} else if f.StartTime != nil {
+		query = query.Where("ChangeSchedEndDateTime >= ?", f.StartTime.Format("2006-01-02 15:04:05"))
+	} else if f.EndTime != nil {
 		query = query.Where("ChangeSchedStartDateTime <= ?", f.EndTime.Format("2006-01-02 15:04:05"))
 	}
 
