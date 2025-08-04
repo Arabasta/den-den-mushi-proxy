@@ -7,5 +7,5 @@ import (
 
 type Repository interface {
 	FindByTicketNumber(num string) (*dto.Record, error)
-	FindChangeRequestsByFilter(filter filters.ListCR) ([]*dto.Record, error)
+	FindApprovedChangeRequestsByFilter(filter filters.ListCR) ([]*dto.Record, error)
 }

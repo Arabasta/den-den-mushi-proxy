@@ -37,7 +37,7 @@ func (r *GormRepository) FindByTicketNumber(num string) (*dto.Record, error) {
 	return dto.FromModel(&m)
 }
 
-func (r *GormRepository) FindChangeRequestsByFilter(f filters.ListCR) ([]*dto.Record, error) {
+func (r *GormRepository) FindApprovedChangeRequestsByFilter(f filters.ListCR) ([]*dto.Record, error) {
 	var models []dto.Model
 	query := r.db.Model(&dto.Model{})
 

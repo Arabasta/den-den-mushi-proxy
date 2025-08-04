@@ -61,7 +61,7 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.C
 	filter.ImplementorGroups = &impGroups
 
 	// fetch CRs using filter
-	crs, err := s.crSvc.FindChangeRequestsByFilter(filter)
+	crs, err := s.crSvc.FindApprovedChangeRequestsByFilter(filter)
 	//s.log.Debug("CRs fetched", zap.Int("count", len(crs)))
 	if err != nil {
 		s.log.Error("FindChangeRequestsByFilter", zap.Error(err))

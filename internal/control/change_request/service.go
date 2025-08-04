@@ -23,7 +23,7 @@ func (s *Service) FindByTicketNumber(num string) (*dto.Record, error) {
 	return s.repo.FindByTicketNumber(num)
 }
 
-func (s *Service) FindChangeRequestsByFilter(f filters.ListCR) ([]*dto.Record, error) {
+func (s *Service) FindApprovedChangeRequestsByFilter(f filters.ListCR) ([]*dto.Record, error) {
 	s.log.Debug("Finding change requests by filter", zap.Any("filter", f))
-	return s.repo.FindChangeRequestsByFilter(f)
+	return s.repo.FindApprovedChangeRequestsByFilter(f)
 }
