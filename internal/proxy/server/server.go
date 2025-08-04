@@ -17,10 +17,6 @@ type Server struct {
 	log    *zap.Logger
 }
 
-func setupSecurityHeaders(r *gin.Engine) {
-
-}
-
 func New(staticFiles embed.FS, db *gorm.DB, redis *redis.Client, cfg *config.Config, log *zap.Logger) *Server {
 	deps := initDependencies(db, redis, cfg, log)
 
@@ -28,6 +24,7 @@ func New(staticFiles embed.FS, db *gorm.DB, redis *redis.Client, cfg *config.Con
 	r := gin.New()
 	r.Use(
 		middleware.RequestLogger(log),
+		middleware.Security(cfg.Ssl.Enabled),
 		middleware.Cors(cfg.Cors, log),
 		gin.Recovery())
 
