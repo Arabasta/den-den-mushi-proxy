@@ -1,0 +1,70 @@
+{
+  "app": {
+    "name": "den-den-mushi-admin",
+    "environment": "dev",
+    "version": "1.0.0",
+    "port": 55008
+  },
+  "development": {
+    "isSMX": false,
+    "IsUsingInvDb": false,
+    "IsTmpAuthCookieEnabled": false
+  },
+  "ssl": {
+    "enabled": false
+  },
+  "Cors": {
+    "allowOrigins": ["*"],
+    "allowMethods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    "allowHeaders": ["Authorization", "Content-Type", "X-Requested-With"],
+    "exposeHeaders": [],
+    "allowCredentials": true,
+    "allowMaxAge": 3600
+  },
+  "Logger": {
+    "level": "debug",
+    "format": "console",
+    "output": "both",
+    "filePath": "./log/ddm-admin.log"
+  },
+  "DdmDB": {
+    "user": "root",
+    "port": 3306,
+    "dbName": "DenDenMushi",
+    "params": "charset=utf8mb4&parseTime=True&loc=Local",
+    "maxIdleConns": 2,
+    "maxOpenConns": 10,
+    "connMaxLifetimeMinutes": 30,
+    "sslEnabled": false,
+    "logLevel": 4
+  },
+  "InvDB": {
+    "user": "",
+    "port": 4405,
+    "dbName": "",
+    "params": "charset=utf8mb4&parseTime=True&loc=Local",
+    "maxIdleConns": 1,
+    "maxOpenConns": 10,
+    "connMaxLifetimeMinutes": 30,
+    "sslEnabled": true,
+    "logLevel": 4
+  },
+  "redis": {
+    "port": 6379,
+    "poolSize": 10
+  },
+  "CookieTmp": {
+    "Name": "cookiename",
+    "Redirect": "ddm.com/login",
+    "UserIdKey": "username",
+    "OuGroupKey": "ou",
+    "Secret": ""
+  },
+  "OuGroup": {
+    "IsValidationEnabled": true,
+    "Prefix": {
+      "L1": "ddm_L1",
+      "L2_L3": "ddm_L2_L3"
+    }
+  }
+}

@@ -1,0 +1,35 @@
+package server
+
+import (
+	oapi "den-den-mushi-Go/openapi/admin"
+	"den-den-mushi-Go/pkg/config"
+	"github.com/gin-gonic/gin"
+	swgui "github.com/swaggest/swgui/v4"
+
+	"go.uber.org/zap"
+)
+
+func serveSwagger(r *gin.Engine, cfg *config.App, log *zap.Logger) {
+	if cfg.Environment == "dev" {
+		log.Info("Serving Swagger UI in dev environment")
+		r.StaticFile("/swagger-spec/admin.yaml", "./swagger/admin.yaml")
+
+		r.GET("/swagger-spec/admin.json", func(c *gin.Context) {
+			swagger, err := oapi.GetSwagger()
+			if err != nil {
+				c.JSON(500, gin.H{"error": "cannot load admin swagger"})
+				return
+			}
+			c.JSON(200, swagger)
+		})
+
+		r.GET("/swagger/admin/*any", gin.WrapH(swgui.NewHandler(
+			"Den Den Mushi Admin API Docs",
+			"/swagger-spec/admin.json",
+			"/swagger/admin/",
+		)))
+
+	} else {
+		log.Info("Not serving Swagger UI in non-dev environment")
+	}
+}

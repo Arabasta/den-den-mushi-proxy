@@ -1,0 +1,142 @@
+openapi: 3.0.3
+info:
+  title: Admin API
+  version: 1.0.0
+  description: |-
+    Admin API for managing PTY sessions and connections
+servers:
+  - url: https://x01smxtra1a.sp.uat.dbs.corp:55007
+    description: UAT
+  - url: http://localhost:55008
+    description: Local
+
+tags:
+  - name: PTY Session
+    description: Manage PTY sessions
+  - name: PTY Connection
+    description: Manage PTY connections
+
+paths:
+  /api/v1/admin/pty_sessions:
+    get:
+      tags:
+        - PTY Session
+      summary: Get all PTY sessions matching the filter
+      security:
+        - ApiKeyAuth: [ ]
+      parameters:
+        # todo: this is just a sample, update it
+        - name: ticket_ids
+          in: query
+          required: false
+          schema: { type: array, items: { type: string } }
+        - name: target_server_hostname
+          in: query
+          required: false
+          schema: { type: string }
+        - name: target_server_ip
+          in: query
+          required: false
+          schema: { type: string }
+        - name: implementors
+          in: query
+          required: false
+          description: userid of implementors
+          schema: { type: array, items: { type: string } }
+        - name: observers
+          in: query
+          required: false
+          description: userid of observers
+          schema: { type: array, items: { type: string } }
+        - name: start_time
+          in: query
+          required: false
+          description: Expected format - RFC3339
+          schema: { type: string, format: date-time }
+        - name: end_time
+          in: query
+          required: false
+          description: Expected format - RFC3339
+          schema: { type: string, format: date-time }
+        - name: pty_session_state
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PtySessionState'
+            # can do cursor pagination if u want
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: page_size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: total_count
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          description: PTY sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetPtySessionResponse'
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+
+######################################################################## Components
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    PtySessionState:
+      type: string
+      description: State of the PTY session
+      enum: [created, active, closed]
+
+# todo delete this and update it
+    # use tables
+    # ddm_pty_sessions
+    # ddm_pty_connections
+    GetPtySessionResponse:
+        type: object
+        properties:
+          # the pty session id is required to retrieve logs
+          id:
+            type: string
+            description: Unique identifier for the PTY session
+          ticket_id:
+            type: string
+            description: Ticket ID associated with the PTY session
+          target_server_hostname:
+            type: string
+            description: Hostname of the target server
+          target_server_ip:
+            type: string
+            description: IP address of the target server
+          implementors:
+            type: array
+            items:
+              type: string
+            description: List of implementors' user IDs
+          observers:
+            type: array
+            items:
+              type: string
+            description: List of observers' user IDs
+          start_time:
+            type: string
+            format: date-time
+            description: Start time of the PTY session in RFC3339 format
+          end_time:
+            type: string
+            format: date-time
+            description: End time of the PTY session in RFC3339 format
+          state:
+            $ref: '#/components/schemas/PtySessionState'
