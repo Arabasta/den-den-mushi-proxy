@@ -1,5 +1,5 @@
 /**
- * Control API
+ * Admin API
  *
  * 
  *
