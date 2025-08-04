@@ -18,8 +18,6 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	//s.logPacket(pkt)
-
 	var logMsg string
 	var err error
 
@@ -141,13 +139,17 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 			s.log.Error("Failed to handle SudoPassword packet", zap.Error(err))
 			return
 		}
+	} else if pkt.Header == protocol.ClientEndSession {
+		s.log.Debug("Handling ClientEndSession packet")
+		s.logL(session_logging.FormatLogLine(pkt.Header.String(), "Received end session from client"))
+		s.EndSession()
 	} else {
 		logMsg, err = s.purpose.HandleOther(s, pkt)
 	}
 
 	if err != nil {
 		s.log.Error("Failed to process message", zap.Error(err))
-		core_helpers.SendToConn(s.activePrimary, protocol.Packet{
+		core_helpers.SendToConn(s.ActivePrimary, protocol.Packet{
 			Header: protocol.Warn,
 			Data:   []byte("Failed to process message"),
 		})
@@ -159,7 +161,7 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 func (s *Session) handleGloballyBlockedControlChar(pkt protocol.Packet) string {
 	// change header and queue it
 	pkt.Header = protocol.BlockedControl
-	core_helpers.SendToConn(s.activePrimary, pkt)
+	core_helpers.SendToConn(s.ActivePrimary, pkt)
 	return "\n" + time.Now().Format(time.TimeOnly) + "[Blocked Control Character]: " + constants.GloballyBlocked[string(pkt.Data)]
 }
 

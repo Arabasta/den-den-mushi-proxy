@@ -77,7 +77,7 @@
     "Secret": ""
   },
   "OuGroup": {
-    "IsValidationEnabled": false,
+    "IsValidationEnabled": true,
     "Prefix": {
       "L1": "ddm_L1",
       "L2_L3": "ddm_L2_L3"

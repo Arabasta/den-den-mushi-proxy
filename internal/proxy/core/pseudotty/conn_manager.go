@@ -46,7 +46,7 @@ func (s *Session) addConn(c *client.Connection) {
 
 	if c.Claims.Connection.PtySession.IsNew {
 		s.log.Info("Is new pty, adding log header")
-		s.logL(session_logging.FormatHeader(s.activePrimary.Claims))
+		s.logL(session_logging.FormatHeader(s.ActivePrimary.Claims))
 
 		core_helpers.SendToConn(c, protocol.Packet{
 			Header: protocol.PtyConnectionSuccess,
@@ -91,18 +91,18 @@ func (s *Session) AssignRole(c *client.Connection) error {
 
 	if c.Claims.Connection.UserSession.StartRole == types.Implementor {
 		// check if primary already exists
-		if s.activePrimary != nil {
+		if s.ActivePrimary != nil {
 			s.log.Warn("Primary connection already exists, cannot register another primary",
 				zap.String("userSessionId", c.Claims.Connection.UserSession.Id))
 			return errors.New("max of one primaryConn per pty session allowed")
 		}
 
-		s.activePrimary = c
+		s.ActivePrimary = c
 	} else if c.Claims.Connection.UserSession.StartRole == types.Observer {
-		if _, exists := s.activeObservers[c]; exists {
+		if _, exists := s.ActiveObservers[c]; exists {
 			return errors.New("already registered as observer")
 		}
-		s.activeObservers[c] = struct{}{}
+		s.ActiveObservers[c] = struct{}{}
 	} else {
 		return errors.New("unknown role for websocket connection")
 	}
@@ -116,10 +116,10 @@ func (s *Session) removeConn(c *client.Connection) {
 		zap.String("userSessionId", c.Claims.Connection.UserSession.Id))
 
 	s.mu.Lock()
-	if s.activePrimary == c {
-		s.activePrimary = nil
+	if s.ActivePrimary == c {
+		s.ActivePrimary = nil
 	} else {
-		delete(s.activeObservers, c)
+		delete(s.ActiveObservers, c)
 	}
 	s.mu.Unlock()
 

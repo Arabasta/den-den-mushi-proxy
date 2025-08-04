@@ -11,7 +11,7 @@ import (
 )
 
 type Connection struct {
-	id     string
+	Id     string
 	Sock   *websocket.Conn
 	Claims *token.Claims
 
@@ -28,7 +28,7 @@ type Connection struct {
 
 func New(sock *websocket.Conn, claims *token.Claims, cfg *config.Config) *Connection {
 	return &Connection{
-		id:        claims.Connection.UserSession.Id,
+		Id:        claims.Connection.UserSession.Id,
 		Sock:      sock,
 		Claims:    claims,
 		WsWriteCh: make(chan protocol.Packet, 100), // todo: make configurable

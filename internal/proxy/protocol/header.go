@@ -40,6 +40,8 @@ func (h Header) String() string {
 		return "PtyConnectionSuccess"
 	case PtyCRTimeout:
 		return "PtyCRTimeout"
+	case ClientEndSession:
+		return "ClientEndSession"
 	case ParseError:
 		return "ParseError"
 	default:
@@ -105,6 +107,9 @@ const (
 
 	// PtyCRTimeoutWarning is sent to the client in intervals when the pty session is about to close due to CR EndTime
 	PtyCRTimeoutWarning Header = 0x17
+
+	// ClientEndSession is sent to the pty from the client to end the session
+	ClientEndSession Header = 0x18
 
 	// ParseError indicates an error in parsing the header
 	ParseError Header = 0xff

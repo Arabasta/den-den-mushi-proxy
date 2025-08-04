@@ -9,16 +9,23 @@ import (
 	"time"
 )
 
+func (s *Session) ForceEndSession(reason string) {
+	s.log.Warn("Forcing end of pty session")
+	s.logL(session_logging.FormatLogLine("System", "Force shutdown of session... Reason: "+reason))
+	s.EndSession()
+}
+
 func (s *Session) EndSession() {
 	s.once.Do(func() {
 		s.cancel() // exit conn loop
 		if s.State == types.Closed {
 			return
 		}
-		defer func() { s.State = types.Closed }()
+		s.State = types.Closed
 
 		s.log.Info("Ending pty session")
 		s.closeTheWorld()
+
 		if s.onClose != nil {
 			s.onClose(s.Id)
 		}
@@ -37,9 +44,9 @@ func (s *Session) closeTheWorld() {
 func (s *Session) deregisterAllWsConnections() {
 	s.mu.RLock()
 	// don't use deregisterCh
-	primary := s.activePrimary
-	observers := make([]*client.Connection, 0, len(s.activeObservers))
-	for o := range s.activeObservers {
+	primary := s.ActivePrimary
+	observers := make([]*client.Connection, 0, len(s.ActiveObservers))
+	for o := range s.ActiveObservers {
 		observers = append(observers, o)
 	}
 	s.mu.RUnlock()

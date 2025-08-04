@@ -97,7 +97,7 @@ func (s *Session) logAndResetLineEditorIfInputEnter(pkt protocol.Packet) {
 		})
 		// log to yirong's ai log todo: refactor
 		s.mu.RLock()
-		userId := s.activePrimary.Claims.Subject
+		userId := s.ActivePrimary.Claims.Subject
 		s.mu.RUnlock()
 		line := session_logging.FormatInputOnlyLogLine(userId, s.line.String())
 		if s.sessionLoggerForAIThing == nil {

@@ -41,8 +41,8 @@ type Session struct {
 	filter filter.CommandFilter // only for health check
 	line   *filter.LineEditor   // only for health check, tracks pty's current line
 
-	activePrimary       *client.Connection
-	activeObservers     map[*client.Connection]struct{}
+	ActivePrimary       *client.Connection
+	ActiveObservers     map[*client.Connection]struct{}
 	lifetimeConnections map[*client.Connection]struct{}
 
 	connRegisterCh   chan *client.Connection
@@ -77,7 +77,7 @@ func New(id string, pty *os.File, now time.Time, onClose func(string), log *zap.
 
 		line: new(filter.LineEditor),
 
-		activeObservers:     make(map[*client.Connection]struct{}),
+		ActiveObservers:     make(map[*client.Connection]struct{}),
 		lifetimeConnections: make(map[*client.Connection]struct{}),
 
 		connRegisterCh:   make(chan *client.Connection),

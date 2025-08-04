@@ -49,11 +49,11 @@ func (s *Session) GetDetails() SessionInfo {
 	defer s.mu.RUnlock()
 
 	var activeParticipants []ConnectionInfo
-	if s.activePrimary != nil && s.activePrimary.Claims != nil {
-		activeParticipants = append(activeParticipants, extractConnectionInfo(s.activePrimary))
+	if s.ActivePrimary != nil && s.ActivePrimary.Claims != nil {
+		activeParticipants = append(activeParticipants, extractConnectionInfo(s.ActivePrimary))
 	}
 
-	for o := range s.activeObservers {
+	for o := range s.ActiveObservers {
 		if o.Claims != nil {
 			activeParticipants = append(activeParticipants, extractConnectionInfo(o))
 		}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"den-den-mushi-Go"
 	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/internal/proxy/jwt_service/jti"
@@ -17,7 +18,10 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
+	"time"
 )
 
 func main() {
@@ -60,11 +64,36 @@ func main() {
 		}
 	}
 
-	s := server.New(root.Files, db, redisClient, cfg, log)
+	s, sessionManager := server.New(root.Files, db, redisClient, cfg, log)
+
+	err = sessionManager.CleanupActiveSessionsAndConnections(cfg.Host.Name)
+	if err != nil {
+		log.Error("Failed to cleanup active sessions and connections", zap.Error(err))
+		// continue with server startup even if cleanup fails
+	}
+
+	// graceful shutdown
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
+	go func() {
+		<-stop
+		log.Info("Shutting down gracefully...")
+
+		// todo: close http server listeners
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		sessionManager.Shutdown(ctx)
+
+		log.Info("Shutdown complete")
+		os.Exit(0)
+	}()
+
 	if err := server.Start(s, cfg, log); err != nil {
 		log.Fatal("failed to start server: %v", zap.Error(err))
 	}
-	// todo: add graceful shutdown
 }
 
 // configPath usage: go run main.go -config /path/to/config.json

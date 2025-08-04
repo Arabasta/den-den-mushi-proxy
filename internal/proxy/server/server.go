@@ -2,6 +2,7 @@ package server
 
 import (
 	"den-den-mushi-Go/internal/proxy/config"
+	"den-den-mushi-Go/internal/proxy/core/session_manager"
 	"den-den-mushi-Go/pkg/middleware"
 	"embed"
 	"fmt"
@@ -17,7 +18,7 @@ type Server struct {
 	log    *zap.Logger
 }
 
-func New(staticFiles embed.FS, db *gorm.DB, redis *redis.Client, cfg *config.Config, log *zap.Logger) *Server {
+func New(staticFiles embed.FS, db *gorm.DB, redis *redis.Client, cfg *config.Config, log *zap.Logger) (*Server, *session_manager.Service) {
 	deps := initDependencies(db, redis, cfg, log)
 
 	if cfg.App.Environment == "prod" {
@@ -37,7 +38,7 @@ func New(staticFiles embed.FS, db *gorm.DB, redis *redis.Client, cfg *config.Con
 	registerWebsocketRoutes(r, deps, cfg, log)
 	addStaticRoutes(r, staticFiles, cfg, log)
 
-	return &Server{engine: r, cfg: cfg, log: log}
+	return &Server{engine: r, cfg: cfg, log: log}, deps.SessionManager
 }
 
 func Start(s *Server, cfg *config.Config, log *zap.Logger) error {
