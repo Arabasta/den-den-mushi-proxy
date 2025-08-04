@@ -19,7 +19,12 @@ type Server struct {
 func New(ddmDb *gorm.DB, staticFiles embed.FS, cfg *config.Config, log *zap.Logger) *Server {
 	deps := initDependencies(ddmDb, cfg, log)
 
-	gin.SetMode(gin.DebugMode)
+	if cfg.App.Environment == "prod" {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
+	}
+
 	r := gin.New()
 	r.Use(
 		middleware.RequestLogger(log),

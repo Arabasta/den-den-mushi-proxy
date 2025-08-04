@@ -20,7 +20,12 @@ type Server struct {
 func New(staticFiles embed.FS, db *gorm.DB, redis *redis.Client, cfg *config.Config, log *zap.Logger) *Server {
 	deps := initDependencies(db, redis, cfg, log)
 
-	gin.SetMode(gin.DebugMode)
+	if cfg.App.Environment == "prod" {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
+	}
+
 	r := gin.New()
 	r.Use(
 		middleware.RequestLogger(log),
