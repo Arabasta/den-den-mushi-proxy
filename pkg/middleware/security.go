@@ -9,14 +9,10 @@ var allowedOriginPattern = regexp.MustCompile(`^https://x([a-zA-Z0-9-]+\.)*corp\
 
 func Security(sslEnabled bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// have to allow iframe, even though its not secure.
-		// idk why frontend is using it
-		// fine grained control annoying to setup cause we don't know where the frontend will be
-		// permanently hosted for now
-		// have to rely on csp
-		// c.Writer.Header().Set("X-Frame-Options", "Self https://*/com")
 
-		// todo scp
+		c.Writer.Header().Set("X-Frame-Options", "DENY")
+
+		// todo csp
 		//origin := c.GetHeader("Origin")
 		//if origin == "" {
 		//	origin = c.GetHeader("Referer") // fallback
@@ -38,7 +34,7 @@ func Security(sslEnabled bool) gin.HandlerFunc {
 		// no sniff MIME types
 		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
 
-		c.Writer.Header().Set("Referrer-Policy", "no-referrer")
+		c.Writer.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 
 		//csp := "default-src 'self'; " +
 		//	"script-src 'self'; " +
