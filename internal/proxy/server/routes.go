@@ -28,7 +28,7 @@ func registerWebsocketRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log 
 	protected.Use(
 		middlewarepkg.TmpAuth(log, cfg.TmpAuth),
 		middlewarepkg.SetAuthContext(),
-		websocket_jwt.WsJwtMiddleware(deps.Validator, log),
+		websocket_jwt.Middleware(deps.Validator, log),
 	)
 
 	websocket.RegisterWebsocketRoutes(protected, log, deps.WebsocketService)

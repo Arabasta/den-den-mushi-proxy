@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func WsJwtMiddleware(v *Validator, log *zap.Logger) gin.HandlerFunc {
+func Middleware(v *Validator, log *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authCtx, ok := middleware.GetAuthContext(c.Request.Context())
 		if !ok {
