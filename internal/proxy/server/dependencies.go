@@ -8,12 +8,12 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/session_manager/pty_sessions"
 	"den-den-mushi-Go/internal/proxy/filter"
 	"den-den-mushi-Go/internal/proxy/integrations/puppet"
-	"den-den-mushi-Go/internal/proxy/jwt_service"
-	"den-den-mushi-Go/internal/proxy/jwt_service/jti"
 	"den-den-mushi-Go/internal/proxy/pty_util"
 	"den-den-mushi-Go/internal/proxy/regex_filters"
 	"den-den-mushi-Go/internal/proxy/tmp/control_server_tmp"
 	"den-den-mushi-Go/internal/proxy/websocket"
+	"den-den-mushi-Go/internal/proxy/websocket_jwt"
+	"den-den-mushi-Go/internal/proxy/websocket_jwt/jti"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -21,7 +21,7 @@ import (
 
 type Deps struct {
 	WebsocketService *websocket.Service
-	Validator        *jwt_service.Validator
+	Validator        *websocket_jwt.Validator
 	Issuer           *control_server_tmp.Issuer // todo: tmp move this to control server
 	SessionManager   *session_manager.Service   // todo: tmp remove this
 }
@@ -46,7 +46,7 @@ func initDependencies(db *gorm.DB, redis *redis.Client, cfg *config.Config, log 
 
 	issuer := control_server_tmp.New(cfg.JwtAudience, log) // todo: remove
 
-	parser := jwt_service.NewParser(cfg.JwtAudience, log)
+	parser := websocket_jwt.NewParser(cfg.JwtAudience, log)
 
 	var jtiRepo jti.Repository
 
@@ -55,9 +55,9 @@ func initDependencies(db *gorm.DB, redis *redis.Client, cfg *config.Config, log 
 	} else {
 		jtiRepo = jti.NewRedisRepository(redis, log)
 	}
-	jtiService := jti.New(jtiRepo, log, cfg.JwtAudience, cfg.Host)
+	jtiService := jti.New(jtiRepo, log, cfg.JwtAudience)
 
-	val := jwt_service.NewValidator(parser, jtiService, cfg.JwtAudience, log)
+	val := websocket_jwt.NewValidator(parser, jtiService, cfg.JwtAudience, log)
 
 	regexRepo := regex_filters.NewGormRepository(db, log)
 	regexFiltersSvc := regex_filters.NewService(regexRepo, log, cfg)

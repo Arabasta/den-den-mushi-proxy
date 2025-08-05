@@ -4,8 +4,8 @@ import (
 	"context"
 	"den-den-mushi-Go"
 	"den-den-mushi-Go/internal/proxy/config"
-	"den-den-mushi-Go/internal/proxy/jwt_service/jti"
 	"den-den-mushi-Go/internal/proxy/server"
+	"den-den-mushi-Go/internal/proxy/websocket_jwt/jti"
 	"den-den-mushi-Go/pkg/dto/connections"
 	"den-den-mushi-Go/pkg/dto/proxy_host"
 	"den-den-mushi-Go/pkg/dto/pty_sessions"
@@ -66,7 +66,7 @@ func main() {
 
 	s, sessionManager := server.New(root.Files, db, redisClient, cfg, log)
 
-	err = sessionManager.CleanupActiveSessionsAndConnections(cfg.Host.Name)
+	err = sessionManager.CleanupActiveSessionsAndConnections()
 	if err != nil {
 		log.Error("Failed to cleanup active sessions and connections", zap.Error(err))
 		// continue with server startup even if cleanup fails

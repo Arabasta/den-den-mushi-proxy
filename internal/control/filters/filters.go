@@ -15,6 +15,7 @@ type ListCR struct {
 	PtySessionState   *types.PtySessionState
 	Page              int
 	PageSize          int
+	IsGetTotalCount   bool
 }
 
 type CrHostPtySession struct {

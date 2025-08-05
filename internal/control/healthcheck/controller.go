@@ -33,7 +33,7 @@ func (h *Handler) GetApiV1Healthcheck(c *gin.Context, params oapi.GetApiV1Health
 		PageSize:        convert.DerefOr(params.PageSize, 20),
 	}
 
-	results, err := h.Service.getHostsAndAssociatedPtySessions(f)
+	results, err := h.Service.getHostsAndAssociatedPtySessions(f, c)
 	if err != nil {
 		h.Log.Error("Failed to fetch healthcheck sessions", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

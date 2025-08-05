@@ -28,7 +28,7 @@ func (m *Service) CreatePtySession(pty *os.File, claims *token.Claims, log *zap.
 		CreatedBy:                claims.Subject,
 		State:                    types.Active,
 		StartTime:                &now,
-		ProxyHostName:            m.cfg.Host.Name,
+		ProxyHostName:            m.hostname,
 		StartConnServerIP:        claims.Connection.Server.IP,
 		StartConnServerPort:      claims.Connection.Server.Port,
 		StartConnServerOSUser:    claims.Connection.Server.OSUser,

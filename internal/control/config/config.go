@@ -13,23 +13,12 @@ type Config struct {
 		IsUsingInvDb                                bool
 		IsAutoMigrateEnabled                        bool
 		IsBlacklistFilter                           bool
+		IsLocalSshKeyIfNotIsPuppetKey               bool
 		TargetSshPort                               string
 		IsSMX                                       bool
 		ProxyLoadbalancerEndpointForDiffProxyGroups string
 		ProxyHostIpForRejoinRouting                 string
 		ProxyHostNameJustForLookup                  string
-		HealthcheckOsUsers                          []string
-		IsLocalSshKeyIfNotIsPuppetKey               bool
-		IsTmpAuthCookieEnabled                      bool
-		EmailSuffix                                 string
-	}
-
-	CookieTmp struct {
-		Name       string
-		Redirect   string
-		UserIdKey  string
-		OuGroupKey string
-		Secret     string
 	}
 
 	Ssl *config.Ssl
@@ -53,4 +42,6 @@ type Config struct {
 			L2L3 string `json:"L2_L3"`
 		} `json:"Prefix_V1"`
 	} `json:"OuGroup"`
+
+	TmpAuth *config.Tmpauth
 }

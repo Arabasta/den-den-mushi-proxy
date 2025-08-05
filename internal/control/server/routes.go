@@ -18,10 +18,7 @@ import (
 func registerProtectedRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log *zap.Logger) {
 	protected := r.Group("")
 	protected.Use(
-		// todo use webseal middleware
-		//middleware.Webseal(log),
-		TmpAuth(log, cfg),
-
+		middleware.TmpAuth(log, cfg.TmpAuth),
 		middleware.SetAuthContext(),
 	)
 

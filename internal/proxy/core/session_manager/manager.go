@@ -7,6 +7,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/session_manager/pty_sessions"
 	"den-den-mushi-Go/internal/proxy/integrations/puppet"
 	"go.uber.org/zap"
+	"os"
 	"sync"
 )
 
@@ -18,11 +19,17 @@ type Service struct {
 	log            *zap.Logger
 	cfg            *config.Config
 	puppetClient   *puppet.Client
+	hostname       string
 }
 
 func New(ptySessionsSvc *pty_sessions.Service, connSvc *connections.Service, log *zap.Logger, cfg *config.Config,
 	puppetClient *puppet.Client) *Service {
 	log.Info("Initializing Session Manager Service...")
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Error("Failed to get hostname", zap.Error(err))
+		os.Exit(1)
+	}
 	return &Service{
 		ptySessions:    make(map[string]*pseudotty.Session),
 		ptySessionsSvc: ptySessionsSvc,
@@ -30,5 +37,6 @@ func New(ptySessionsSvc *pty_sessions.Service, connSvc *connections.Service, log
 		log:            log,
 		cfg:            cfg,
 		puppetClient:   puppetClient,
+		hostname:       hostname,
 	}
 }

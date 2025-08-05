@@ -15,12 +15,7 @@
     "TargetSshPort": "64022",
     "proxyHostIpForRejoinRouting": "127.0.1",
     "proxyHostNameJustForLookup": "ddm-proxy",
-    "proxyLoadbalancerEndpointForDiffProxyGroups": "localhost:45007",
-    "HealthcheckOsUsers" : [
-      "ddmhealthcheck",
-      "suzuyajuuzou"
-    ],
-    "IsTmpAuthCookieEnabled": true
+    "proxyLoadbalancerEndpointForDiffProxyGroups": "localhost:45007"
   },
   "ssl": {
     "enabled": true
@@ -69,18 +64,16 @@
     "port": 6379,
     "poolSize": 10
   },
-  "CookieTmp": {
-    "Name": "cookiename",
-    "Redirect": "ddm.com/login",
-    "UserIdKey": "username",
-    "OuGroupKey": "ou",
-    "Secret": ""
-  },
   "OuGroup": {
     "IsValidationEnabled": true,
     "Prefix_V1": {
       "L1": "L1",
       "L2_L3": "L2_L3"
     }
+  },
+  "Tmpauth": {
+    "IsEnabled": false,
+    "UserIdKey": "username",
+    "OuGroupKey": "ou"
   }
 }

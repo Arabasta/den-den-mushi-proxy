@@ -49,13 +49,14 @@ export class MakeChangeService extends BaseService {
      * @param ptySessionState Does not filter out CRs, field not for users
      * @param page 
      * @param pageSize 
+     * @param totalCount 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiV1ChangeRequestsGet(ticketIds?: Array<string>, implementorGroups?: Array<string>, lob?: string, country?: string, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<ChangeRequestSessionsResponse>>;
-    public apiV1ChangeRequestsGet(ticketIds?: Array<string>, implementorGroups?: Array<string>, lob?: string, country?: string, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<ChangeRequestSessionsResponse>>>;
-    public apiV1ChangeRequestsGet(ticketIds?: Array<string>, implementorGroups?: Array<string>, lob?: string, country?: string, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<ChangeRequestSessionsResponse>>>;
-    public apiV1ChangeRequestsGet(ticketIds?: Array<string>, implementorGroups?: Array<string>, lob?: string, country?: string, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public apiV1ChangeRequestsGet(ticketIds?: Array<string>, implementorGroups?: Array<string>, lob?: string, country?: string, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, totalCount?: boolean, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<ChangeRequestSessionsResponse>>;
+    public apiV1ChangeRequestsGet(ticketIds?: Array<string>, implementorGroups?: Array<string>, lob?: string, country?: string, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, totalCount?: boolean, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<ChangeRequestSessionsResponse>>>;
+    public apiV1ChangeRequestsGet(ticketIds?: Array<string>, implementorGroups?: Array<string>, lob?: string, country?: string, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, totalCount?: boolean, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<ChangeRequestSessionsResponse>>>;
+    public apiV1ChangeRequestsGet(ticketIds?: Array<string>, implementorGroups?: Array<string>, lob?: string, country?: string, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, totalCount?: boolean, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new HttpParams({encoder: this.encoder});
         if (ticketIds) {
@@ -84,6 +85,8 @@ export class MakeChangeService extends BaseService {
           <any>page, 'page');
         localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
           <any>pageSize, 'page_size');
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>totalCount, 'total_count');
 
         let localVarHeaders = this.defaultHeaders;
 

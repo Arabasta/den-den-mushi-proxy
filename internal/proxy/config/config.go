@@ -69,4 +69,6 @@ type Config struct {
 			IsValidationEnabled bool
 		}
 	}
+
+	TmpAuth *config.Tmpauth
 }

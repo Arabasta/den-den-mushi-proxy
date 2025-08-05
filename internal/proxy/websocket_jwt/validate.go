@@ -1,8 +1,9 @@
-package jwt_service
+package websocket_jwt
 
 import (
-	"den-den-mushi-Go/internal/proxy/jwt_service/jti"
+	"den-den-mushi-Go/internal/proxy/websocket_jwt/jti"
 	"den-den-mushi-Go/pkg/config"
+	"den-den-mushi-Go/pkg/middleware"
 	"den-den-mushi-Go/pkg/token"
 	"errors"
 	"github.com/golang-jwt/jwt/v5"
@@ -30,10 +31,20 @@ func NewValidator(p *jwt.Parser, jti *jti.Service, cfg *config.JwtAudience, log 
 }
 
 // ValidateClaims Validate must follow https://www.rfc-editor.org/rfc/rfc8725.html
-func (v *Validator) ValidateClaims(claims *token.Claims, tok *jwt.Token) error {
+func (v *Validator) ValidateClaims(claims *token.Claims, tok *jwt.Token, authCtx *middleware.AuthContext) error {
 	v.log.Debug("Validating claims", zap.Any("claims", claims), zap.String("jti", claims.ID))
 
-	// todo: RFC8725 3.8 validate subject against keycloak user
+	// RFC8725 3.8 validate subject against keycloak user
+	if claims.Subject == "" {
+		v.log.Error("Token has no subject", zap.String("jti", claims.ID))
+	}
+	if claims.Subject != authCtx.UserID {
+		v.log.Error("Token subject does not match auth context user ID", zap.String("jti", claims.ID),
+			zap.String("subject", claims.Subject),
+			zap.String("authUserID", authCtx.UserID))
+		return errors.New("token subject does not match auth context user ID")
+	}
+	v.log.Debug("Validated subject", zap.String("jti", claims.ID), zap.String("subject", claims.Subject))
 
 	// check typ RFC8725 3.11 3.12
 	if !v.isExpectedTyp(tok.Header["typ"].(string), v.cfg.ExpectedTyp) {

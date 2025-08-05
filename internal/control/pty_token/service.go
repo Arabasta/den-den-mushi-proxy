@@ -6,6 +6,7 @@ import (
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/host"
 	"den-den-mushi-Go/internal/control/jwt"
+	"den-den-mushi-Go/internal/control/os_adm_users"
 	"den-den-mushi-Go/internal/control/policy"
 	"den-den-mushi-Go/internal/control/proxy_lb"
 	"den-den-mushi-Go/internal/control/pty_sessions"
@@ -29,13 +30,14 @@ type Service struct {
 	certNameSvc              *certname.Service
 	changeRequestPolicyChain policy.Policy[request.Ctx]
 	healthCheckPolicyChain   policy.Policy[request.Ctx]
+	osAdmUsersSvc            *os_adm_users.Service
 
 	log *zap.Logger
 	cfg *config.Config
 }
 
 func NewService(psS *pty_sessions.Service, plbS *proxy_lb.Service, hostS *host.Service, certNameSvc *certname.Service,
-	issuer *jwt.Issuer, crS *change_request.Service,
+	issuer *jwt.Issuer, crS *change_request.Service, osAdmUsersSvc *os_adm_users.Service,
 	changeRequestPolicyChain policy.Policy[request.Ctx],
 	healthCheckPolicyChain policy.Policy[request.Ctx],
 	log *zap.Logger, cfg *config.Config) *Service {
@@ -112,6 +114,7 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 			return "", "", err
 		}
 
+		// todo update this need to su? or just root only?
 		allowedSuOsUsers = cyberark.ExtractAllOsUsers(cr.CyberArkObjects)
 		s.log.Debug("CR allowed OS users extracted", zap.Strings("allowedSuOsUsers", allowedSuOsUsers))
 	} else if r.Body.Purpose == types.Healthcheck {
@@ -128,7 +131,8 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 		}
 
 		// todo: this guy should be from db, each perso n has their own os user
-		allowedSuOsUsers = s.cfg.Development.HealthcheckOsUsers
+		// todo: maybe dont need seems liek su for root only
+		//	allowedSuOsUsers = s.osAdmUsersSvc.GetNonCrOsUsers(r.AuthCtx.UserID)
 		s.log.Debug("Healthcheck allowed OS users", zap.Strings("allowedSuOsUsers", allowedSuOsUsers))
 
 		// todo: this should be by OU group what they want idk

@@ -6,13 +6,12 @@ import (
 	"go.uber.org/zap"
 )
 
-func (m *Service) CleanupActiveSessionsAndConnections(proxyHost string) error {
-	m.log.Info("Cleaning up old active sessions with connections", zap.String("proxyHost", proxyHost))
-
+func (m *Service) CleanupActiveSessionsAndConnections() error {
+	m.log.Info("Cleaning up old active sessions with connections", zap.String("proxyHost", m.hostname))
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	return m.ptySessionsSvc.CleanupActiveSessionsAndConnections(proxyHost)
+	return m.ptySessionsSvc.CleanupActiveSessionsAndConnections(m.hostname)
 }
 
 func (m *Service) Shutdown(ctx context.Context) {

@@ -25,32 +25,32 @@ tags:
 
 paths:
   ######################################################################## Session Logs Use Case
-  /api/v1/session_logs/{pty_session_id}:
-    get:
-      tags:
-        - Session Logs
-      summary: Get logs for a specific PTY session
-      security:
-        - BearerAuth: [ ]
-      parameters:
-        - name: pty_session_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: PTY session logs retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-        '404':
-          description: PTY session not found
-        '500':
-          description: Internal server error
+#  /api/v1/session_logs/{pty_session_id}:
+#    get:
+#      tags:
+#        - Session Logs
+#      summary: Get logs for a specific PTY session
+#      security:
+#        - BearerAuth: [ ]
+#      parameters:
+#        - name: pty_session_id
+#          in: path
+#          required: true
+#          schema:
+#            type: string
+#      responses:
+#        '200':
+#          description: PTY session logs retrieved successfully
+#          content:
+#            application/json:
+#              schema:
+#                type: array
+#                items:
+#                  type: string
+#        '404':
+#          description: PTY session not found
+#        '500':
+#          description: Internal server error
 
 
   ######################################################################## Pty Token Use Case
@@ -156,16 +156,24 @@ paths:
           - name: page_size
             in: query
             schema: { type: integer, minimum: 1, maximum: 1000, default: 20 }
+          - name: total_count
+            in: query
+            schema: { type: boolean, default: false }
       responses:
           '200':
             description: List change request details and their associated PTY sessions
             content:
               application/json:
                 schema:
+                  properties:
+                    total_count:
+                        description: total number of change requests matching the filter
+                        type: integer
                   type: array
                   items:
                     $ref: '#/components/schemas/ChangeRequestSessionsResponse'
                 example:
+                  note: its outdated
                   change_id: CR20250721001
                   country: ["SG", "HK"]
                   lob: "CES"

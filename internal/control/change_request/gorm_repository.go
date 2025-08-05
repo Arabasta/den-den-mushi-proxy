@@ -105,3 +105,53 @@ func (r *GormRepository) FindApprovedChangeRequestsByFilter(f filters.ListCR) ([
 	r.log.Debug("Fetched change requests", zap.Int("Count", len(models)))
 	return dto.FromModels(models)
 }
+
+func (r *GormRepository) CountApprovedChangeRequestsByFilter(f filters.ListCR) (int64, error) {
+	var count int64
+	query := r.db.Model(&dto.Model{})
+
+	if f.TicketIDs != nil && len(*f.TicketIDs) > 0 {
+		query = query.Where("TicketNumber IN ?", *f.TicketIDs)
+	}
+
+	query = query.Where("State = ?", "Approved")
+
+	if f.ImplementorGroups != nil && len(*f.ImplementorGroups) > 0 {
+		var likeClauses []string
+		var args []interface{}
+		for _, g := range *f.ImplementorGroups {
+			likeClauses = append(likeClauses, "ImplementerGroup LIKE ?")
+			args = append(args, "%"+g+"%")
+		}
+		query = query.Where("("+strings.Join(likeClauses, " OR ")+")", args...)
+	}
+
+	if f.LOB != nil {
+		query = query.Where("LOB = ?", *f.LOB)
+	}
+
+	if f.Country != nil {
+		query = query.Where("CountryImpacted LIKE ?", "%"+*f.Country+"%")
+	}
+
+	if f.StartTime != nil && f.EndTime != nil {
+		query = query.Where(
+			"ChangeSchedStartDateTime <= ? AND ChangeSchedEndDateTime >= ?",
+			f.EndTime.Format("2006-01-02 15:04:05"),
+			f.StartTime.Format("2006-01-02 15:04:05"),
+		)
+	} else if f.StartTime != nil {
+		query = query.Where("ChangeSchedEndDateTime >= ?", f.StartTime.Format("2006-01-02 15:04:05"))
+	} else if f.EndTime != nil {
+		query = query.Where("ChangeSchedStartDateTime <= ?", f.EndTime.Format("2006-01-02 15:04:05"))
+	}
+
+	err := query.Count(&count).Error
+	if err != nil {
+		r.log.Error("DB error while counting change requests", zap.Error(err))
+		return 0, err
+	}
+
+	r.log.Debug("Counted change requests", zap.Int64("Count", count))
+	return count, nil
+}

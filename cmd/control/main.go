@@ -5,12 +5,13 @@ import (
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/server"
 	"den-den-mushi-Go/internal/control/testdata"
-	"den-den-mushi-Go/internal/proxy/jwt_service/jti"
+	"den-den-mushi-Go/internal/proxy/websocket_jwt/jti"
 	"den-den-mushi-Go/pkg/dto/change_request"
 	"den-den-mushi-Go/pkg/dto/connections"
 	"den-den-mushi-Go/pkg/dto/cyberark"
 	"den-den-mushi-Go/pkg/dto/host"
 	"den-den-mushi-Go/pkg/dto/implementor_groups"
+	"den-den-mushi-Go/pkg/dto/os_adm_users"
 	"den-den-mushi-Go/pkg/dto/proxy_host"
 	"den-den-mushi-Go/pkg/dto/proxy_lb"
 	"den-den-mushi-Go/pkg/dto/pty_sessions"
@@ -63,11 +64,12 @@ func main() {
 			&connections.Model{},
 			&proxy_host.Model{},
 			&jti.Model{},
+			&os_adm_users.Model{},
 		); err != nil {
 			log.Fatal("AutoMigrate failed", zap.Error(err))
 		}
 		if cfg.Development.IsAutoMigrateEnabled {
-			//testdata.CallAll(db)
+			testdata.CallAll(db)
 		}
 	}
 
@@ -80,12 +82,13 @@ func main() {
 			&pty_sessions.Model{},
 			&connections.Model{},
 			&jti.Model{},
+			&os_adm_users.Model{},
 		); err != nil {
 			log.Fatal("AutoMigrate failed", zap.Error(err))
 		}
 
 		if cfg.Development.IsAutoMigrateEnabled {
-			testdata.CreateProxyHostAndLb(db, cfg)
+			//testdata.CreateProxyHostAndLb(db, cfg)
 		}
 	}
 

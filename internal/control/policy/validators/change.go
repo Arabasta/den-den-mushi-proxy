@@ -15,14 +15,6 @@ func IsServerIpInObjects(ip string, objects []string) bool {
 	return cyberark.IsIpInObjects(ip, objects)
 }
 
-func IsOsUserInObjects(osUser string, objects []string) bool {
-	if osUser == "" {
-		return false
-	}
-
-	return cyberark.IsOsUserInObjects(osUser, objects)
-}
-
 func IsApproved(crState string) bool {
 	return crState == "Approved"
 }

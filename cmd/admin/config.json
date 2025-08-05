@@ -53,18 +53,16 @@
     "port": 6379,
     "poolSize": 10
   },
-  "CookieTmp": {
-    "Name": "cookiename",
-    "Redirect": "ddm.com/login",
-    "UserIdKey": "username",
-    "OuGroupKey": "ou",
-    "Secret": ""
-  },
   "OuGroup": {
     "IsValidationEnabled": true,
     "Prefix": {
       "L1": "ddm_L1",
       "L2_L3": "ddm_L2_L3"
     }
+  },
+  "Tmpauth": {
+    "IsEnabled": false,
+    "UserIdKey": "username",
+    "OuGroupKey": "ou"
   }
 }

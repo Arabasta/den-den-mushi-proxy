@@ -4,33 +4,44 @@ import (
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/filters"
 	"den-den-mushi-Go/internal/control/host"
+	"den-den-mushi-Go/internal/control/os_adm_users"
 	"den-den-mushi-Go/internal/control/pty_sessions"
 	oapi "den-den-mushi-Go/openapi/control"
 	ptysessionspkg "den-den-mushi-Go/pkg/dto/pty_sessions"
+	"den-den-mushi-Go/pkg/middleware"
+	"errors"
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
 type Service struct {
 	ptySessionsSvc *pty_sessions.Service
 	hostSvc        *host.Service
+	osAdmUsersSvc  *os_adm_users.Service
 
 	log *zap.Logger
 	cfg *config.Config
 }
 
 func NewService(ptySessionsSvc *pty_sessions.Service,
-	hostSvc *host.Service, log *zap.Logger, cfg *config.Config) *Service {
+	hostSvc *host.Service, osAdmUsersSvc *os_adm_users.Service, log *zap.Logger, cfg *config.Config) *Service {
 	log.Info("Initializing Make Change Service")
 	return &Service{
 		ptySessionsSvc: ptySessionsSvc,
 		hostSvc:        hostSvc,
+		osAdmUsersSvc:  osAdmUsersSvc,
 		log:            log,
 		cfg:            cfg,
 	}
 }
 
-func (s *Service) getHostsAndAssociatedPtySessions(f filters.HealthcheckPtySession) (*[]oapi.HostSessionDetails, error) {
+func (s *Service) getHostsAndAssociatedPtySessions(f filters.HealthcheckPtySession, c *gin.Context) (*[]oapi.HostSessionDetails, error) {
 	s.log.Debug("Fetching hosts and PTY sessions", zap.Any("filter", f))
+	authCtx, ok := middleware.GetAuthContext(c.Request.Context())
+	if !ok {
+		s.log.Error("Auth context missing in request")
+		return nil, errors.New("auth context missing in request")
+	}
 
 	// todo: FindAllByFilter will eventually require ougroup
 	hosts, err := s.hostSvc.FindAllByFilter(f)
@@ -64,8 +75,10 @@ func (s *Service) getHostsAndAssociatedPtySessions(f filters.HealthcheckPtySessi
 				Country:     &h.Country,
 			},
 			PtySessions: convertToPtySessionSummaries(hostSessions),
-			OsUsers:     &s.cfg.Development.HealthcheckOsUsers,
-		}
+			OsUsers: func() *[]string {
+				users := s.osAdmUsersSvc.GetNonCrOsUsers(authCtx.UserID)
+				return &users
+			}()}
 
 		result = append(result, details)
 	}

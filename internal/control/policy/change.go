@@ -2,6 +2,7 @@ package policy
 
 import (
 	"den-den-mushi-Go/internal/control/implementor_groups"
+	"den-den-mushi-Go/internal/control/os_adm_users"
 	"den-den-mushi-Go/internal/control/policy/validators"
 	"den-den-mushi-Go/internal/control/pty_token/request"
 	"den-den-mushi-Go/pkg/types"
@@ -13,12 +14,15 @@ type ChangePolicy[T request.Ctx] struct {
 	next Policy[T]
 
 	impGroupService *implementor_groups.Service
-	log             *zap.Logger
+	osAdmUsersSvc   *os_adm_users.Service
+
+	log *zap.Logger
 }
 
-func NewChangePolicy[T request.Ctx](impGroupSvc *implementor_groups.Service, log *zap.Logger) *ChangePolicy[T] {
+func NewChangePolicy[T request.Ctx](impGroupSvc *implementor_groups.Service, osAdmUsersSvc *os_adm_users.Service, log *zap.Logger) *ChangePolicy[T] {
 	return &ChangePolicy[T]{
 		impGroupService: impGroupSvc,
+		osAdmUsersSvc:   osAdmUsersSvc,
 		log:             log,
 	}
 }
@@ -67,8 +71,10 @@ func (p *ChangePolicy[T]) Check(r T) error {
 		p.log.Warn("Server IP is not in change request", zap.String("ip", r.GetServerInfo().IP))
 		return errors.New("server IP is not in change request cyberark objects")
 	}
+	osAdmUsers := p.osAdmUsersSvc.GetNonCrOsUsers(r.GetUserId())
 
-	if !validators.IsOsUserInObjects(r.GetServerInfo().OSUser, cr.CyberArkObjects) {
+	if !validators.IsOsUserInObjects(r.GetServerInfo().OSUser, cr.CyberArkObjects) &&
+		!validators.IsOsUserInOsAdmUsers(r.GetServerInfo().OSUser, osAdmUsers) {
 		p.log.Warn("OS User is not in change request", zap.String("osUser", r.GetServerInfo().OSUser))
 		return errors.New("OS User is not in change request cyberark objects")
 	}

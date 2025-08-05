@@ -27,3 +27,7 @@ func (s *Service) FindApprovedChangeRequestsByFilter(f filters.ListCR) ([]*dto.R
 	s.log.Debug("Finding change requests by filter", zap.Any("filter", f))
 	return s.repo.FindApprovedChangeRequestsByFilter(f)
 }
+
+func (s *Service) CountApprovedChangeRequestsByFilter(f filters.ListCR) (int64, error) {
+	return s.repo.CountApprovedChangeRequestsByFilter(f)
+}

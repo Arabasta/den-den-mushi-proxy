@@ -21,8 +21,6 @@ func Cors(cfg *config.Cors, log *zap.Logger) gin.HandlerFunc {
 		log.Debug("CORS Middleware triggered", zap.String("origin", origin), zap.String("method", method), zap.String("requestedHeaders", reqHeaders))
 
 		c.Header("Access-Control-Allow-Origin", "*") // allow all for now
-		//c.Header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
-		//c.Header("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Requested-With")
 		c.Header("Access-Control-Allow-Methods", allowedMethods)
 		c.Header("Access-Control-Allow-Headers", allowedHeaders)
 		c.Header("Access-Control-Allow-Credentials", strconv.FormatBool(cfg.AllowCredentials))

@@ -46,6 +46,8 @@ func (r *GormRepository) Save(session *pty_sessions.Record) error {
 	return nil
 }
 
+// todo: this will not cleanup active connections with a closed session
+// todo: this won't scale well
 func (r *GormRepository) FindActiveByProxyHostWithConnections(proxyHost string) ([]*pty_sessions.Record, error) {
 	var sessions []pty_sessions.Model
 	err := r.db.

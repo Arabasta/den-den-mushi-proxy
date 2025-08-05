@@ -18,7 +18,6 @@ type Handler struct {
 
 func (h *Handler) GetApiV1ChangeRequests(c *gin.Context, params oapi.GetApiV1ChangeRequestsParams) {
 	h.Log.Debug("GetApiV1ChangeRequests called", zap.Any("params", params))
-
 	r := filters.ListCR{
 		TicketIDs:         params.TicketIds,
 		ImplementorGroups: params.ImplementorGroups,
@@ -29,18 +28,30 @@ func (h *Handler) GetApiV1ChangeRequests(c *gin.Context, params oapi.GetApiV1Cha
 		PtySessionState:   (*types.PtySessionState)(params.PtySessionState),
 		Page:              convert.DerefOr(params.Page, 1),
 		PageSize:          convert.DerefOr(params.PageSize, 20),
+		IsGetTotalCount:   convert.DerefOr(params.TotalCount, false),
 	}
 
-	results, err := h.Service.ListChangeRequestsWithSessions(r, c)
+	results, totalCount, err := h.Service.ListChangeRequestsWithSessions(r, c)
 	if err != nil {
 		httpx.RespondError(c, http.StatusInternalServerError, "failed to retrieve change requests", err, h.Log)
 		return
 	}
+
+	var response struct {
+		TotalCount *int64                               `json:"total_count,omitempty"`
+		Items      []oapi.ChangeRequestSessionsResponse `json:"items"`
+	}
+	response.Items = results
+
+	if r.IsGetTotalCount {
+		response.TotalCount = &totalCount
+	}
+
 	if len(results) == 0 {
 		h.Log.Debug("No change requests found for the given filter", zap.Any("filter", r))
-		c.JSON(http.StatusOK, []oapi.ChangeRequestSessionsResponse{})
+		c.JSON(http.StatusOK, response)
 		return
 	}
 
-	c.JSON(http.StatusOK, results)
+	c.JSON(http.StatusOK, response)
 }

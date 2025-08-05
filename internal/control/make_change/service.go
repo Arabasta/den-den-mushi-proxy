@@ -5,6 +5,7 @@ import (
 	"den-den-mushi-Go/internal/control/filters"
 	"den-den-mushi-Go/internal/control/host"
 	"den-den-mushi-Go/internal/control/implementor_groups"
+	"den-den-mushi-Go/internal/control/os_adm_users"
 	"den-den-mushi-Go/internal/control/pty_sessions"
 	oapi "den-den-mushi-Go/openapi/control"
 	hostpkg "den-den-mushi-Go/pkg/dto/host"
@@ -21,37 +22,39 @@ type Service struct {
 	ptySessionsSvc *pty_sessions.Service
 	hostSvc        *host.Service
 	impGrpSvc      *implementor_groups.Service
+	osAdmUsersSvc  *os_adm_users.Service
 
 	log *zap.Logger
 }
 
 func NewService(crSvc *change_request.Service, ptySessionsSvc *pty_sessions.Service,
-	hostSvc *host.Service, impGrpSvc *implementor_groups.Service, log *zap.Logger) *Service {
+	hostSvc *host.Service, impGrpSvc *implementor_groups.Service, osAdmUsersSvc *os_adm_users.Service, log *zap.Logger) *Service {
 	log.Info("Initializing Make Change Service")
 	return &Service{
 		crSvc:          crSvc,
 		ptySessionsSvc: ptySessionsSvc,
 		hostSvc:        hostSvc,
 		impGrpSvc:      impGrpSvc,
+		osAdmUsersSvc:  osAdmUsersSvc,
 		log:            log,
 	}
 }
 
-// todo refactor garbage, need to make it 1 query ... will do it when there are no more changes or maybe not
+// todo refactor garbage, need to make it 1 query and SRP ... will do it when there are no more changes or maybe not
 // todo return cyberark objects
-func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.Context) ([]oapi.ChangeRequestSessionsResponse, error) {
+func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.Context) ([]oapi.ChangeRequestSessionsResponse, int64, error) {
 	var r []oapi.ChangeRequestSessionsResponse
 
 	// only show crs for user's implementor groups
 	authCtx, ok := middleware.GetAuthContext(c.Request.Context())
 	if !ok {
 		s.log.Error("Auth context missing in request")
-		return nil, errors.New("auth context missing in request")
+		return nil, 0, errors.New("auth context missing in request")
 	}
 	userImplGroups, err := s.impGrpSvc.FindAllByUserId(authCtx.UserID)
 	if err != nil {
 		s.log.Error("Failed to fetch user implementor groups", zap.Error(err))
-		return nil, err
+		return nil, 0, err
 	}
 	s.log.Debug("implementor groups for user", zap.Any("groups", userImplGroups))
 	impGroups := make([]string, 0)
@@ -60,16 +63,25 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.C
 	}
 	filter.ImplementorGroups = &impGroups
 
+	// get total count
+	var totalCount int64
+	if filter.IsGetTotalCount {
+		totalCount, err = s.crSvc.CountApprovedChangeRequestsByFilter(filter)
+		if err != nil {
+			s.log.Error("CountApprovedChangeRequestsByFilter", zap.Error(err))
+			return nil, 0, err
+		}
+		s.log.Debug("Total count of change requests", zap.Int64("count", totalCount))
+	}
+
 	// fetch CRs using filter
 	crs, err := s.crSvc.FindApprovedChangeRequestsByFilter(filter)
-	//s.log.Debug("CRs fetched", zap.Int("count", len(crs)))
 	if err != nil {
 		s.log.Error("FindChangeRequestsByFilter", zap.Error(err))
-		return nil, err
+		return nil, 0, err
 	}
 
 	for _, cr := range crs {
-		//	s.log.Debug("Mapping CR", zap.Any("cr", cr))
 		// extract ips from cr
 		ipToUsers := cyberark.MapIPToOSUsers(cr.CyberArkObjects)
 		s.log.Debug("Mapped CyberArk object", zap.Any("object", cr.CyberArkObjects))
@@ -86,7 +98,6 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.C
 			s.log.Error("Failed to fetch hosts by IPs", zap.Error(err))
 			continue
 		}
-		//	s.log.Debug("Fetched hosts by IPs", zap.Any("hosts", hosts))
 
 		hostMap := make(map[string]*hostpkg.Record)
 		for _, h := range hosts {
@@ -99,7 +110,6 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.C
 			s.log.Error("Failed to fetch PTY sessions", zap.Error(err))
 			continue
 		}
-		//s.log.Debug("Fetched PTY sessions", zap.Any("sessions", sessions))
 
 		// group sessions by StartConnServerIP
 		ipSessionsMap := map[string]*hostAggregate{}
@@ -122,10 +132,30 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.C
 				Name:        hostRec.HostName,
 			}
 
+			// todo refactor this, it is garbage
 			osUsers, ok := ipToUsers[ip]
 			if !ok {
 				osUsers = []string{}
 			}
+			extraUsers := s.osAdmUsersSvc.GetNonCrOsUsers(authCtx.UserID)
+			userSet := make(map[string]struct{}, len(osUsers)+len(extraUsers))
+			var merged []string
+			for _, u := range append(osUsers, extraUsers...) {
+				if _, exists := userSet[u]; !exists && u != "" {
+					userSet[u] = struct{}{}
+					merged = append(merged, u)
+				}
+			}
+			osUsers = merged
+			// remove root users so they dont click and err
+			filtered := make([]string, 0, len(merged))
+			for _, u := range merged {
+				if u != "root" {
+					filtered = append(filtered, u)
+				}
+			}
+
+			osUsers = filtered
 
 			var sessions []*ptysessionspkg.Record
 			if agg, ok := ipSessionsMap[ip]; ok {
@@ -152,8 +182,7 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.C
 		})
 	}
 
-	//s.log.Debug("Returning change request sessions response", zap.Any("response", r))
-	return r, nil
+	return r, totalCount, nil
 }
 
 type hostAggregate struct {

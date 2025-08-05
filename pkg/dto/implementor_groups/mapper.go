@@ -12,12 +12,12 @@ func FromModel(m *Model) *Record {
 }
 
 func FromModels(models []Model) []*Record {
-	if models == nil {
+	if len(models) == 0 {
 		return nil
 	}
 	records := make([]*Record, len(models))
-	for i, m := range models {
-		records[i] = FromModel(&m)
+	for i := range models {
+		records[i] = FromModel(&models[i])
 	}
 	return records
 }

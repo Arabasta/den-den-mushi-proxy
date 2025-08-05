@@ -1,4 +1,4 @@
-package jwt_service
+package websocket_jwt
 
 import (
 	"den-den-mushi-Go/pkg/config"

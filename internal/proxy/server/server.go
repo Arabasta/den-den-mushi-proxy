@@ -21,10 +21,10 @@ type Server struct {
 func New(staticFiles embed.FS, db *gorm.DB, redis *redis.Client, cfg *config.Config, log *zap.Logger) (*Server, *session_manager.Service) {
 	deps := initDependencies(db, redis, cfg, log)
 
-	if cfg.App.Environment == "prod" {
-		gin.SetMode(gin.ReleaseMode)
-	} else {
+	if cfg.App.Environment == "dev" {
 		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
 	}
 
 	r := gin.New()
@@ -34,9 +34,11 @@ func New(staticFiles embed.FS, db *gorm.DB, redis *redis.Client, cfg *config.Con
 		middleware.Cors(cfg.Cors, log),
 		gin.Recovery())
 
-	registerUnprotectedRoutes(r, deps, cfg, log)
+	if cfg.App.Environment == "dev" {
+		registerUnprotectedRoutes(r, deps, cfg, log)
+		addStaticRoutes(r, staticFiles, cfg, log)
+	}
 	registerWebsocketRoutes(r, deps, cfg, log)
-	addStaticRoutes(r, staticFiles, cfg, log)
 
 	return &Server{engine: r, cfg: cfg, log: log}, deps.SessionManager
 }

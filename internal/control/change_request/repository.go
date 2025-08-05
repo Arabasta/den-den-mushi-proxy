@@ -8,4 +8,5 @@ import (
 type Repository interface {
 	FindByTicketNumber(num string) (*dto.Record, error)
 	FindApprovedChangeRequestsByFilter(filter filters.ListCR) ([]*dto.Record, error)
+	CountApprovedChangeRequestsByFilter(filter filters.ListCR) (int64, error)
 }

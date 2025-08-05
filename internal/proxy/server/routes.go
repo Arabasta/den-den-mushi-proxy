@@ -2,10 +2,11 @@ package server
 
 import (
 	"den-den-mushi-Go/internal/proxy/config"
-	"den-den-mushi-Go/internal/proxy/middleware"
 	"den-den-mushi-Go/internal/proxy/tmp/admin_server_tmp"
 	"den-den-mushi-Go/internal/proxy/tmp/control_server_tmp"
 	"den-den-mushi-Go/internal/proxy/websocket"
+	"den-den-mushi-Go/internal/proxy/websocket_jwt"
+	middlewarepkg "den-den-mushi-Go/pkg/middleware"
 	"embed"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -25,10 +26,9 @@ func registerUnprotectedRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, lo
 func registerWebsocketRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log *zap.Logger) {
 	protected := r.Group("")
 	protected.Use(
-		//middlewarepkg.Keycloak(cfg.Keycloak, log),
-		//middlewarepkg.Webseal(log),
-		//middlewarepkg.SetAuthContext(),
-		middleware.WsJwtMiddleware(deps.Validator, log),
+		middlewarepkg.TmpAuth(log, cfg.TmpAuth),
+		middlewarepkg.SetAuthContext(),
+		websocket_jwt.WsJwtMiddleware(deps.Validator, log),
 	)
 
 	websocket.RegisterWebsocketRoutes(protected, log, deps.WebsocketService)

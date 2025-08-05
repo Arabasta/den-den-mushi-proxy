@@ -8,10 +8,6 @@
   "ssl": {
     "enabled": false
   },
-  "host": {
-    "name": "ddm-proxy",
-    "ip": "127.0.0.1"
-  },
   "development": {
     "isSMX": false,
     "UseSqlJtiRepo": true,
@@ -109,5 +105,10 @@
       "SafeB": "qwe",
       "IsValidationEnabled": true
     }
+  },
+  "Tmpauth": {
+    "IsEnabled": false,
+    "UserIdKey": "username",
+    "OuGroupKey": "ou"
   }
 }

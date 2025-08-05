@@ -3,9 +3,11 @@ package policy
 import (
 	"den-den-mushi-Go/internal/control/host"
 	"den-den-mushi-Go/internal/control/implementor_groups"
+	"den-den-mushi-Go/internal/control/os_adm_users"
 	"den-den-mushi-Go/internal/control/policy/validators"
 	"den-den-mushi-Go/internal/control/pty_token/request"
 	"den-den-mushi-Go/pkg/types"
+	"errors"
 	"go.uber.org/zap"
 )
 
@@ -14,15 +16,18 @@ type HealthcheckPolicy[T request.Ctx] struct {
 
 	impGroupService *implementor_groups.Service
 	hostService     *host.Service
-	log             *zap.Logger
-	v               *validators.Validator
+	osAdmUsersSvc   *os_adm_users.Service
+
+	log *zap.Logger
+	v   *validators.Validator
 }
 
-func NewHealthcheckPolicy[T request.Ctx](hostService *host.Service, impGroupService *implementor_groups.Service,
+func NewHealthcheckPolicy[T request.Ctx](hostService *host.Service, impGroupService *implementor_groups.Service, osAdmUsersSvc *os_adm_users.Service,
 	log *zap.Logger, v *validators.Validator) *HealthcheckPolicy[T] {
 	return &HealthcheckPolicy[T]{
 		hostService:     hostService,
 		impGroupService: impGroupService,
+		osAdmUsersSvc:   osAdmUsersSvc,
 		log:             log,
 		v:               v,
 	}
@@ -52,7 +57,13 @@ func (p *HealthcheckPolicy[T]) Check(r T) error {
 	//	return err
 	//}
 
-	// 4. check is os user is a valid readonly user for that user?, todo implement this once we have the mapping in DB
+	// 4. check is os user is a valid readonly user for that user? idk lol
+	osAdmUsers := p.osAdmUsersSvc.GetNonCrOsUsers(r.GetUserId())
+
+	if !validators.IsOsUserInOsAdmUsers(r.GetServerInfo().OSUser, osAdmUsers) {
+		p.log.Warn("OS User is not valid", zap.String("osUser", r.GetServerInfo().OSUser), zap.Strings("expected os users", osAdmUsers))
+		return errors.New("OS User is not in OS Admin Users or UserId user")
+	}
 
 	if p.next != nil {
 		return p.next.Check(r)
