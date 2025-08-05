@@ -23,7 +23,9 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 )
 
 func main() {
@@ -91,7 +93,7 @@ func main() {
 			//testdata.CreateProxyHostAndLb(db, cfg)
 		}
 	}
-
+	reapChildren()
 	s := server.New(db, root.Files, cfg, log)
 	if err := server.Start(s, cfg, log); err != nil {
 		log.Fatal("failed to start server", zap.Error(err))
@@ -114,4 +116,20 @@ func configPath() string {
 	}
 
 	return finalPath
+}
+
+func reapChildren() {
+	go func() {
+		sig := make(chan os.Signal, 1)
+		signal.Notify(sig, syscall.SIGCHLD)
+		for range sig {
+			for {
+				var status syscall.WaitStatus
+				pid, err := syscall.Wait4(-1, &status, syscall.WNOHANG, nil)
+				if pid <= 0 || err != nil {
+					break
+				}
+			}
+		}
+	}()
 }
