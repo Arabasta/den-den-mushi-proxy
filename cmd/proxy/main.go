@@ -87,6 +87,15 @@ func main() {
 
 		sessionManager.Shutdown(ctx)
 
+		log.Info("Shutdown requested, forcing exit in 5s...")
+		time.AfterFunc(5*time.Second, func() {
+			log.Warn("Forcing process exit")
+			os.Exit(0)
+		})
+
+		// block until shutdown tasks finish or timeout
+		<-ctx.Done()
+
 		log.Info("Shutdown complete")
 		os.Exit(0)
 	}()
