@@ -60,7 +60,7 @@ func (p *HealthcheckPolicy[T]) Check(r T) error {
 	// 4. check is os user is a valid readonly user for that user? idk lol
 	osAdmUsers := p.osAdmUsersSvc.GetNonCrOsUsers(r.GetUserId())
 
-	if !validators.IsOsUserInOsAdmUsers(r.GetServerInfo().OSUser, osAdmUsers) {
+	if !p.v.IsOsUserInOsAdmUsers(r.GetServerInfo().OSUser, osAdmUsers) {
 		p.log.Warn("OS User is not valid", zap.String("osUser", r.GetServerInfo().OSUser), zap.Strings("expected os users", osAdmUsers))
 		return errors.New("OS User is not in OS Admin Users or UserId user")
 	}

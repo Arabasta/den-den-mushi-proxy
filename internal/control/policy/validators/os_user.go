@@ -2,7 +2,7 @@ package validators
 
 import "den-den-mushi-Go/pkg/util/cyberark"
 
-func IsOsUserInObjects(osUser string, objects []string) bool {
+func (v *Validator) IsOsUserInObjects(osUser string, objects []string) bool {
 	if osUser == "" {
 		return false
 	}
@@ -10,7 +10,7 @@ func IsOsUserInObjects(osUser string, objects []string) bool {
 	return cyberark.IsOsUserInObjects(osUser, objects)
 }
 
-func IsOsUserInOsAdmUsers(osUser string, osAdmUsers []string) bool {
+func (v *Validator) IsOsUserInOsAdmUsers(osUser string, osAdmUsers []string) bool {
 	if osUser == "" {
 		return false
 	}

@@ -25,19 +25,29 @@ paths:
       security:
         - ApiKeyAuth: [ ]
       parameters:
-        # todo: this is just a sample, update it
+        - name: session_ids
+          in: query
+          required: false
+          description: Pty session IDs
+          schema: { type: array, items: { type: string } }
         - name: ticket_ids
           in: query
           required: false
+          description: CR Number
           schema: { type: array, items: { type: string } }
         - name: target_server_hostname
           in: query
           required: false
-          schema: { type: string }
+          schema: { type: array, items: { type: string } }
         - name: target_server_ip
           in: query
           required: false
-          schema: { type: string }
+          schema: { type: array, items: { type: string } }
+        - name: created_by
+          in: query
+          required: false
+          description: userid of the user who created the PTY session
+          schema: { type: array, items: { type: string } }
         - name: implementors
           in: query
           required: false
@@ -48,6 +58,11 @@ paths:
           required: false
           description: userid of observers
           schema: { type: array, items: { type: string } }
+        - name: purpose
+          in: query
+          required: false
+          description: change request or health check
+          schema: { $ref: '#/components/schemas/ConnectionPurpose' }
         - name: start_time
           in: query
           required: false
@@ -140,3 +155,9 @@ components:
             description: End time of the PTY session in RFC3339 format
           state:
             $ref: '#/components/schemas/PtySessionState'
+
+
+    ConnectionPurpose:
+      type: string
+      description: Type of connection being established
+      enum: [change_request, health_check]

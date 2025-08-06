@@ -83,7 +83,7 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 	// policies for change request
 	ptySessionPolicyCR := policy.NewPtySessionPolicy[request.Ctx](ptySessionService, connectionService, log)
 	implementorPolicyCR := policy.NewImplementorPolicy[request.Ctx](hostService, log, validator)
-	changePolicy := policy.NewChangePolicy[request.Ctx](impGroupsService, osAdmUsersService, log)
+	changePolicy := policy.NewChangePolicy[request.Ctx](impGroupsService, osAdmUsersService, validator, log)
 
 	ptySessionPolicyCR.SetNext(implementorPolicyCR)
 	implementorPolicyCR.SetNext(changePolicy)

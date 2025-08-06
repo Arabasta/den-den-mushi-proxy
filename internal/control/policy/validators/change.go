@@ -5,9 +5,7 @@ import (
 	"time"
 )
 
-// todo: refactor absolute garbage
-
-func IsServerIpInObjects(ip string, objects []string) bool {
+func (v *Validator) IsServerIpInObjects(ip string, objects []string) bool {
 	if ip == "" {
 		return false
 	}
@@ -15,11 +13,11 @@ func IsServerIpInObjects(ip string, objects []string) bool {
 	return cyberark.IsIpInObjects(ip, objects)
 }
 
-func IsApproved(crState string) bool {
+func (v *Validator) IsApproved(crState string) bool {
 	return crState == "Approved"
 }
 
-func IsValidWindow(start, end time.Time) bool {
+func (v *Validator) IsValidWindow(start, end time.Time) bool {
 	now := time.Now()
 	return now.After(start) && now.Before(end)
 }

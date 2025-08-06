@@ -15,14 +15,17 @@ type ChangePolicy[T request.Ctx] struct {
 
 	impGroupService *implementor_groups.Service
 	osAdmUsersSvc   *os_adm_users.Service
+	v               *validators.Validator
 
 	log *zap.Logger
 }
 
-func NewChangePolicy[T request.Ctx](impGroupSvc *implementor_groups.Service, osAdmUsersSvc *os_adm_users.Service, log *zap.Logger) *ChangePolicy[T] {
+func NewChangePolicy[T request.Ctx](impGroupSvc *implementor_groups.Service, osAdmUsersSvc *os_adm_users.Service,
+	v *validators.Validator, log *zap.Logger) *ChangePolicy[T] {
 	return &ChangePolicy[T]{
 		impGroupService: impGroupSvc,
 		osAdmUsersSvc:   osAdmUsersSvc,
+		v:               v,
 		log:             log,
 	}
 }
@@ -57,7 +60,7 @@ func (p *ChangePolicy[T]) Check(r T) error {
 	}
 
 	// 4. check if CR valid
-	if !validators.IsValidWindow(*cr.ChangeStartTime, *cr.ChangeEndTime) {
+	if !p.v.IsValidWindow(*cr.ChangeStartTime, *cr.ChangeEndTime) {
 		p.log.Warn("Change request time invalid", zap.String("changeID", r.GetChangeId()))
 		return errors.New("change request window is invalid")
 	}
@@ -67,19 +70,19 @@ func (p *ChangePolicy[T]) Check(r T) error {
 		return errors.New("user is not in change implementer group")
 	}
 
-	if !validators.IsServerIpInObjects(r.GetServerInfo().IP, cr.CyberArkObjects) {
+	if !p.v.IsServerIpInObjects(r.GetServerInfo().IP, cr.CyberArkObjects) {
 		p.log.Warn("Server IP is not in change request", zap.String("ip", r.GetServerInfo().IP))
 		return errors.New("server IP is not in change request cyberark objects")
 	}
 	osAdmUsers := p.osAdmUsersSvc.GetNonCrOsUsers(r.GetUserId())
 
-	if !validators.IsOsUserInObjects(r.GetServerInfo().OSUser, cr.CyberArkObjects) &&
-		!validators.IsOsUserInOsAdmUsers(r.GetServerInfo().OSUser, osAdmUsers) {
+	if !p.v.IsOsUserInObjects(r.GetServerInfo().OSUser, cr.CyberArkObjects) &&
+		!p.v.IsOsUserInOsAdmUsers(r.GetServerInfo().OSUser, osAdmUsers) {
 		p.log.Warn("OS User is not in change request", zap.String("osUser", r.GetServerInfo().OSUser))
 		return errors.New("OS User is not in change request cyberark objects")
 	}
 
-	if !validators.IsApproved(cr.State) {
+	if !p.v.IsApproved(cr.State) {
 		p.log.Warn("Change request is not approved", zap.String("changeID", r.GetChangeId()), zap.String("state", cr.State))
 		return errors.New("change request is not approved")
 	}
