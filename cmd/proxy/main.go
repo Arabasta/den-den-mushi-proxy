@@ -87,8 +87,8 @@ func main() {
 
 		sessionManager.Shutdown(ctx)
 
-		log.Info("Shutdown requested, forcing exit in 5s...")
-		time.AfterFunc(5*time.Second, func() {
+		log.Info("Shutdown requested, forcing exit in 10s...")
+		time.AfterFunc(10*time.Second, func() {
 			log.Warn("Forcing process exit")
 			os.Exit(0)
 		})
