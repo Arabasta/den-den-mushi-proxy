@@ -16,7 +16,7 @@ const socketManager = {
         const jwt2 = "kei"
 
         // connect to proxy
-        let websocketUrl = `ws://${window.location.hostname}:45007/v1/ws?Authorization=${encodeURIComponent(jwt2)}`;
+        let websocketUrl = `wss://${window.location.hostname}:45007/v1/ws?Authorization=${encodeURIComponent(jwt2)}`;
         console.log(websocketUrl);
         this.socket = new WebSocket(websocketUrl, ['X-Proxy-Session-Token', jwt]);
 
@@ -195,7 +195,10 @@ const controlCharToString = (payload) => {
             65: "Arrow Up",
             66: "Arrow Down",
             67: "Arrow Right",
-            68: "Arrow Left"
+            68: "Arrow Left",
+            70: "End",
+            72: "Home",
+
         }[payload[2]] ?? `Special key sequence (${payload.join(',')})`;
     }
 
