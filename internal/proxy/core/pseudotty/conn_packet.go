@@ -32,6 +32,9 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		// let it go through
 		if constants.IsControlCharAffectsLine(pkt.Data) {
 			s.updateLineEditor(pkt.Data)
+			// should not log, should not add to last input, should not insert into line editor
+			logMsg, err = s.purpose.HandleInput(s, pkt)
+			return
 		}
 
 		// update last input for output logging to remove echo
@@ -185,6 +188,10 @@ func (s *Session) updateLineEditor(b []byte) {
 		s.line.Backspace()
 	case string(constants.CtrlC):
 		s.line.Reset()
+	case string(constants.Home):
+		s.line.MoveStart()
+	case string(constants.End):
+		s.line.MoveEnd()
 	default:
 		s.log.Error("updateLineEditor called with unhandled control char")
 	}

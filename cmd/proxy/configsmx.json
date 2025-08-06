@@ -13,8 +13,7 @@
     "UseSqlJtiRepo": true,
     "UseRedis": false,
     "IsUsingInvDb": true,
-    "IsAutoMigrateEnabled": false,
-    "RegexDbPollIntervalSeconds": 30
+    "IsAutoMigrateEnabled": false
   },
   "logger": {
     "level": "debug",
@@ -110,5 +109,11 @@
     "IsEnabled": false,
     "UserIdKey": "username",
     "OuGroupKey": "ou"
+  },
+  "Filters": {
+    "DbPollIntervalSeconds": 30,
+    "IsHealthcheckBlacklistEnabled": true,
+    "IsHealthcheckWhitelistEnabled": true,
+    "IsChangeBlacklistEnabled": true
   }
 }

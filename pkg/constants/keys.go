@@ -8,6 +8,9 @@ var (
 	ArrowDown  = []byte{27, 91, 66}
 	ArrowRight = []byte{27, 91, 67}
 	ArrowLeft  = []byte{27, 91, 68}
+	// 69
+	End  = []byte{27, 91, 70} // ESC [ F
+	Home = []byte{27, 91, 72} // ESC [ H
 
 	CtrlA = []byte{1}
 	CtrlB = []byte{2}

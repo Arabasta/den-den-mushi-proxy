@@ -5,6 +5,8 @@ var ControlCharAffectsLine = map[string]struct{}{
 	string(ArrowLeft):  {},
 	string(ArrowRight): {},
 	string(CtrlC):      {},
+	string(Home):       {},
+	string(End):        {},
 }
 
 func IsControlCharAffectsLine(b []byte) bool {

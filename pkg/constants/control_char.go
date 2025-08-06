@@ -9,6 +9,9 @@ var ControlChars = map[string]string{
 	string(ArrowRight): "ArrowRight",
 	string(ArrowLeft):  "ArrowLeft",
 
+	string(Home): "Home",
+	string(End):  "End",
+
 	string(CtrlA): "CtrlA",
 	string(CtrlB): "CtrlB",
 	string(CtrlC): "CtrlC",

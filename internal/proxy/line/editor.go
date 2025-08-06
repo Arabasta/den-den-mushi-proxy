@@ -1,4 +1,4 @@
-package filter
+package line
 
 import (
 	"sync"
@@ -9,13 +9,13 @@ const (
 	ErrorMaxBuffer  = "???Error Max Buffer"
 )
 
-type LineEditor struct {
+type Editor struct {
 	mu     sync.RWMutex
 	Buffer []rune
 	Cursor int
 }
 
-func (e *LineEditor) Insert(r rune) {
+func (e *Editor) Insert(r rune) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
@@ -28,22 +28,25 @@ func (e *LineEditor) Insert(r rune) {
 	if e.Cursor >= len(e.Buffer) {
 		e.Buffer = append(e.Buffer, r)
 	} else {
-		e.Buffer = append(e.Buffer[:e.Cursor], append([]rune{r}, e.Buffer[e.Cursor:]...)...)
+		e.Buffer = append(e.Buffer, 0)
+		copy(e.Buffer[e.Cursor+1:], e.Buffer[e.Cursor:])
+		e.Buffer[e.Cursor] = r
 	}
 	e.Cursor++
 }
 
-func (e *LineEditor) Backspace() {
+func (e *Editor) Backspace() {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
 	if e.Cursor > 0 && len(e.Buffer) > 0 {
-		e.Buffer = append(e.Buffer[:e.Cursor-1], e.Buffer[e.Cursor:]...)
+		copy(e.Buffer[e.Cursor-1:], e.Buffer[e.Cursor:])
+		e.Buffer = e.Buffer[:len(e.Buffer)-1]
 		e.Cursor--
 	}
 }
 
-func (e *LineEditor) MoveLeft() {
+func (e *Editor) MoveLeft() {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
@@ -52,7 +55,7 @@ func (e *LineEditor) MoveLeft() {
 	}
 }
 
-func (e *LineEditor) MoveRight() {
+func (e *Editor) MoveRight() {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
@@ -60,18 +63,29 @@ func (e *LineEditor) MoveRight() {
 		e.Cursor++
 	}
 }
+func (e *Editor) MoveStart() {
+	e.mu.Lock()
+	e.Cursor = 0
+	e.mu.Unlock()
+}
 
-func (e *LineEditor) String() string {
+func (e *Editor) MoveEnd() {
+	e.mu.Lock()
+	e.Cursor = len(e.Buffer)
+	e.mu.Unlock()
+}
+
+func (e *Editor) String() string {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
 
 	return string(e.Buffer)
 }
 
-func (e *LineEditor) Reset() {
+func (e *Editor) Reset() {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	e.Buffer = nil
+	e.Buffer = e.Buffer[:0]
 	e.Cursor = 0
 }

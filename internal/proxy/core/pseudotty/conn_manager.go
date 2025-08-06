@@ -16,6 +16,10 @@ func (s *Session) RegisterConn(c *client.Connection, onClose func(string)) error
 	s.log.Info("Attaching connection to pty session", zap.String("userSessionId",
 		c.Claims.Connection.UserSession.Id))
 
+	if s.State == types.Closed {
+		return errors.New("pty session is closed, cannot register connection")
+	}
+
 	c.Ctx, c.Cancel = context.WithCancel(s.ctx)
 	c.Close = func() {
 		s.connDeregisterCh <- c

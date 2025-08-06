@@ -71,4 +71,12 @@ type Config struct {
 	}
 
 	TmpAuth *config.Tmpauth
+
+	Filters struct {
+		DbPollIntervalSeconds time.Duration
+
+		IsHealthcheckBlacklistEnabled bool
+		IsHealthcheckWhitelistEnabled bool
+		IsChangeBlacklistEnabled      bool
+	}
 }

@@ -7,6 +7,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/pseudotty/session_logging"
 	"den-den-mushi-Go/internal/proxy/filter"
 	"den-den-mushi-Go/internal/proxy/integrations/puppet"
+	"den-den-mushi-Go/internal/proxy/line"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"den-den-mushi-Go/pkg/ds"
 	"den-den-mushi-Go/pkg/token"
@@ -39,7 +40,7 @@ type Session struct {
 	lastInput               []byte
 
 	filter filter.CommandFilter // only for health check
-	line   *filter.LineEditor   // only for health check, tracks pty's current line
+	line   *line.Editor         // only for health check, tracks pty's current line
 
 	ActivePrimary       *client.Connection
 	ActiveObservers     map[*client.Connection]struct{}
@@ -64,10 +65,11 @@ type Session struct {
 	cfg *config.Config
 
 	puppetClient *puppet.Client
+	filterSvc    *filter.Service
 }
 
 func New(id string, pty *os.File, now time.Time, onClose func(string), log *zap.Logger, cfg *config.Config,
-	puppetClient *puppet.Client) (*Session, error) {
+	puppetClient *puppet.Client, filterSvc *filter.Service) (*Session, error) {
 	s := &Session{
 		Id:        id,
 		pty:       pty,
@@ -75,7 +77,7 @@ func New(id string, pty *os.File, now time.Time, onClose func(string), log *zap.
 		log:       log.With(zap.String("ptySession", id)),
 		cfg:       cfg,
 
-		line: new(filter.LineEditor),
+		line: new(line.Editor),
 
 		ActiveObservers:     make(map[*client.Connection]struct{}),
 		lifetimeConnections: make(map[*client.Connection]struct{}),
@@ -89,17 +91,20 @@ func New(id string, pty *os.File, now time.Time, onClose func(string), log *zap.
 		ptyOutput:         ds.NewCircularArray[protocol.Packet](500), // todo: make configurable capa and maybe track line or something
 		isPtyOutputLocked: false,
 		puppetClient:      puppetClient,
+		filterSvc:         filterSvc,
 	}
 
 	s.ctx, s.cancel = context.WithCancel(context.Background())
 
 	if err := s.initSessionLogger(); err != nil {
 		s.log.Error("Failed to create session log", zap.Error(err))
+		s.EndSession()
 		return s, err
 	}
 
 	if err := s.initSessionLoggerForAIThing(); err != nil {
 		s.log.Error("Failed to create session logger for ai thing", zap.Error(err))
+		s.EndSession()
 		return s, err
 	}
 
@@ -115,39 +120,37 @@ func (s *Session) Setup(claims *token.Claims) error {
 
 	if s.startClaims.Connection.Purpose == types.Change {
 		s.crEndTime = &s.startClaims.Connection.ChangeRequest.EndTime
+
+		// if cr ending in 1min or already ended, don't allow session to start
+		// else it will crash the conn loop
+		if s.crEndTime.Before(time.Now().Add(1 * time.Minute)) {
+			return errors.New("CR already expired")
+		}
 	}
 
 	err := setPurpose(s, s.startClaims.Connection.Purpose)
 	if err != nil {
 		s.log.Error("Failed to set up session", zap.String("id", s.Id), zap.Error(err))
+		s.EndSession()
 		return err
 	}
 
 	s.log.Debug("Session purpose", zap.String("purpose", string(s.startClaims.Connection.Purpose)))
-	if s.startClaims.Connection.Purpose == types.Healthcheck {
-		s.log.Info("Setting healthcheck filter")
-		s.filter = filter.GetFilter(s.startClaims.Connection.FilterType)
-		if s.filter == nil {
-			err = errors.New("invalid filter type")
-			s.log.Error("Failed to register initial connection", zap.Error(err))
-			return err
-		}
-	} else if s.startClaims.Connection.Purpose == types.Change {
-		s.log.Info("Setting change request filter")
-		s.filter = filter.GetChangeFilter()
-	} else {
-		s.log.Error("Unknown purpose for session", zap.String("purpose", string(s.startClaims.Connection.Purpose)))
-		return errors.New("unknown purpose for session")
+	s.filter = s.filterSvc.GetFilter(s.startClaims.Connection.FilterType, s.startClaims.Connection.Purpose)
+	if s.filter == nil {
+		err = errors.New("invalid filter type")
+		s.log.Error("Failed to register initial connection", zap.Error(err))
+		s.EndSession()
+		return err
 	}
 
 	s.log.Info("Initializing conn loop and pty reader")
 
-	if s.crEndTime != nil {
-		go s.monitorCrEndTime()
-	}
-
 	go s.connLoop()
 	go s.readPtyLoop()
 
+	if s.crEndTime != nil {
+		go s.monitorCrEndTime()
+	}
 	return nil
 }

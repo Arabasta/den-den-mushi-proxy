@@ -1,7 +1,7 @@
 package filter
 
 import (
-	"github.com/labstack/gommon/log"
+	"den-den-mushi-Go/internal/proxy/config"
 	"go.uber.org/zap"
 	"regexp"
 	"sync"
@@ -10,26 +10,29 @@ import (
 type BlacklistFilter struct {
 	mu                     sync.RWMutex
 	ouGroupRegexFiltersMap map[string][]regexp.Regexp
+	log                    *zap.Logger
+	cfg                    *config.Config
 }
 
 func (b *BlacklistFilter) IsValid(cmd string, ouGroup string) (string, bool) {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
-	ouGroup = "default"
-
-	log.Debug("Debug: Checking command against blacklist", zap.String("cmd", cmd), zap.String("ouGroup", ouGroup))
-	blockedCmds, ok := b.ouGroupRegexFiltersMap[ouGroup]
-	if !ok {
-		log.Debug("No blacklist found for OU group", zap.String("ouGroup", ouGroup))
-		return cmd, true // no filters for this OU group
+	if !b.cfg.Filters.IsHealthcheckBlacklistEnabled {
+		b.log.Info("Healthcheck blacklist is disabled, allowing all commands")
+		return cmd, true
 	}
 
-	for _, blocked := range blockedCmds {
-		log.Debug("Checking cmd against blacklist", zap.String("cmd", cmd), zap.String("ouGroup", ouGroup))
-		if blocked.MatchString(cmd) {
-			return cmd, false // blocked
-		}
+	cmd = preprocessCommand(cmd)
+
+	if !isValidForDefault(cmd, true, b.ouGroupRegexFiltersMap) {
+		b.log.Debug("Command is not valid for default group", zap.String("cmd", cmd))
+		return cmd, false
+	}
+
+	if !isValidForOuGroup(cmd, true, ouGroup, b.ouGroupRegexFiltersMap) {
+		b.log.Debug("Command is not valid for OU group", zap.String("cmd", cmd), zap.String("ouGroup", ouGroup))
+		return cmd, false
 	}
 
 	return cmd, true

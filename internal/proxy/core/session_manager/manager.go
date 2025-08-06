@@ -5,6 +5,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/pseudotty"
 	"den-den-mushi-Go/internal/proxy/core/session_manager/connections"
 	"den-den-mushi-Go/internal/proxy/core/session_manager/pty_sessions"
+	"den-den-mushi-Go/internal/proxy/filter"
 	"den-den-mushi-Go/internal/proxy/integrations/puppet"
 	"go.uber.org/zap"
 	"os"
@@ -19,11 +20,12 @@ type Service struct {
 	log            *zap.Logger
 	cfg            *config.Config
 	puppetClient   *puppet.Client
+	filterSvc      *filter.Service
 	hostname       string
 }
 
 func New(ptySessionsSvc *pty_sessions.Service, connSvc *connections.Service, log *zap.Logger, cfg *config.Config,
-	puppetClient *puppet.Client) *Service {
+	puppetClient *puppet.Client, filterSvc *filter.Service) *Service {
 	log.Info("Initializing Session Manager Service...")
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -36,6 +38,7 @@ func New(ptySessionsSvc *pty_sessions.Service, connSvc *connections.Service, log
 		connSvc:        connSvc,
 		log:            log,
 		cfg:            cfg,
+		filterSvc:      filterSvc,
 		puppetClient:   puppetClient,
 		hostname:       hostname,
 	}

@@ -1,36 +1,38 @@
 package filter
 
 import (
-	"github.com/labstack/gommon/log"
+	"den-den-mushi-Go/internal/proxy/config"
 	"go.uber.org/zap"
 	"regexp"
-	"strings"
 	"sync"
 )
 
 type WhitelistFilter struct {
 	mu                     sync.RWMutex
 	ouGroupRegexFiltersMap map[string][]regexp.Regexp
+	log                    *zap.Logger
+	cfg                    *config.Config
 }
 
 func (w *WhitelistFilter) IsValid(cmd string, ouGroup string) (string, bool) {
 	w.mu.RLock()
 	defer w.mu.RUnlock()
 
-	ouGroup = "default"
-
-	allowedCmds, ok := w.ouGroupRegexFiltersMap[ouGroup]
-	if !ok {
-		return cmd, false // no filters for this OU group
+	if !w.cfg.Filters.IsHealthcheckWhitelistEnabled {
+		w.log.Info("Healthcheck whitelist is disabled, allowing all commands")
+		return cmd, true
 	}
 
-	cmd = strings.TrimSpace(cmd)
+	cmd = preprocessCommand(cmd)
 
-	for _, allowed := range allowedCmds {
-		log.Debug("Checking cmd against blacklist", zap.String("cmd", cmd), zap.String("ouGroup", ouGroup))
-		if allowed.MatchString(cmd) {
-			return cmd, true // allowed
-		}
+	if isValidForDefault(cmd, false, w.ouGroupRegexFiltersMap) {
+		w.log.Debug("Command is valid for default group", zap.String("cmd", cmd))
+		return cmd, true
+	}
+
+	if isValidForOuGroup(cmd, false, ouGroup, w.ouGroupRegexFiltersMap) {
+		w.log.Debug("Command is valid for OU group", zap.String("cmd", cmd), zap.String("ouGroup", ouGroup))
+		return cmd, true
 	}
 
 	return cmd, false
@@ -46,14 +48,3 @@ func (w *WhitelistFilter) load(patterns map[string][]regexp.Regexp) {
 		w.ouGroupRegexFiltersMap[ouGroup] = regexList
 	}
 }
-
-//
-//func (w *WhitelistFilter) UpdateCommands(newAllowed []string) {
-//	w.mu.Lock()
-//	defer w.mu.Unlock()
-//
-//	w.filteredCommands = make(map[string]struct{})
-//	for _, cmd := range newAllowed {
-//		w.filteredCommands[cmd] = struct{}{}
-//	}
-//}

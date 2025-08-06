@@ -41,9 +41,6 @@ func initDependencies(db *gorm.DB, redis *redis.Client, cfg *config.Config, log 
 	connectionRepo := connections.NewGormRepository(db, log)
 	connectionSvc := connections.NewService(connectionRepo, log)
 
-	sessionManager := session_manager.New(ptySessionsSvc, connectionSvc, log, cfg, puppetClient)
-	websocketService := websocket.NewService(connectionMethodFactory, sessionManager, log, cfg)
-
 	issuer := control_server_tmp.New(cfg.JwtAudience, log) // todo: remove
 
 	parser := websocket_jwt.NewParser(cfg.JwtAudience, log)
@@ -61,8 +58,10 @@ func initDependencies(db *gorm.DB, redis *redis.Client, cfg *config.Config, log 
 
 	regexRepo := regex_filters.NewGormRepository(db, log)
 	regexFiltersSvc := regex_filters.NewService(regexRepo, log, cfg)
-	loadSvc := filter.NewLoadService(regexFiltersSvc, log)
-	loadSvc.StartScheduler()
+	filterSvc := filter.NewService(regexFiltersSvc, log, cfg)
+
+	sessionManager := session_manager.New(ptySessionsSvc, connectionSvc, log, cfg, puppetClient, filterSvc)
+	websocketService := websocket.NewService(connectionMethodFactory, sessionManager, log, cfg)
 
 	return &Deps{
 		WebsocketService: websocketService,
