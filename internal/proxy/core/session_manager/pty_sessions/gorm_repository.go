@@ -1,6 +1,7 @@
 package pty_sessions
 
 import (
+	"den-den-mushi-Go/pkg/dto/connections"
 	"den-den-mushi-Go/pkg/dto/pty_sessions"
 	"den-den-mushi-Go/pkg/types"
 	"errors"
@@ -56,10 +57,6 @@ func (r *GormRepository) FindActiveByProxyHostWithConnections(proxyHost string) 
 		Find(&sessions).Error
 
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			r.log.Debug("No active PTY sessions found for proxy host", zap.String("proxyHost", proxyHost))
-			return nil, nil
-		}
 		r.log.Error("DB error while fetching active PTY sessions with connections", zap.String("proxyHost", proxyHost), zap.Error(err))
 		return nil, err
 	}
@@ -81,7 +78,7 @@ func (r *GormRepository) CloseSessionsAndConnections(sessionIDs []string, connec
 
 	// close connections
 	if len(connectionIDs) > 0 {
-		if err := r.db.Table("ddm_connections").
+		if err := r.db.Model(&connections.Model{}).
 			Where("id IN ?", connectionIDs).
 			Updates(map[string]interface{}{
 				"status":     types.ConnectionStatusClosed,
