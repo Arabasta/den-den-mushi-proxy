@@ -1,13 +1,14 @@
 package websocket_jwt
 
 import (
+	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/pkg/middleware"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
 )
 
-func Middleware(v *Validator, log *zap.Logger) gin.HandlerFunc {
+func Middleware(v *Validator, log *zap.Logger, cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authCtx, ok := middleware.GetAuthContext(c.Request.Context())
 		if !ok {
@@ -30,7 +31,7 @@ func Middleware(v *Validator, log *zap.Logger) gin.HandlerFunc {
 			return
 		}
 
-		err = v.ValidateClaims(claims, token, authCtx)
+		err = v.ValidateClaims(claims, token, authCtx, cfg.TmpAuth)
 		if err != nil {
 			log.Error("Failed to validate claims", zap.Any("claims", claims), zap.Any("token", token), zap.Error(err))
 			c.AbortWithStatusJSON(401, gin.H{"error": "JWT validation failed"})

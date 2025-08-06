@@ -73,7 +73,6 @@ func (s *Session) closePty() {
 	}
 
 	s.log.Info("Closed pty")
-
 }
 
 func (s *Session) closeLogWriter() {

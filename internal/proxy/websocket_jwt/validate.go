@@ -31,14 +31,14 @@ func NewValidator(p *jwt.Parser, jti *jti.Service, cfg *config.JwtAudience, log 
 }
 
 // ValidateClaims Validate must follow https://www.rfc-editor.org/rfc/rfc8725.html
-func (v *Validator) ValidateClaims(claims *token.Claims, tok *jwt.Token, authCtx *middleware.AuthContext) error {
+func (v *Validator) ValidateClaims(claims *token.Claims, tok *jwt.Token, authCtx *middleware.AuthContext, cfg *config.Tmpauth) error {
 	v.log.Debug("Validating claims", zap.Any("claims", claims), zap.String("jti", claims.ID))
 
 	// RFC8725 3.8 validate subject against keycloak user
 	if claims.Subject == "" {
 		v.log.Error("Token has no subject", zap.String("jti", claims.ID))
 	}
-	if claims.Subject != authCtx.UserID {
+	if cfg.IsEnabled && claims.Subject != authCtx.UserID {
 		v.log.Error("Token subject does not match auth context user ID", zap.String("jti", claims.ID),
 			zap.String("subject", claims.Subject),
 			zap.String("authUserID", authCtx.UserID))
