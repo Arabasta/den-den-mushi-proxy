@@ -1,4 +1,4 @@
-# @yourorg/control-api-client@1.0.0
+# @kei/control-api-client@1.0.0
 
 API for starting and joining PTY sessions. Currently also hosting all non-proxy related endpoints.
 
@@ -24,7 +24,7 @@ Navigate to the folder of your consuming project and run one of next commands.
 _published:_
 
 ```console
-npm install @yourorg/control-api-client@1.0.0 --save
+npm install @kei/control-api-client@1.0.0 --save
 ```
 
 _without publishing (not recommended):_
@@ -46,7 +46,7 @@ npm link
 In your project:
 
 ```console
-npm link @yourorg/control-api-client
+npm link @kei/control-api-client
 ```
 
 __Note for Windows users:__ The Angular CLI has troubles to use linked npm packages.
@@ -61,7 +61,7 @@ In your Angular project:
 
 import { ApplicationConfig } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
-import { provideApi } from '@yourorg/control-api-client';
+import { provideApi } from '@kei/control-api-client';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -75,7 +75,7 @@ export const appConfig: ApplicationConfig = {
 **NOTE**
 If you're still using `AppModule` and haven't [migrated](https://angular.dev/reference/migrations/standalone) yet, you can still import an Angular module:
 ```typescript
-import { ApiModule } from '@yourorg/control-api-client';
+import { ApiModule } from '@kei/control-api-client';
 ```
 
 If different from the generated base path, during app bootstrap, you can provide the base path to your service.
@@ -83,7 +83,7 @@ If different from the generated base path, during app bootstrap, you can provide
 ```typescript
 import { ApplicationConfig } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
-import { provideApi } from '@yourorg/control-api-client';
+import { provideApi } from '@kei/control-api-client';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -98,7 +98,7 @@ export const appConfig: ApplicationConfig = {
 // with a custom configuration
 import { ApplicationConfig } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
-import { provideApi } from '@yourorg/control-api-client';
+import { provideApi } from '@kei/control-api-client';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -117,7 +117,7 @@ export const appConfig: ApplicationConfig = {
 // with factory building a custom configuration
 import { ApplicationConfig } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
-import { provideApi, Configuration } from '@yourorg/control-api-client';
+import { provideApi, Configuration } from '@kei/control-api-client';
 
 export const appConfig: ApplicationConfig = {
     providers: [

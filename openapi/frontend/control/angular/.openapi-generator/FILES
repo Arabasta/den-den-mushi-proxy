@@ -5,6 +5,7 @@ api.base.service.ts
 api.module.ts
 api/api.ts
 api/healthcheck.service.ts
+api/iExpress.service.ts
 api/makeChange.service.ts
 api/pTYToken.service.ts
 api/whitelistBlacklist.service.ts
@@ -18,9 +19,13 @@ model/changeRequestSessionsResponse.ts
 model/connection.ts
 model/connectionPurpose.ts
 model/connectionStatus.ts
+model/getIExpressHostsAndSessionDetailsResponse.ts
+model/getIExpressResponse.ts
 model/healthcheckSessionsResponse.ts
 model/host.ts
 model/hostSessionDetails.ts
+model/hostSessionDetailsV2.ts
+model/iExpress.ts
 model/joinRequest.ts
 model/models.ts
 model/proxyLoadBalancer.ts
