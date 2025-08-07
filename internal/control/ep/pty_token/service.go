@@ -169,6 +169,12 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request2.StartRequest]) (str
 		// todo update this need to su? or just root only?
 		allowedSuOsUsers = cyberark.ExtractAllOsUsers(exp.CyberArkObjects)
 		s.log.Debug("IExpress allowed OS users extracted", zap.Strings("allowedSuOsUsers", allowedSuOsUsers))
+
+		if s.cfg.Development.IsBlacklistFilter {
+			filter = types.Blacklist // todo: get filter type by host type or OU group?
+		} else {
+			filter = types.Whitelist
+		}
 	} else {
 		s.log.Error("Invalid connection purpose", zap.String("purpose", string(r.Body.Purpose)))
 		return "", "", errors.New("invalid connection purpose")
@@ -198,6 +204,7 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request2.JoinRequest]) (strin
 		s.log.Error("Failed to find pty session", zap.String("ptySessionId", r.Body.PtySessionId), zap.Error(err))
 		return "", "", errors.New("failed to find pty session")
 	}
+	//func () todo add iexpress rejoin
 
 	crId, err := s.getChangeRequestIDOrError(ps.StartConnPurpose, ps.StartConnChangeRequestID)
 	if err != nil {

@@ -21,7 +21,7 @@ func (s *Session) monitorCrEndTime() {
 	if s.crEndTime.After(now) {
 		timeTillEnd := s.crEndTime.Sub(now)
 
-		s.log.Info("CR session timeout scheduled", zap.Duration("timeTillEnd", timeTillEnd))
+		s.log.Info("Ticket session timeout scheduled", zap.Duration("timeTillEnd", timeTillEnd))
 
 		for _, threshold := range WarningThresholds {
 			if timeTillEnd > threshold {
@@ -36,7 +36,7 @@ func (s *Session) monitorCrEndTime() {
 
 		select {
 		case <-timer.C: // on timer ch fire
-			s.log.Info("CR end time reached, closing PTY session")
+			s.log.Info("Ticket end time reached, closing PTY session")
 
 			pkt := protocol.Packet{
 				Header: protocol.PtyCRTimeout,
@@ -49,11 +49,11 @@ func (s *Session) monitorCrEndTime() {
 
 			s.EndSession()
 		case <-s.ctx.Done():
-			s.log.Info("Session cancelled before CR timeout")
+			s.log.Info("Session cancelled before Ticket timeout")
 			timer.Stop()
 		}
 	} else {
-		s.log.Warn("CR end time already passed, closing PTY session immediately")
+		s.log.Warn("Ticket end time already passed, closing PTY session immediately")
 		s.EndSession()
 	}
 }
@@ -61,7 +61,7 @@ func (s *Session) monitorCrEndTime() {
 func (s *Session) scheduleWarning(delay time.Duration, threshold time.Duration) {
 	select {
 	case <-time.After(delay):
-		s.log.Debug("Sending CR timeout warning, session ending in ", zap.Duration("minutes", threshold))
+		s.log.Debug("Sending Ticket timeout warning, session ending in ", zap.Duration("minutes", threshold))
 
 		// send warning packet
 		pkt := protocol.Packet{

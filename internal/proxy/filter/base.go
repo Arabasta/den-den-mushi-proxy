@@ -62,5 +62,16 @@ func (f *Service) GetFilter(filterType types.Filter, purpose types.ConnectionPur
 			return nil
 		}
 	}
+
+	if purpose == types.IExpress {
+		switch filterType {
+		case types.Whitelist:
+			return f.Whitelist
+		case types.Blacklist:
+			return f.Blacklist
+		default:
+			return nil
+		}
+	}
 	return nil
 }

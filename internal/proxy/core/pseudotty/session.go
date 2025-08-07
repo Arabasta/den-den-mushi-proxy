@@ -118,13 +118,13 @@ func (s *Session) Setup(claims *token.Claims) error {
 	s.log.Debug("Setting up session", zap.String("id", s.Id))
 	s.startClaims = claims
 
-	if s.startClaims.Connection.Purpose == types.Change {
+	if s.startClaims.Connection.Purpose == types.Change || s.startClaims.Connection.Purpose == types.IExpress {
 		s.crEndTime = &s.startClaims.Connection.ChangeRequest.EndTime
 
 		// if cr ending in 1min or already ended, don't allow session to start
 		// else it will crash the conn loop
 		if s.crEndTime.Before(time.Now().Add(1 * time.Minute)) {
-			return errors.New("CR already expired")
+			return errors.New("ticket already expired")
 		}
 	}
 

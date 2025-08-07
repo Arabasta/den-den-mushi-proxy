@@ -39,8 +39,14 @@ func FormatHeader(claims *token.Claims) string {
 			"# Health Check Details:\n" +
 				"#\t- Filter: " + string(claims.Connection.FilterType)
 		// todo: add more stuff
+	} else if claims.Connection.Purpose == types.IExpress {
+		header +=
+			"# IExpress Request Details:\n" +
+				"#\t- IExpress Request ID: " + claims.Connection.ChangeRequest.Id + "\n" +
+				"#\t- End Time: " + claims.Connection.ChangeRequest.EndTime.Format(time.RFC3339)
 	} else {
 		header += "# No additional details for this session purpose\n"
+
 	}
 
 	header += "\n\n\n"

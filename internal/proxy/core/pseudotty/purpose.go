@@ -24,6 +24,10 @@ func setPurpose(s *Session, purpose types.ConnectionPurpose) error {
 	case types.Healthcheck:
 		s.log.Debug("Setting session purpose to Healthcheck")
 		s.purpose = &HealthcheckPurpose{}
+	case types.IExpress:
+		// todo: implement IExpressPurpose
+		s.log.Debug("Iexpress purpose...Setting session purpose to Healthcheck for now")
+		s.purpose = &HealthcheckPurpose{}
 	default:
 		s.log.Error("Unknown purpose for new connection", zap.String("purpose", string(purpose)))
 		return errors.New("unknown purpose")
