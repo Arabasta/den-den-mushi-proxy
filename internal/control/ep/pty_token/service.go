@@ -204,9 +204,8 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request2.JoinRequest]) (strin
 		s.log.Error("Failed to find pty session", zap.String("ptySessionId", r.Body.PtySessionId), zap.Error(err))
 		return "", "", errors.New("failed to find pty session")
 	}
-	//func () todo add iexpress rejoin
 
-	crId, err := s.getChangeRequestIDOrError(ps.StartConnPurpose, ps.StartConnChangeRequestID)
+	ticketId, err := s.getTicketIDOrError(ps.StartConnPurpose, ps.StartConnChangeRequestID)
 	if err != nil {
 		s.log.Error("Invalid connection details", zap.String("ptySessionId", r.Body.PtySessionId), zap.Error(err))
 		return "", "", err
@@ -216,7 +215,7 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request2.JoinRequest]) (strin
 		Req: r,
 		AdapterFields: request2.AdapterFields{
 			Purpose:  ps.StartConnPurpose,
-			ChangeID: crId,
+			ChangeID: ticketId,
 			Server: dto.ServerInfo{
 				IP:     ps.StartConnServerIP,
 				OSUser: ps.StartConnServerOSUser,
@@ -243,6 +242,20 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request2.JoinRequest]) (strin
 			s.log.Warn("Health check policy check failed", zap.Error(err))
 			return "", "", err
 		}
+	} else if adapter.Purpose == types.IExpress {
+		exp, err := s.iexpressSvc.FindByTicketNumber(adapter.ChangeID)
+		if err != nil || exp == nil {
+			s.log.Error("Failed to find IExpress request by ID", zap.String("IExpress", adapter.ChangeID), zap.Error(err))
+			return "", "", err
+		}
+
+		adapter.Iexpress = exp
+
+		s.log.Debug("Starting IExpress policy check")
+		if err := s.iexpressPolicyChain.Check(adapter); err != nil {
+			s.log.Warn("IExpress requesst policy check failed", zap.Error(err))
+			return "", "", err
+		}
 	} else {
 		s.log.Error("Invalid connection purpose", zap.String("purpose", string(adapter.Purpose)))
 		return "", "", errors.New("invalid connection purpose")
@@ -251,7 +264,10 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request2.JoinRequest]) (strin
 	s.log.Debug("Building connection for join", zap.String("ptySessionId", r.Body.PtySessionId))
 	conn := jwt.BuildConnForJoin(ps, r)
 
-	tok, err := s.issuer.Mint(r.AuthCtx, conn, ps.ProxyDetails.ProxyType)
+	// todo: get this from start conn
+	proxyType := types.OS
+
+	tok, err := s.issuer.Mint(r.AuthCtx, conn, proxyType)
 	if err != nil {
 		s.log.Error("Failed to mint token", zap.Error(err))
 		return "", "", err
@@ -259,10 +275,10 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request2.JoinRequest]) (strin
 
 	// return X-Proxy-Host ps.ProxyHostName, to be passed to load balancer for routing?
 	// or maybe just straight up manual routing
-	return tok, ps.ProxyDetails.HostName, nil
+	return tok, ps.ProxyHostName, nil
 }
 
-func (s *Service) getChangeRequestIDOrError(p types.ConnectionPurpose, id string) (string, error) {
+func (s *Service) getTicketIDOrError(p types.ConnectionPurpose, id string) (string, error) {
 	switch p {
 	case types.Change:
 		if id == "" {
@@ -271,6 +287,11 @@ func (s *Service) getChangeRequestIDOrError(p types.ConnectionPurpose, id string
 		return id, nil
 	case types.Healthcheck:
 		return "", nil
+	case types.IExpress:
+		if id == "" {
+			return "", errors.New("missing IExpress request ID for IExpress purpose")
+		}
+		return id, nil
 	default:
 		return "", errors.New("invalid connection purpose: " + string(p))
 	}
