@@ -55,7 +55,7 @@ func (p *ChangeRequestPurpose) handleEnter(s *Session, pkt protocol.Packet) (str
 			return "", err
 		}
 
-		return fmt.Sprintf("\n%s [Command Blocked] %s", time.Now().Format(time.TimeOnly), msg), nil
+		return fmt.Sprintf("\n%s [Command Blocked] %s", time.Now().Format(time.TimeOnly), msg), CommandBlockedError
 	}
 
 	s.log.Debug("Checked command", zap.String("line", s.line.String()), zap.Bool("allowed", allowed))

@@ -50,7 +50,11 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		}
 
 		logMsg, err = s.purpose.HandleInput(s, pkt)
-		s.logAndResetLineEditorIfInputEnter(pkt)
+		if err != nil && err == CommandBlockedError {
+			// skip
+		} else {
+			s.logAndResetLineEditorIfInputEnter(pkt)
+		}
 	} else if pkt.Header == protocol.Sudo && s.startClaims.Connection.Purpose == types.Change {
 		s.logPacket(pkt)
 		/// todo: refactor this garbage

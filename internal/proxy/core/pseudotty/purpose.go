@@ -9,6 +9,8 @@ import (
 
 // todo: move to purpose package
 
+var CommandBlockedError = errors.New("command blocked")
+
 type Purpose interface {
 	HandleInput(s *Session, pkt protocol.Packet) (string, error)
 	HandleOther(s *Session, pkt protocol.Packet) (string, error)
