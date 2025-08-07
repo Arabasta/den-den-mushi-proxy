@@ -14,6 +14,8 @@ tags:
     description: Get tokens for starting and joining PTY sessions
   - name: Make Change
     description: Retrieve Change Requests, their hosts and associated PTY sessions (for user's implementor group, currently not filtered)
+  - name: IExpress
+    description: Retrieve IExpress tickets, their hosts and associated PTY sessions
   - name: Healthcheck
     description: Retrieve healthcheck servers and associated PTY sessions (for user's OU Group, currently not filtered)
   - name: Whitelist / Blacklist
@@ -311,6 +313,95 @@ paths:
                                     status: active
                                     join_time: "2025-07-21 22:45:08.325"
                                     leave_time: "2025-07-21 22:46:48.383"
+  ######################################################################## Make change Use Case
+  ## todo make cursoor pagination
+
+  /api/v1/iexpress/:
+    get:
+      tags:
+        - IExpress
+      summary: Get Approved IExpress tickets and associated PTY sessions
+      description: Returns all APPROVED IExpress Tickets for the user's implementor groups (implementor group is compared to the
+       approver groups and md approver group in the ticket)
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: request_ids
+          in: query
+          required: false
+          schema: { type: array, items: { type: string } }
+        - name: requestor
+          in: query
+          required: false
+          schema: { type: string }
+        - name: lob
+          in: query
+          required: false
+          schema: { type: string }
+        - name: origin_country
+          in: query
+          required: false
+          schema: { type: string }
+        - name: app_impacted
+          in: query
+          required: false
+          schema: { type: array, items: { type: string } }
+        - name: start_time
+          in: query
+          required: false
+          description: Expected format - RFC3339
+          schema: { type: string, format: date-time }
+        - name: end_time
+          in: query
+          required: false
+          description: Expected format - RFC3339
+          schema: { type: string, format: date-time }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: page_size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 1000, default: 20 }
+        - name: total_count
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          description: List iexpress details
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/GetIExpressResponse'
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+
+  /api/v1/iexpress/{request_id}:
+    get:
+      tags:
+        - IExpress
+      summary: Get details of a specific IExpress ticket
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: request_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: IExpress ticket details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetIExpressHostsAndSessionDetailsResponse'
+        '404':
+          description: IExpress ticket not found
+        '500':
+          description: Internal server error
 
 ######################################################################### Whitelist / Blacklist Use Case
   /api/v1/whitelist/regex:
@@ -850,6 +941,23 @@ components:
           items:
             $ref: '#/components/schemas/PtySessionSummary'
 
+    HostSessionDetailsV2:
+      type: object
+      properties:
+        host:
+          $ref: '#/components/schemas/Host'
+        cyberark_objects:
+          type: array
+          items:
+            type: string
+        os_users:
+          type: array
+          items:
+            type: string
+        pty_sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PtySessionSummary'
     ######################################################################## Healthcheck use case
 
     HealthcheckSessionsResponse:
@@ -859,6 +967,73 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/HostSessionDetails'
+    ######################################################################## Iexpress use case
+
+    IExpress:
+      type: object
+      required:
+        - request_id
+        - requestor
+        - state
+        - lob
+        - origin_country
+        - app_impacted
+        - start_time
+        - end_time
+      properties:
+        request_id:
+          type: string
+        requestor:
+          type: string
+        lob:
+          type: string
+        origin_country:
+          type: string
+        app_impacted:
+          type: array
+          items:
+            type: string
+        action:
+          type: string
+        related_ticket:
+          type: string
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        state:
+          type: string
+        approver_group1:
+          type: string
+        approver_group2:
+          type: string
+        md_approver_group:
+          type: string
+
+    GetIExpressResponse:
+      type: object
+      properties:
+        total_count:
+          description: total number of iexpress requests matching the filter
+          type: integer
+        page:
+          type: integer
+        page_size:
+          type: integer
+        items:
+            type: array
+            items:
+              $ref: '#/components/schemas/IExpress'
+
+    GetIExpressHostsAndSessionDetailsResponse:
+      type: object
+      properties:
+        host_session_details:
+          type: array
+          items:
+            $ref: '#/components/schemas/HostSessionDetailsV2'
 
     ######################################################################## Whitelist / blacklist use case
 
