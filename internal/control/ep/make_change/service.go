@@ -71,7 +71,7 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.C
 			s.log.Error("CountApprovedChangeRequestsByFilter", zap.Error(err))
 			return nil, 0, err
 		}
-		s.log.Debug("Total count of change requests", zap.Int64("count", totalCount))
+		//s.log.Debug("Total count of change requests", zap.Int64("count", totalCount))
 	}
 
 	// fetch CRs using filter
@@ -84,13 +84,13 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.C
 	for _, cr := range crs {
 		// extract ips from cr
 		ipToUsers := cyberark.MapIPToOSUsers(cr.CyberArkObjects)
-		s.log.Debug("Mapped CyberArk object", zap.Any("object", cr.CyberArkObjects))
+		//s.log.Debug("Mapped CyberArk object", zap.Any("object", cr.CyberArkObjects))
 
 		ips := make([]string, 0, len(ipToUsers))
 		for ip := range ipToUsers {
 			ips = append(ips, ip)
 		}
-		s.log.Debug("Mapped IPs to OS Users", zap.Strings("ips", ips))
+		//s.log.Debug("Mapped IPs to OS Users", zap.Strings("ips", ips))
 
 		// get host details
 		hosts, err := s.hostSvc.FindAllLinuxOsByIps(ips)
@@ -103,7 +103,7 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.C
 		for _, h := range hosts {
 			hostMap[h.IpAddress] = h
 		}
-		s.log.Debug("Mapped hosts by IPs", zap.Any("hostMap", hostMap))
+		//s.log.Debug("Mapped hosts by IPs", zap.Any("hostMap", hostMap))
 
 		sessions, err := s.ptySessionsSvc.FindAllByChangeRequestIDAndServerIPs(cr.ChangeRequestId, ips)
 		if err != nil {
@@ -121,7 +121,7 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.C
 			}
 			ipSessionsMap[s.StartConnServerIP].sessions = append(ipSessionsMap[s.StartConnServerIP].sessions, s)
 		}
-		s.log.Debug("Grouped PTY sessions by IP", zap.Any("ipSessionsMap", ipSessionsMap))
+		//s.log.Debug("Grouped PTY sessions by IP", zap.Any("ipSessionsMap", ipSessionsMap))
 
 		var hostDetails []oapi.HostSessionDetails
 		for ip, hostRec := range hostMap {

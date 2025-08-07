@@ -36,7 +36,7 @@ func NewService(ptySessionsSvc *pty_sessions.Service,
 }
 
 func (s *Service) getHostsAndAssociatedPtySessions(f filters.HealthcheckPtySession, c *gin.Context) (*[]oapi.HostSessionDetails, error) {
-	s.log.Debug("Fetching hosts and PTY sessions", zap.Any("filter", f))
+	//s.log.Debug("Fetching hosts and PTY sessions", zap.Any("filter", f))
 	authCtx, ok := middleware.GetAuthContext(c.Request.Context())
 	if !ok {
 		s.log.Error("Auth context missing in request")
@@ -45,7 +45,7 @@ func (s *Service) getHostsAndAssociatedPtySessions(f filters.HealthcheckPtySessi
 
 	// todo: FindAllByFilter will eventually require ougroup
 	hosts, err := s.hostSvc.FindAllByFilter(f)
-	s.log.Debug("Got hosts", zap.Any("filter", f), zap.Any("hosts", len(hosts)))
+	//	s.log.Debug("Got hosts", zap.Any("filter", f), zap.Any("hosts", len(hosts)))
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (s *Service) getHostsAndAssociatedPtySessions(f filters.HealthcheckPtySessi
 	}
 
 	sessions, err := s.ptySessionsSvc.FindAllByStartConnServerIpsAndState(hostips, f.PtySessionState)
-	s.log.Debug("Got sessions", zap.Any("filter", f), zap.Any("sessions", len(sessions)))
+	//s.log.Debug("Got sessions", zap.Any("filter", f), zap.Any("sessions", len(sessions)))
 	if err != nil {
 		s.log.Error("Failed to fetch PTY sessions", zap.Error(err))
 		return nil, err
@@ -83,7 +83,7 @@ func (s *Service) getHostsAndAssociatedPtySessions(f filters.HealthcheckPtySessi
 		result = append(result, details)
 	}
 
-	s.log.Debug("Returning host session details", zap.Int("count", len(result)))
+	//s.log.Debug("Returning host session details", zap.Int("count", len(result)))
 	return &result, nil
 }
 

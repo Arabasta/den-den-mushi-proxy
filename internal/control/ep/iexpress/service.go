@@ -54,7 +54,7 @@ func (s Service) ListExpressRequests(f filters.ListIexpress, c *gin.Context) (*o
 		s.log.Error("Failed to fetch user implementor groups", zap.Error(err))
 		return nil, err
 	}
-	s.log.Debug("implementor groups for user", zap.Any("groups", userImplGroups))
+	//s.log.Debug("implementor groups for user", zap.Any("groups", userImplGroups))
 	impGroups := make([]string, 0)
 	for _, group := range userImplGroups {
 		impGroups = append(impGroups, group.GroupName)
@@ -69,7 +69,7 @@ func (s Service) ListExpressRequests(f filters.ListIexpress, c *gin.Context) (*o
 			s.log.Error("CountApprovedIExpressByFilter", zap.Error(err))
 			return nil, err
 		}
-		s.log.Debug("Total count of iexpress requests", zap.Int("count", totalCount))
+		//	s.log.Debug("Total count of iexpress requests", zap.Int("count", totalCount))
 	}
 
 	// fetch IExpress requests using filter
@@ -125,13 +125,13 @@ func (s Service) ListExpressRequestDetails(id string, c *gin.Context) (*oapi.Get
 
 	// extract ips from exp
 	ipToUsers := cyberark.MapIPToOSUsers(exp.CyberArkObjects)
-	s.log.Debug("Mapped CyberArk object", zap.Any("object", exp.CyberArkObjects))
+	//s.log.Debug("Mapped CyberArk object", zap.Any("object", exp.CyberArkObjects))
 
 	ips := make([]string, 0, len(ipToUsers))
 	for ip := range ipToUsers {
 		ips = append(ips, ip)
 	}
-	s.log.Debug("Mapped IPs to OS Users", zap.Strings("ips", ips))
+	//s.log.Debug("Mapped IPs to OS Users", zap.Strings("ips", ips))
 
 	// get host details
 	hosts, err := s.hostSvc.FindAllLinuxOsByIps(ips)
@@ -144,7 +144,7 @@ func (s Service) ListExpressRequestDetails(id string, c *gin.Context) (*oapi.Get
 	for _, h := range hosts {
 		hostMap[h.IpAddress] = h
 	}
-	s.log.Debug("Mapped hosts by IPs", zap.Any("hostMap", hostMap))
+	//s.log.Debug("Mapped hosts by IPs", zap.Any("hostMap", hostMap))
 
 	sessions, err := s.ptySessionsSvc.FindAllByChangeRequestIDAndServerIPs(exp.RequestId, ips)
 	if err != nil {
@@ -162,7 +162,7 @@ func (s Service) ListExpressRequestDetails(id string, c *gin.Context) (*oapi.Get
 		}
 		ipSessionsMap[s.StartConnServerIP].sessions = append(ipSessionsMap[s.StartConnServerIP].sessions, s)
 	}
-	s.log.Debug("Grouped PTY sessions by IP", zap.Any("ipSessionsMap", ipSessionsMap))
+	//s.log.Debug("Grouped PTY sessions by IP", zap.Any("ipSessionsMap", ipSessionsMap))
 
 	var hostDetails []oapi.HostSessionDetailsV2
 	for ip, hostRec := range hostMap {
