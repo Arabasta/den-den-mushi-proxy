@@ -1,7 +1,7 @@
 package policy
 
 import (
-	"den-den-mushi-Go/internal/control/pty_token/request"
+	"den-den-mushi-Go/internal/control/ep/pty_token/request"
 	"go.uber.org/zap"
 )
 

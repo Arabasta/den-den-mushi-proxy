@@ -1,10 +1,11 @@
 package server
 
 import (
+	"den-den-mushi-Go/internal/control/ep/iexpress"
+	"den-den-mushi-Go/internal/control/ep/make_change"
+	"den-den-mushi-Go/internal/control/ep/pty_token"
+	"den-den-mushi-Go/internal/control/ep/whiteblacklist"
 	"den-den-mushi-Go/internal/control/healthcheck"
-	"den-den-mushi-Go/internal/control/make_change"
-	"den-den-mushi-Go/internal/control/pty_token"
-	"den-den-mushi-Go/internal/control/whiteblacklist"
 	oapi "den-den-mushi-Go/openapi/control"
 	"github.com/gin-gonic/gin"
 )
@@ -14,6 +15,15 @@ type MasterHandler struct {
 	MakeChangeHandler     *make_change.Handler
 	WhiteBlacklistHandler *whiteblacklist.Handler
 	HealthcheckHandler    *healthcheck.Handler
+	IExpressHandler       *iexpress.Handler
+}
+
+func (h *MasterHandler) GetApiV1Iexpress(c *gin.Context, params oapi.GetApiV1IexpressParams) {
+	h.IExpressHandler.GetApiV1IExpress(c, params)
+}
+
+func (h *MasterHandler) GetApiV1IexpressRequestId(c *gin.Context, requestId string) {
+	h.IExpressHandler.GetApiV1IexpressRequestId(c, requestId)
 }
 
 // Forwarding methods (required by oapi.ServerInterface)

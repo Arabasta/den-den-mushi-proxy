@@ -3,7 +3,7 @@ package types
 type ConnectionPurpose string
 
 const (
-	Change       ConnectionPurpose = "change_request"
-	Healthcheck  ConnectionPurpose = "health_check"
-	JoinExisting ConnectionPurpose = "join_existing"
+	Change      ConnectionPurpose = "change_request"
+	Healthcheck ConnectionPurpose = "health_check"
+	IExpress    ConnectionPurpose = "iexpress"
 )

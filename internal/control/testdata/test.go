@@ -4,6 +4,7 @@ import (
 	"den-den-mushi-Go/pkg/dto/change_request"
 	"den-den-mushi-Go/pkg/dto/cyberark"
 	"den-den-mushi-Go/pkg/dto/host"
+	"den-den-mushi-Go/pkg/dto/iexpress"
 	"den-den-mushi-Go/pkg/dto/implementor_groups"
 	"den-den-mushi-Go/pkg/dto/proxy_host"
 	"den-den-mushi-Go/pkg/dto/proxy_lb"
@@ -11,12 +12,49 @@ import (
 )
 
 func CallAll(db *gorm.DB) {
-	createCR(db)
-	createImplementorGroups(db)
+	//createCR(db)
+	//createImplementorGroups(db)
 	//createCyberark(db)
 	////createProxyLb(db)
 	//createProxyHost(db)
 	//createHosts(db)
+	createIexpress(db)
+}
+
+func createIexpress(db *gorm.DB) {
+	db.Create(&[]iexpress.Model{
+		{
+			RequestId:       "EX202512314",
+			OriginCountry:   "SG",
+			Lob:             "TechOps",
+			Requestor:       "System update and patching",
+			AppImpacted:     "ddm,ddm2",
+			Action:          "Patching EC2 instances in SG and HK region.",
+			RelatedTicket:   "CR202512314",
+			StartTime:       "2025-07-20 23:00:00",
+			EndTime:         "2026-07-22 01:00:00",
+			State:           "Approved",
+			CyberArkObjects: "54.255.144.215-ec2-user-x123,127.0.0.1-rootabc-w123,127.0.0.1-root-w123",
+			ApproverGroup1:  "admin",
+			ApproverGroup2:  "devops",
+			MDApproverGroup: "kei",
+		},
+		{
+			RequestId:       "EX202512315",
+			OriginCountry:   "SG",
+			Lob:             "TechOps",
+			Requestor:       "System update and patching",
+			AppImpacted:     "ddm",
+			Action:          "Patching EC2 instances in SG and HK region.",
+			RelatedTicket:   "CR202512314",
+			StartTime:       "2025-07-20 23:00:00",
+			EndTime:         "2026-07-22 01:00:00",
+			State:           "Approved",
+			CyberArkObjects: "54.255.144.215-ec2-user-x123,127.0.0.1-rootabc-w123,127.0.0.1-root-w123",
+			ApproverGroup1:  "admin",
+			MDApproverGroup: "kei",
+		},
+	})
 }
 
 func createCR(db *gorm.DB) {

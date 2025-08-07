@@ -18,6 +18,19 @@ type ListCR struct {
 	IsGetTotalCount   bool
 }
 
+type ListIexpress struct {
+	TicketIDs         *[]string
+	Requestor         *string
+	ImplementorGroups *[]string
+	LOB               *string
+	Country           *string
+	AppImpacted       *[]string
+	StartTime         *time.Time
+	EndTime           *time.Time
+	Page              int
+	PageSize          int
+	IsGetTotalCount   bool
+}
 type CrHostPtySession struct {
 	CRID  string
 	IPs   []string

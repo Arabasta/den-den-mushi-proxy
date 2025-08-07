@@ -10,6 +10,7 @@ import (
 	"den-den-mushi-Go/pkg/dto/connections"
 	"den-den-mushi-Go/pkg/dto/cyberark"
 	"den-den-mushi-Go/pkg/dto/host"
+	"den-den-mushi-Go/pkg/dto/iexpress"
 	"den-den-mushi-Go/pkg/dto/implementor_groups"
 	"den-den-mushi-Go/pkg/dto/os_adm_users"
 	"den-den-mushi-Go/pkg/dto/proxy_host"
@@ -67,6 +68,7 @@ func main() {
 			&proxy_host.Model{},
 			&jti.Model{},
 			&os_adm_users.Model{},
+			&iexpress.Model{},
 		); err != nil {
 			log.Fatal("AutoMigrate failed", zap.Error(err))
 		}

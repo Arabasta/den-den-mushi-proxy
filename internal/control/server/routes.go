@@ -2,10 +2,11 @@ package server
 
 import (
 	"den-den-mushi-Go/internal/control/config"
+	"den-den-mushi-Go/internal/control/ep/iexpress"
+	"den-den-mushi-Go/internal/control/ep/make_change"
+	"den-den-mushi-Go/internal/control/ep/pty_token"
+	"den-den-mushi-Go/internal/control/ep/whiteblacklist"
 	"den-den-mushi-Go/internal/control/healthcheck"
-	"den-den-mushi-Go/internal/control/make_change"
-	"den-den-mushi-Go/internal/control/pty_token"
-	"den-den-mushi-Go/internal/control/whiteblacklist"
 	oapi "den-den-mushi-Go/openapi/control"
 	"den-den-mushi-Go/pkg/middleware"
 	"embed"
@@ -37,6 +38,10 @@ func registerProtectedRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log 
 		},
 		HealthcheckHandler: &healthcheck.Handler{
 			Service: deps.HealthcheckService,
+			Log:     log,
+		},
+		IExpressHandler: &iexpress.Handler{
+			Service: deps.IexpressService,
 			Log:     log,
 		},
 	}

@@ -7,7 +7,7 @@
   },
   "development": {
     "isSMX": false,
-    "skipPolicyChecks": false,
+    "skipPolicyChecks": true,
     "IsUsingInvDb": false,
     "IsAutoMigrateEnabled": true,
     "IsBlacklistFilter": true,

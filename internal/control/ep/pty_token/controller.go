@@ -1,7 +1,7 @@
 package pty_token
 
 import (
-	"den-den-mushi-Go/internal/control/pty_token/request"
+	request2 "den-den-mushi-Go/internal/control/ep/pty_token/request"
 	oapi "den-den-mushi-Go/openapi/control"
 	dtopkg "den-den-mushi-Go/pkg/dto"
 	"den-den-mushi-Go/pkg/httpx"
@@ -32,8 +32,8 @@ func (h *Handler) PostApiV1PtyTokenStart(c *gin.Context) {
 		return
 	}
 
-	r := wrapper.WithAuth[request.StartRequest]{
-		Body: request.StartRequest{
+	r := wrapper.WithAuth[request2.StartRequest]{
+		Body: request2.StartRequest{
 			Purpose: types.ConnectionPurpose(raw.Purpose),
 			ChangeID: func() string {
 				if raw.ChangeId != nil {
@@ -76,8 +76,8 @@ func (h *Handler) PostApiV1PtyTokenJoin(c *gin.Context) {
 		return
 	}
 
-	r := wrapper.WithAuth[request.JoinRequest]{
-		Body: request.JoinRequest{
+	r := wrapper.WithAuth[request2.JoinRequest]{
+		Body: request2.JoinRequest{
 			PtySessionId: raw.PtySessionId,
 			StartRole:    types.StartRole(raw.StartRole),
 		},

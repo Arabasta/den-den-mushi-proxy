@@ -5,20 +5,22 @@ import (
 	"den-den-mushi-Go/internal/control/change_request"
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/connection"
+	iexpress2 "den-den-mushi-Go/internal/control/ep/iexpress"
+	"den-den-mushi-Go/internal/control/ep/make_change"
+	"den-den-mushi-Go/internal/control/ep/pty_token"
+	"den-den-mushi-Go/internal/control/ep/pty_token/request"
+	"den-den-mushi-Go/internal/control/ep/whiteblacklist"
 	"den-den-mushi-Go/internal/control/healthcheck"
 	"den-den-mushi-Go/internal/control/host"
+	"den-den-mushi-Go/internal/control/iexpress"
 	"den-den-mushi-Go/internal/control/implementor_groups"
 	"den-den-mushi-Go/internal/control/jwt"
-	"den-den-mushi-Go/internal/control/make_change"
 	"den-den-mushi-Go/internal/control/os_adm_users"
 	"den-den-mushi-Go/internal/control/policy"
 	"den-den-mushi-Go/internal/control/policy/validators"
 	"den-den-mushi-Go/internal/control/proxy_lb"
 	"den-den-mushi-Go/internal/control/pty_sessions"
-	"den-den-mushi-Go/internal/control/pty_token"
-	"den-den-mushi-Go/internal/control/pty_token/request"
 	"den-den-mushi-Go/internal/control/regex_filters"
-	"den-den-mushi-Go/internal/control/whiteblacklist"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -35,6 +37,7 @@ type Deps struct {
 	RegexService             *regex_filters.Service
 	WhiteBlacklistService    *whiteblacklist.Service
 	HealthcheckService       *healthcheck.Service
+	IexpressService          *iexpress2.Service
 }
 
 func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps {
@@ -73,6 +76,9 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 	osAdmUsersRepo := os_adm_users.NewGormRepository(ddmDb, log)
 	osAdmUsersService := os_adm_users.NewService(osAdmUsersRepo, log)
 
+	iexpressRepo := iexpress.NewGormRepository(ddmDb, log)
+	iexpressService := iexpress.NewService(iexpressRepo, log)
+
 	// validator for policy chains  ============================================================================================
 	validator := validators.NewValidator(log, cfg)
 
@@ -98,6 +104,15 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 	healthcheckPolicy.SetNext(implementorPolicyHC)
 	healthcheckPolicyChain = ptySessionPolicyHC
 
+	// policies for iexpress
+	ptySessionPolicyIExpress := policy.NewPtySessionPolicy[request.Ctx](ptySessionService, connectionService, log)
+	implementorPolicyIExpress := policy.NewImplementorPolicy[request.Ctx](hostService, log, validator)
+	iexpressPolicy := policy.NewIExpressPolicy[request.Ctx](impGroupsService, osAdmUsersService, validator, log)
+
+	ptySessionPolicyIExpress.SetNext(iexpressPolicy)
+	iexpressPolicy.SetNext(implementorPolicyIExpress)
+	iexpressPolicyChain := ptySessionPolicyIExpress
+
 	if cfg.Development.SkipPolicyChecks {
 		log.Info("Skip policy checks enabled. Using noop policy")
 		noopPolicy := policy.NewNoopPolicy[request.Ctx](log)
@@ -107,11 +122,12 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 
 	// pass policy chains to service
 	ptyTokenService := pty_token.NewService(ptySessionService, proxyLbService, hostService, certNameSvc, issuer, changeService,
-		osAdmUsersService, changeRequestPolicyChain, healthcheckPolicyChain,
+		osAdmUsersService, iexpressService, changeRequestPolicyChain, healthcheckPolicyChain, iexpressPolicyChain,
 		log, cfg)
 
 	makeChangeService := make_change.NewService(changeService, ptySessionService, hostService, impGroupsService, osAdmUsersService, log)
 	healthcheckService := healthcheck.NewService(ptySessionService, hostService, osAdmUsersService, log, cfg)
+	iexpresssvcEp := iexpress2.NewService(iexpressService, ptySessionService, hostService, impGroupsService, osAdmUsersService, log)
 	return &Deps{
 		Issuer:                   issuer,
 		ProxyService:             proxyLbService,
@@ -124,5 +140,6 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 		RegexService:             regexSvc,
 		WhiteBlacklistService:    whiteblacklistSvc,
 		HealthcheckService:       healthcheckService,
+		IexpressService:          iexpresssvcEp,
 	}
 }

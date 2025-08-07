@@ -63,6 +63,10 @@ func ExtractOsUserFromObject(o string) string {
 }
 
 func MapIPToOSUsers(objects []string) map[string][]string {
+	if len(objects) == 0 {
+		return map[string][]string{}
+	}
+
 	ipToUsers := make(map[string]map[string]struct{})
 
 	for _, o := range objects {

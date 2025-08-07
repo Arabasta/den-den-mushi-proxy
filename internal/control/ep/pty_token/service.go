@@ -4,15 +4,17 @@ import (
 	"den-den-mushi-Go/internal/control/certname"
 	"den-den-mushi-Go/internal/control/change_request"
 	"den-den-mushi-Go/internal/control/config"
+	request2 "den-den-mushi-Go/internal/control/ep/pty_token/request"
 	"den-den-mushi-Go/internal/control/host"
+	"den-den-mushi-Go/internal/control/iexpress"
 	"den-den-mushi-Go/internal/control/jwt"
 	"den-den-mushi-Go/internal/control/os_adm_users"
 	"den-den-mushi-Go/internal/control/policy"
 	"den-den-mushi-Go/internal/control/proxy_lb"
 	"den-den-mushi-Go/internal/control/pty_sessions"
-	"den-den-mushi-Go/internal/control/pty_token/request"
 	"den-den-mushi-Go/pkg/dto"
 	changerequestpkg "den-den-mushi-Go/pkg/dto/change_request"
+	iexpress2 "den-den-mushi-Go/pkg/dto/iexpress"
 	"den-den-mushi-Go/pkg/middleware/wrapper"
 	"den-den-mushi-Go/pkg/types"
 	"den-den-mushi-Go/pkg/util/cyberark"
@@ -28,18 +30,21 @@ type Service struct {
 	hostSvc                  *host.Service
 	crSvc                    *change_request.Service
 	certNameSvc              *certname.Service
-	changeRequestPolicyChain policy.Policy[request.Ctx]
-	healthCheckPolicyChain   policy.Policy[request.Ctx]
+	changeRequestPolicyChain policy.Policy[request2.Ctx]
+	healthCheckPolicyChain   policy.Policy[request2.Ctx]
+	iexpressPolicyChain      policy.Policy[request2.Ctx]
 	osAdmUsersSvc            *os_adm_users.Service
+	iexpressSvc              *iexpress.Service
 
 	log *zap.Logger
 	cfg *config.Config
 }
 
 func NewService(psS *pty_sessions.Service, plbS *proxy_lb.Service, hostS *host.Service, certNameSvc *certname.Service,
-	issuer *jwt.Issuer, crS *change_request.Service, osAdmUsersSvc *os_adm_users.Service,
-	changeRequestPolicyChain policy.Policy[request.Ctx],
-	healthCheckPolicyChain policy.Policy[request.Ctx],
+	issuer *jwt.Issuer, crS *change_request.Service, osAdmUsersSvc *os_adm_users.Service, iexpressSvc *iexpress.Service,
+	changeRequestPolicyChain policy.Policy[request2.Ctx],
+	healthCheckPolicyChain policy.Policy[request2.Ctx],
+	iexpressPolicyChain policy.Policy[request2.Ctx],
 	log *zap.Logger, cfg *config.Config) *Service {
 	log.Info("Initializing PTY Token Service")
 	return &Service{
@@ -50,14 +55,17 @@ func NewService(psS *pty_sessions.Service, plbS *proxy_lb.Service, hostS *host.S
 		issuer:                   issuer,
 		changeRequestPolicyChain: changeRequestPolicyChain,
 		healthCheckPolicyChain:   healthCheckPolicyChain,
+		iexpressPolicyChain:      iexpressPolicyChain,
 		crSvc:                    crS,
+		osAdmUsersSvc:            osAdmUsersSvc,
+		iexpressSvc:              iexpressSvc,
 		log:                      log,
 		cfg:                      cfg,
 	}
 }
 
 // todo: split into healthcheck and cr endpoints
-func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (string, string, error) {
+func (s *Service) mintStartToken(r wrapper.WithAuth[request2.StartRequest]) (string, string, error) {
 	hostConnMethod, hostType := types.LocalSshKey, types.OS
 
 	if !s.cfg.Development.IsLocalSshKeyIfNotIsPuppetKey {
@@ -84,10 +92,11 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 
 	var filter types.Filter
 	var cr *changerequestpkg.Record
+	var exp *iexpress2.Record
 
-	adapter := &request.StartAdapter{
+	adapter := &request2.StartAdapter{
 		Req: r,
-		AdapterFields: request.AdapterFields{
+		AdapterFields: request2.AdapterFields{
 			Purpose:  r.Body.Purpose,
 			ChangeID: r.Body.ChangeID,
 			Server: dto.ServerInfo{
@@ -141,13 +150,32 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 		//	s.log.Error("Failed to find filter type by host type", zap.String("hostType", string(hostType)), zap.Error(err))
 		//	return "", "", err
 		//}
+	} else if r.Body.Purpose == types.IExpress {
+		s.log.Debug("Starting IExpress policy check")
+		exp, err = s.iexpressSvc.FindByTicketNumber(r.Body.ChangeID)
+		if err != nil || exp == nil {
+			s.log.Error("Failed to find iexpress request by ID", zap.String("iexpress", r.Body.ChangeID), zap.Error(err))
+			return "", "", err
+		}
+
+		adapter.Iexpress = exp
+
+		s.log.Debug("Starting IExpress policy check")
+		if err = s.iexpressPolicyChain.Check(adapter); err != nil {
+			s.log.Warn("IExpress policy check failed", zap.Error(err))
+			return "", "", err
+		}
+
+		// todo update this need to su? or just root only?
+		allowedSuOsUsers = cyberark.ExtractAllOsUsers(exp.CyberArkObjects)
+		s.log.Debug("IExpress allowed OS users extracted", zap.Strings("allowedSuOsUsers", allowedSuOsUsers))
 	} else {
 		s.log.Error("Invalid connection purpose", zap.String("purpose", string(r.Body.Purpose)))
 		return "", "", errors.New("invalid connection purpose")
 	}
 
 	s.log.Debug("Building connection for start")
-	conn := jwt.BuildConnForStart(hostConnMethod, r, cr, filter, s.cfg.Development.TargetSshPort, allowedSuOsUsers, puppetTrusted.Certname)
+	conn := jwt.BuildConnForStart(hostConnMethod, r, cr, exp, filter, s.cfg.Development.TargetSshPort, allowedSuOsUsers, puppetTrusted.Certname)
 
 	tok, err := s.issuer.Mint(r.AuthCtx, conn, hostType)
 	if err != nil {
@@ -164,7 +192,7 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request.StartRequest]) (stri
 	return tok, proxyLbUrl, nil
 }
 
-func (s *Service) mintJoinToken(r wrapper.WithAuth[request.JoinRequest]) (string, string, error) {
+func (s *Service) mintJoinToken(r wrapper.WithAuth[request2.JoinRequest]) (string, string, error) {
 	ps, err := s.psSvc.FindById(r.Body.PtySessionId)
 	if err != nil || ps == nil {
 		s.log.Error("Failed to find pty session", zap.String("ptySessionId", r.Body.PtySessionId), zap.Error(err))
@@ -177,9 +205,9 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request.JoinRequest]) (string
 		return "", "", err
 	}
 
-	adapter := &request.JoinAdapter{
+	adapter := &request2.JoinAdapter{
 		Req: r,
-		AdapterFields: request.AdapterFields{
+		AdapterFields: request2.AdapterFields{
 			Purpose:  ps.StartConnPurpose,
 			ChangeID: crId,
 			Server: dto.ServerInfo{
@@ -222,8 +250,9 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request.JoinRequest]) (string
 		return "", "", err
 	}
 
-	// todo: return X-Proxy-Host ps.ProxyHostName, to be passed to load balancer for routing
-	return tok, ps.ProxyDetails.LoadBalancerEndpoint, nil
+	// return X-Proxy-Host ps.ProxyHostName, to be passed to load balancer for routing?
+	// or maybe just straight up manual routing
+	return tok, ps.ProxyDetails.HostName, nil
 }
 
 func (s *Service) getChangeRequestIDOrError(p types.ConnectionPurpose, id string) (string, error) {

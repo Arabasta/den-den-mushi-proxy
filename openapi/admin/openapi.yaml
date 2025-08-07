@@ -23,7 +23,7 @@ paths:
         - PTY Session
       summary: Get all PTY sessions matching the filter
       security:
-        - ApiKeyAuth: [ ]
+        - BearerAuth: [ ]
       parameters:
         - name: session_ids
           in: query
