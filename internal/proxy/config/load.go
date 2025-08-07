@@ -30,6 +30,8 @@ func Load(path string) *Config {
 	config.BindJwtAudienceSecret(v)
 	config.BindPuppet(v)
 	config.BindSshKey(v)
+	config.BindTmpAuthSecret(v)
+
 	cfg.DdmDB = config.BindSqlDb(v, "DDM_DB", "DdmDB")
 	cfg.InvDB = config.BindSqlDb(v, "INV_DB", "InvDB")
 
