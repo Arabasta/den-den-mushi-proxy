@@ -28,7 +28,7 @@ func New(ddmDb *gorm.DB, staticFiles embed.FS, cfg *config.Config, log *zap.Logg
 	r := gin.New()
 	r.Use(
 		middleware.RequestLogger(log),
-		middleware.Security(cfg.Ssl.Enabled),
+		//	middleware.Security(cfg.Ssl.Enabled),
 		middleware.Cors(cfg.Cors, log),
 		gin.Recovery())
 
