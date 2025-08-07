@@ -56,9 +56,13 @@ func BuildConnForStart(t types.ConnectionMethod, r wrapper.WithAuth[request2.Sta
 
 func BuildConnForJoin(p *pty_sessions.Record, r wrapper.WithAuth[request2.JoinRequest]) *dtopkg.Connection {
 	return &dtopkg.Connection{
-		Server:  p.StartConnectionDetails.Server,
-		Type:    p.StartConnectionDetails.Type,
-		Purpose: p.StartConnectionDetails.Purpose,
+		Server: dtopkg.ServerInfo{
+			IP:     p.StartConnServerIP,
+			Port:   p.StartConnServerPort,
+			OSUser: p.StartConnServerOSUser,
+		},
+		Type:    p.StartConnType,
+		Purpose: p.StartConnPurpose,
 		UserSession: dtopkg.UserSession{
 			Id:        r.AuthCtx.UserID + "/" + uuid.NewString(),
 			StartRole: r.Body.StartRole,
@@ -71,19 +75,20 @@ func BuildConnForJoin(p *pty_sessions.Record, r wrapper.WithAuth[request2.JoinRe
 		ChangeRequest: func() dtopkg.ChangeRequest {
 			if p.StartConnectionDetails.Purpose == types.Change {
 				return dtopkg.ChangeRequest{
-					Id:                p.StartConnectionDetails.ChangeRequest.Id,
-					ImplementorGroups: p.StartConnectionDetails.ChangeRequest.ImplementorGroups,
-					EndTime:           p.StartConnectionDetails.ChangeRequest.EndTime,
+					Id:                p.StartConnChangeRequestID,
+					ImplementorGroups: p.StartConnectionDetails.ChangeRequest.ImplementorGroups, // todo this is not retrieving rn need to redo schema
+					EndTime:           p.StartConnectionDetails.ChangeRequest.EndTime,           // todo this is not retrieving rn need to redo schema
 				}
 			} else if p.StartConnectionDetails.Purpose == types.IExpress {
 				return dtopkg.ChangeRequest{
-					Id: p.StartConnectionDetails.ChangeRequest.Id,
+					Id: p.StartConnChangeRequestID,
 					// todo will be empty string if not set
-					ImplementorGroups: p.StartConnectionDetails.ChangeRequest.ImplementorGroups,
-					EndTime:           p.StartConnectionDetails.ChangeRequest.EndTime,
+					ImplementorGroups: p.StartConnectionDetails.ChangeRequest.ImplementorGroups, // todo this is not retrieving rn need to redo schema
+					EndTime:           p.StartConnectionDetails.ChangeRequest.EndTime,           // todo this is not retrieving rn need to redo schema
 				}
 			}
 			return dtopkg.ChangeRequest{}
 		}(),
-		FilterType: p.StartConnectionDetails.FilterType}
+		FilterType: p.StartConnFilterType,
+	}
 }
