@@ -20,6 +20,7 @@ import (
 	"den-den-mushi-Go/pkg/util/cyberark"
 	"errors"
 	"go.uber.org/zap"
+	"strings"
 )
 
 type Service struct {
@@ -90,7 +91,6 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request2.StartRequest]) (str
 	//	return "", "", err
 	//}
 
-	var filter types.Filter
 	var cr *changerequestpkg.Record
 	var exp *iexpress2.Record
 
@@ -133,12 +133,6 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request2.StartRequest]) (str
 			return "", "", err
 		}
 
-		if s.cfg.Development.IsBlacklistFilter {
-			filter = types.Blacklist // todo: get filter type by host type or OU group?
-		} else {
-			filter = types.Whitelist
-		}
-
 		// todo: this guy should be from db, each perso n has their own os user
 		// todo: maybe dont need seems liek su for root only
 		//	allowedSuOsUsers = s.osAdmUsersSvc.GetNonCrOsUsers(r.AuthCtx.UserID)
@@ -169,16 +163,12 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request2.StartRequest]) (str
 		// todo update this need to su? or just root only?
 		allowedSuOsUsers = cyberark.ExtractAllOsUsers(exp.CyberArkObjects)
 		s.log.Debug("IExpress allowed OS users extracted", zap.Strings("allowedSuOsUsers", allowedSuOsUsers))
-
-		if s.cfg.Development.IsBlacklistFilter {
-			filter = types.Blacklist // todo: get filter type by host type or OU group?
-		} else {
-			filter = types.Whitelist
-		}
 	} else {
 		s.log.Error("Invalid connection purpose", zap.String("purpose", string(r.Body.Purpose)))
 		return "", "", errors.New("invalid connection purpose")
 	}
+
+	filter := s.setFilter(r.AuthCtx.OuGroup)
 
 	s.log.Debug("Building connection for start")
 	conn := jwt.BuildConnForStart(hostConnMethod, r, cr, exp, filter, s.cfg.Development.TargetSshPort, allowedSuOsUsers, puppetTrusted.Certname)
@@ -295,4 +285,15 @@ func (s *Service) getTicketIDOrError(p types.ConnectionPurpose, id string) (stri
 	default:
 		return "", errors.New("invalid connection purpose: " + string(p))
 	}
+}
+
+func (s *Service) setFilter(ouGroup string) types.Filter {
+	if strings.HasSuffix(ouGroup, "_Compute") || strings.HasSuffix(ouGroup, "_Database") {
+		return types.Blacklist
+	} else if strings.HasSuffix(ouGroup, "_Storage") {
+		return types.Whitelist
+	}
+
+	// default
+	return types.Blacklist
 }
