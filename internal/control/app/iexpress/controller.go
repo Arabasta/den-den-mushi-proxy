@@ -40,22 +40,6 @@ func (h *Handler) GetApiV1IExpress(c *gin.Context, params oapi.GetApiV1IexpressP
 		return
 	}
 
-	//var response struct {
-	//	TotalCount *int64                     `json:"total_count,omitempty"`
-	//	Items      []oapi.GetIExpressResponse `json:"items"`
-	//}
-	//response.Items = res
-	//
-	//if f.IsGetTotalCount {
-	//	response.TotalCount = &totalCount
-	//}
-	//
-	//if len(res) == 0 {
-	//	h.Log.Debug("No iexpress requests found for the given filter", zap.Any("filter", f))
-	//	c.JSON(http.StatusOK, response)
-	//	return
-	//}
-
 	c.JSON(http.StatusOK, res)
 }
 
@@ -70,5 +54,4 @@ func (h *Handler) GetApiV1IexpressRequestId(c *gin.Context, id string) {
 	}
 
 	c.JSON(http.StatusOK, res)
-
 }

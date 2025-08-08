@@ -6,6 +6,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/internal/proxy/server"
 	"den-den-mushi-Go/internal/proxy/websocket_jwt/jti"
+	configpkg "den-den-mushi-Go/pkg/config"
 	"den-den-mushi-Go/pkg/dto/connections"
 	"den-den-mushi-Go/pkg/dto/proxy_host"
 	"den-den-mushi-Go/pkg/dto/pty_sessions"
@@ -36,8 +37,15 @@ func main() {
 		_ = log.Sync()
 	}()
 
+	hostname, err := os.Hostname()
+	if err != nil || hostname == "" {
+		log.Error("Failed to get hostname during startup", zap.Error(err))
+		os.Exit(1)
+	}
+	cfg.Host = &configpkg.Host{Name: hostname}
+	log.Info("Starting Den Den Mushi Proxy", zap.String("version", cfg.App.Version), zap.String("hostname", cfg.Host.Name))
+
 	var db *gorm.DB
-	var err error
 
 	if !cfg.Development.IsUsingInvDb {
 		db, err = mysql.Client(cfg.DdmDB, cfg.Ssl, log)

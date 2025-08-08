@@ -288,12 +288,10 @@ func (s *Service) getTicketIDOrError(p types.ConnectionPurpose, id string) (stri
 }
 
 func (s *Service) setFilter(ouGroup string) types.Filter {
-	if strings.HasSuffix(ouGroup, "_Compute") || strings.HasSuffix(ouGroup, "_Database") {
-		return types.Blacklist
-	} else if strings.HasSuffix(ouGroup, "_Storage") {
+	if strings.HasSuffix(ouGroup, "_Storage") {
 		return types.Whitelist
 	}
 
-	// default
+	// default to Blacklist for _Compute, _Database, and other groups
 	return types.Blacklist
 }

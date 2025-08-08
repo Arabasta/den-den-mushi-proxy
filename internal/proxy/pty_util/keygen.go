@@ -39,6 +39,7 @@ func GenerateEphemeralKey(cfg *config.Config, log *zap.Logger) (string, string, 
 	}
 
 	pubKeyString := strings.Trim(string(ssh.MarshalAuthorizedKey(keyPair.PublicKey())), "\n")
+	// todo use cfg.App.User@cfg.Host.name
 	pubKeyString += " " + cfg.Ssh.PubKeyHostnameSuffix
 
 	cleanup := func() {
