@@ -13,7 +13,28 @@
     </div>
     <div class="right">
         <button class="menu-button" id="menuButton">⋮</button>
-        <button class="sudo-button" id="sudoButton">Sudo</button>
+
+    </div>
+</div>
+
+<div id="toolbar">
+    <div class="left">
+        <button class="toolbar-button" id="sudoButton">Sudo</button>
+        <button class="toolbar-button" id="keiGPTButton">KeiGPT</button>
+
+        <div class="dropdown-wrapper">
+            <button class="toolbar-button" id="scriptsDropdownButton">Scripts ⏷</button>
+            <div class="dropdown-menu" id="scriptsDropdown">
+                <button class="dropdown-item">These scripts are uploaded by to a script store (S3?)</button>
+                <button class="dropdown-item">Validation (through JWT start conn claims) will be done before execution</button>
+                <button class="dropdown-item">Similar to Oracle CloudShell tools</button>
+                <button class="dropdown-item">puppet infrastructure status</button>
+                <button class="dropdown-item"></button>
+            </div>
+        </div>
+    </div>
+    <div class="right">
+        <button class="toolbar-button danger" id="endButton">End Session</button>
     </div>
 </div>
 
@@ -52,6 +73,16 @@
 </div>
 
 <div id="terminal"></div>
+
+<div id="keiGPTPanel">
+    <div class="header">
+        <h3>KeiGPT Assistant</h3>
+        <button id="closeKeiGPT">×</button>
+    </div>
+    <div id="keiGPTOutput">
+        <p>I've retrieved your terminal history. Type something and I'll help!</p>
+    </div>
+</div>
 <script type="module" src="/static/js/main.js"></script>
 </body>
 </html>

@@ -15,13 +15,11 @@ type Config struct {
 	Host *config.Host
 
 	Development struct {
-		UseSqlJtiRepo              bool
-		SshTestKeyPath             string
-		UseRedis                   bool
-		IsUsingInvDb               bool
-		IsAutoMigrateEnabled       bool
-		IsSMX                      bool
-		RegexDbPollIntervalSeconds time.Duration
+		UseSqlJtiRepo        bool
+		UseRedis             bool
+		IsUsingInvDb         bool
+		IsAutoMigrateEnabled bool
+		IsSMX                bool
 	}
 
 	Pty struct {

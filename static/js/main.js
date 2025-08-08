@@ -1,12 +1,13 @@
 import socketManager from './websocket.js';
 import {terminal} from './terminal.js';
+// Import for side effects: sets up settings menu event listeners
+import "./settings/settingsMenu.js";
 
 const {term, fitAddon} = terminal;
 
 document.addEventListener('DOMContentLoaded', () => {
     const terminalElement = document.getElementById('terminal');
 
-    // delay so i can open dev tools
     setTimeout(() => {
         term.open(terminalElement);
         socketManager.connect();
@@ -20,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         registerHandlers();
         window.addEventListener('resize', fitAndNotify);
-    }, 1000);
+    }, 0);
 
 
 });
@@ -54,7 +55,7 @@ function sendInput(data) {
 }
 
 document.getElementById('endButton').addEventListener('click', () => {
-    const ok = prompt("End Session?", "");
+    const ok = confirm("End session?");
     if (!ok) return;
 
     const socket = socketManager.getSocket();
@@ -85,3 +86,38 @@ document.getElementById('sudoButton').addEventListener('click', () => {
         console.warn("WebSocket not connected.");
     }
 });
+
+const scriptsButton = document.getElementById('scriptsDropdownButton');
+const scriptsDropdown = document.getElementById('scriptsDropdown');
+
+scriptsButton.addEventListener('click', () => {
+    scriptsDropdown.parentElement.classList.toggle('show');
+});
+
+document.addEventListener('click', (event) => {
+    if (!scriptsButton.contains(event.target) && !scriptsDropdown.contains(event.target)) {
+        scriptsDropdown.parentElement.classList.remove('show');
+    }
+});
+
+document.getElementById('keiGPTButton').addEventListener('click', () => {
+    const keiGPTPanel = document.getElementById('keiGPTPanel');
+    keiGPTPanel.classList.toggle('show');
+    if (keiGPTPanel.classList.contains('show')) {
+        keiGPTPanel.scrollIntoView({behavior: 'smooth'});
+    }
+});
+
+document.getElementById('closeKeiGPT').addEventListener('click', () => {
+    document.getElementById('keiGPTPanel').classList.remove('show');
+});
+
+// Dummy terminal observer (simulate GPT suggestions)
+term.onData((input) => {
+    const keiGPTOutput = document.getElementById('keiGPTOutput');
+    const p = document.createElement('p');
+    p.textContent = `👀 KeiGPT saw: ${input}`;
+    keiGPTOutput.appendChild(p);
+    keiGPTOutput.scrollTop = keiGPTOutput.scrollHeight;
+});
+
