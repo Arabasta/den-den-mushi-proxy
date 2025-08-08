@@ -1,7 +1,7 @@
 package pty_token
 
 import (
-	request2 "den-den-mushi-Go/internal/control/ep/pty_token/request"
+	request2 "den-den-mushi-Go/internal/control/app/pty_token/request"
 	oapi "den-den-mushi-Go/openapi/control"
 	dtopkg "den-den-mushi-Go/pkg/dto"
 	"den-den-mushi-Go/pkg/httpx"

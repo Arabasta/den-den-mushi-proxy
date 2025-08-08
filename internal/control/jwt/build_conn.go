@@ -1,7 +1,7 @@
 package jwt
 
 import (
-	request2 "den-den-mushi-Go/internal/control/ep/pty_token/request"
+	request2 "den-den-mushi-Go/internal/control/app/pty_token/request"
 	dtopkg "den-den-mushi-Go/pkg/dto"
 	"den-den-mushi-Go/pkg/dto/change_request"
 	iexpress2 "den-den-mushi-Go/pkg/dto/iexpress"

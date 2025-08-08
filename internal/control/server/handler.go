@@ -1,11 +1,11 @@
 package server
 
 import (
-	"den-den-mushi-Go/internal/control/ep/healthcheck"
-	"den-den-mushi-Go/internal/control/ep/iexpress"
-	"den-den-mushi-Go/internal/control/ep/make_change"
-	"den-den-mushi-Go/internal/control/ep/pty_token"
-	"den-den-mushi-Go/internal/control/ep/whiteblacklist"
+	"den-den-mushi-Go/internal/control/app/healthcheck"
+	"den-den-mushi-Go/internal/control/app/iexpress"
+	"den-den-mushi-Go/internal/control/app/make_change"
+	"den-den-mushi-Go/internal/control/app/pty_token"
+	"den-den-mushi-Go/internal/control/app/whiteblacklist"
 	oapi "den-den-mushi-Go/openapi/control"
 	"github.com/gin-gonic/gin"
 )

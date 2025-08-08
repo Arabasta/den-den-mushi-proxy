@@ -1,9 +1,9 @@
 package policy
 
 import (
-	"den-den-mushi-Go/internal/control/connection"
-	"den-den-mushi-Go/internal/control/ep/pty_token/request"
-	"den-den-mushi-Go/internal/control/pty_sessions"
+	"den-den-mushi-Go/internal/control/app/pty_token/request"
+	"den-den-mushi-Go/internal/control/core/connection"
+	"den-den-mushi-Go/internal/control/core/pty_sessions"
 	"den-den-mushi-Go/pkg/types"
 	"errors"
 	"go.uber.org/zap"

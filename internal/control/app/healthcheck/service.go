@@ -2,10 +2,10 @@ package healthcheck
 
 import (
 	"den-den-mushi-Go/internal/control/config"
+	"den-den-mushi-Go/internal/control/core/host"
+	"den-den-mushi-Go/internal/control/core/os_adm_users"
+	"den-den-mushi-Go/internal/control/core/pty_sessions"
 	"den-den-mushi-Go/internal/control/filters"
-	"den-den-mushi-Go/internal/control/host"
-	"den-den-mushi-Go/internal/control/os_adm_users"
-	"den-den-mushi-Go/internal/control/pty_sessions"
 	oapi "den-den-mushi-Go/openapi/control"
 	ptysessionspkg "den-den-mushi-Go/pkg/dto/pty_sessions"
 	"den-den-mushi-Go/pkg/middleware"

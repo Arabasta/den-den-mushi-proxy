@@ -1,8 +1,8 @@
 package policy
 
 import (
-	"den-den-mushi-Go/internal/control/ep/pty_token/request"
-	"den-den-mushi-Go/internal/control/host"
+	"den-den-mushi-Go/internal/control/app/pty_token/request"
+	"den-den-mushi-Go/internal/control/core/host"
 	"den-den-mushi-Go/internal/control/policy/validators"
 	"den-den-mushi-Go/pkg/types"
 	"go.uber.org/zap"

@@ -1,12 +1,12 @@
 package server
 
 import (
+	"den-den-mushi-Go/internal/control/app/healthcheck"
+	"den-den-mushi-Go/internal/control/app/iexpress"
+	"den-den-mushi-Go/internal/control/app/make_change"
+	"den-den-mushi-Go/internal/control/app/pty_token"
+	"den-den-mushi-Go/internal/control/app/whiteblacklist"
 	"den-den-mushi-Go/internal/control/config"
-	"den-den-mushi-Go/internal/control/ep/healthcheck"
-	"den-den-mushi-Go/internal/control/ep/iexpress"
-	"den-den-mushi-Go/internal/control/ep/make_change"
-	"den-den-mushi-Go/internal/control/ep/pty_token"
-	"den-den-mushi-Go/internal/control/ep/whiteblacklist"
 	oapi "den-den-mushi-Go/openapi/control"
 	"den-den-mushi-Go/pkg/middleware"
 	"embed"

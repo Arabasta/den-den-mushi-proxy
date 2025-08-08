@@ -1,40 +1,40 @@
 package server
 
 import (
-	"den-den-mushi-Go/internal/control/certname"
-	"den-den-mushi-Go/internal/control/change_request"
+	"den-den-mushi-Go/internal/control/app/healthcheck"
+	iexpress2 "den-den-mushi-Go/internal/control/app/iexpress"
+	"den-den-mushi-Go/internal/control/app/make_change"
+	"den-den-mushi-Go/internal/control/app/pty_token"
+	"den-den-mushi-Go/internal/control/app/pty_token/request"
+	"den-den-mushi-Go/internal/control/app/whiteblacklist"
 	"den-den-mushi-Go/internal/control/config"
-	"den-den-mushi-Go/internal/control/connection"
-	"den-den-mushi-Go/internal/control/ep/healthcheck"
-	iexpress2 "den-den-mushi-Go/internal/control/ep/iexpress"
-	"den-den-mushi-Go/internal/control/ep/make_change"
-	"den-den-mushi-Go/internal/control/ep/pty_token"
-	"den-den-mushi-Go/internal/control/ep/pty_token/request"
-	"den-den-mushi-Go/internal/control/ep/whiteblacklist"
-	"den-den-mushi-Go/internal/control/host"
-	"den-den-mushi-Go/internal/control/iexpress"
-	"den-den-mushi-Go/internal/control/implementor_groups"
+	certname2 "den-den-mushi-Go/internal/control/core/certname"
+	change_request2 "den-den-mushi-Go/internal/control/core/change_request"
+	connection2 "den-den-mushi-Go/internal/control/core/connection"
+	host2 "den-den-mushi-Go/internal/control/core/host"
+	iexpress3 "den-den-mushi-Go/internal/control/core/iexpress"
+	implementor_groups2 "den-den-mushi-Go/internal/control/core/implementor_groups"
+	os_adm_users2 "den-den-mushi-Go/internal/control/core/os_adm_users"
+	proxy_lb2 "den-den-mushi-Go/internal/control/core/proxy_lb"
+	pty_sessions2 "den-den-mushi-Go/internal/control/core/pty_sessions"
+	regex_filters2 "den-den-mushi-Go/internal/control/core/regex_filters"
 	"den-den-mushi-Go/internal/control/jwt"
-	"den-den-mushi-Go/internal/control/os_adm_users"
 	"den-den-mushi-Go/internal/control/policy"
 	"den-den-mushi-Go/internal/control/policy/validators"
-	"den-den-mushi-Go/internal/control/proxy_lb"
-	"den-den-mushi-Go/internal/control/pty_sessions"
-	"den-den-mushi-Go/internal/control/regex_filters"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type Deps struct {
 	Issuer                   *jwt.Issuer
-	ProxyService             *proxy_lb.Service
-	ChangeService            *change_request.Service
-	ImplementorGroupsService *implementor_groups.Service
-	PtySessionService        *pty_sessions.Service
-	HostService              *host.Service
+	ProxyService             *proxy_lb2.Service
+	ChangeService            *change_request2.Service
+	ImplementorGroupsService *implementor_groups2.Service
+	PtySessionService        *pty_sessions2.Service
+	HostService              *host2.Service
 	PtyTokenService          *pty_token.Service
 	MakeChangeService        *make_change.Service
-	RegexService             *regex_filters.Service
+	RegexService             *regex_filters2.Service
 	WhiteBlacklistService    *whiteblacklist.Service
 	HealthcheckService       *healthcheck.Service
 	IexpressService          *iexpress2.Service
@@ -44,40 +44,40 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 	issuer := jwt.New(cfg, log)
 
 	// repos and services ========================================================================================
-	proxyLbRepo := proxy_lb.NewGormRepository(ddmDb, log)
-	proxyLbService := proxy_lb.NewService(proxyLbRepo, log)
+	proxyLbRepo := proxy_lb2.NewGormRepository(ddmDb, log)
+	proxyLbService := proxy_lb2.NewService(proxyLbRepo, log)
 
 	//proxyHostRepo := proxy_host.NewGormRepository(ddmDb, log)
 	//proxyHostService := proxy_host.NewService(proxyHostRepo, log)
 
-	changeRepo := change_request.NewGormRepository(ddmDb, log)
-	changeService := change_request.NewService(changeRepo, log)
+	changeRepo := change_request2.NewGormRepository(ddmDb, log)
+	changeService := change_request2.NewService(changeRepo, log)
 
-	impGroupsRepo := implementor_groups.NewGormRepository(ddmDb, log, cfg)
-	impGroupsService := implementor_groups.NewService(impGroupsRepo, log)
+	impGroupsRepo := implementor_groups2.NewGormRepository(ddmDb, log, cfg)
+	impGroupsService := implementor_groups2.NewService(impGroupsRepo, log)
 
-	ptySessionRepo := pty_sessions.NewGormRepository(ddmDb, log)
-	ptySessionService := pty_sessions.NewService(ptySessionRepo, log)
+	ptySessionRepo := pty_sessions2.NewGormRepository(ddmDb, log)
+	ptySessionService := pty_sessions2.NewService(ptySessionRepo, log)
 
-	hostRepo := host.NewGormRepository(ddmDb, log)
-	hostService := host.NewService(hostRepo, log)
+	hostRepo := host2.NewGormRepository(ddmDb, log)
+	hostService := host2.NewService(hostRepo, log)
 
-	regexRepo := regex_filters.NewGormRepository(ddmDb, log)
-	regexSvc := regex_filters.NewService(regexRepo, log)
+	regexRepo := regex_filters2.NewGormRepository(ddmDb, log)
+	regexSvc := regex_filters2.NewService(regexRepo, log)
 
 	whiteblacklistSvc := whiteblacklist.NewService(regexSvc, log)
 
-	connRepo := connection.NewGormRepository(ddmDb, log)
-	connectionService := connection.NewService(connRepo, log)
+	connRepo := connection2.NewGormRepository(ddmDb, log)
+	connectionService := connection2.NewService(connRepo, log)
 
-	certNameRepo := certname.NewGormRepository(ddmDb, log)
-	certNameSvc := certname.NewService(certNameRepo, log, cfg)
+	certNameRepo := certname2.NewGormRepository(ddmDb, log)
+	certNameSvc := certname2.NewService(certNameRepo, log, cfg)
 
-	osAdmUsersRepo := os_adm_users.NewGormRepository(ddmDb, log)
-	osAdmUsersService := os_adm_users.NewService(osAdmUsersRepo, log)
+	osAdmUsersRepo := os_adm_users2.NewGormRepository(ddmDb, log)
+	osAdmUsersService := os_adm_users2.NewService(osAdmUsersRepo, log)
 
-	iexpressRepo := iexpress.NewGormRepository(ddmDb, log)
-	iexpressService := iexpress.NewService(iexpressRepo, log)
+	iexpressRepo := iexpress3.NewGormRepository(ddmDb, log)
+	iexpressService := iexpress3.NewService(iexpressRepo, log)
 
 	// validator for policy chains  ============================================================================================
 	validator := validators.NewValidator(log, cfg)

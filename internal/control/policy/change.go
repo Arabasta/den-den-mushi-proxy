@@ -1,9 +1,9 @@
 package policy
 
 import (
-	"den-den-mushi-Go/internal/control/ep/pty_token/request"
-	"den-den-mushi-Go/internal/control/implementor_groups"
-	"den-den-mushi-Go/internal/control/os_adm_users"
+	"den-den-mushi-Go/internal/control/app/pty_token/request"
+	implementor_groups2 "den-den-mushi-Go/internal/control/core/implementor_groups"
+	"den-den-mushi-Go/internal/control/core/os_adm_users"
 	"den-den-mushi-Go/internal/control/policy/validators"
 	"den-den-mushi-Go/pkg/types"
 	"errors"
@@ -13,14 +13,14 @@ import (
 type ChangePolicy[T request.Ctx] struct {
 	next Policy[T]
 
-	impGroupService *implementor_groups.Service
+	impGroupService *implementor_groups2.Service
 	osAdmUsersSvc   *os_adm_users.Service
 	v               *validators.Validator
 
 	log *zap.Logger
 }
 
-func NewChangePolicy[T request.Ctx](impGroupSvc *implementor_groups.Service, osAdmUsersSvc *os_adm_users.Service,
+func NewChangePolicy[T request.Ctx](impGroupSvc *implementor_groups2.Service, osAdmUsersSvc *os_adm_users.Service,
 	v *validators.Validator, log *zap.Logger) *ChangePolicy[T] {
 	return &ChangePolicy[T]{
 		impGroupService: impGroupSvc,
@@ -65,7 +65,7 @@ func (p *ChangePolicy[T]) Check(r T) error {
 		return errors.New("change request window is invalid")
 	}
 
-	if !implementor_groups.IsUsersGroupsInCRImplementerGroups(impGroups, cr.ImplementorGroups) {
+	if !validators.IsUsersGroupsInCRImplementerGroups(impGroups, cr.ImplementorGroups) {
 		p.log.Warn("User is not in change implementer group", zap.String("user", r.GetUserId()))
 		return errors.New("user is not in change implementer group")
 	}

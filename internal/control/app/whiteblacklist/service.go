@@ -1,7 +1,7 @@
 package whiteblacklist
 
 import (
-	"den-den-mushi-Go/internal/control/regex_filters"
+	"den-den-mushi-Go/internal/control/core/regex_filters"
 	dto "den-den-mushi-Go/pkg/dto/regex_filters"
 	"den-den-mushi-Go/pkg/middleware"
 	"den-den-mushi-Go/pkg/types"
