@@ -87,6 +87,13 @@ const socketManager = {
         this.socket.send(buffer);
     },
 
+    sendClose() {
+        const buffer = new Uint8Array(1);
+        buffer[0] = 0x18;
+        this.socket.send(buffer);
+        this.socket.close();
+    },
+
     getSocket() {
         return this.socket;
     }

@@ -53,6 +53,19 @@ function sendInput(data) {
     socketManager.getSocket().send(buffer);
 }
 
+document.getElementById('endButton').addEventListener('click', () => {
+    const ok = prompt("End Session?", "");
+    if (!ok) return;
+
+    const socket = socketManager.getSocket();
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socketManager.sendClose();
+        term.write("\r\n\x1b[31mSession ended.\x1b[0m\r\n");
+    } else {
+        console.warn("WebSocket not connected.");
+    }
+});
+
 document.getElementById('sudoButton').addEventListener('click', () => {
     const user = prompt("Enter user to switch to:", "root");
     if (!user) return;
