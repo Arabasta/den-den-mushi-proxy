@@ -12,7 +12,6 @@ type Config struct {
 		SkipPolicyChecks                            bool
 		IsUsingInvDb                                bool
 		IsAutoMigrateEnabled                        bool
-		IsBlacklistFilter                           bool
 		IsLocalSshKeyIfNotIsPuppetKey               bool
 		TargetSshPort                               string
 		IsSMX                                       bool

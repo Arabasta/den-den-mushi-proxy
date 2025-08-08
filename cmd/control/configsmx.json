@@ -10,7 +10,6 @@
     "skipPolicyChecks": false,
     "IsUsingInvDb": true,
     "IsAutoMigrateEnabled": false,
-    "IsBlacklistFilter": true,
     "IsLocalSshKeyIfNotIsPuppetKey": false,
     "TargetSshPort": "64022",
     "proxyHostIpForRejoinRouting": "127.0.1",
