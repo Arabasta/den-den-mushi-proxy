@@ -21,11 +21,17 @@ func (s *Session) RegisterConn(c *client.Connection, onClose func(string)) error
 	}
 
 	c.Ctx, c.Cancel = context.WithCancel(s.ctx)
-	c.Close = func() {
-		s.connDeregisterCh <- c
+
+	c.CloseDb = func() {
 		if onClose != nil {
+			s.log.Debug("Calling onClose callback for connection deregistration updating DB")
 			onClose(c.Claims.Connection.UserSession.Id)
 		}
+	}
+
+	c.Close = func() {
+		s.log.Debug("Close called, sending to connDeregisterCh")
+		s.connDeregisterCh <- c
 	}
 
 	s.connRegisterCh <- c
@@ -116,7 +122,7 @@ func (s *Session) AssignRole(c *client.Connection) error {
 
 // removeConn when a new websocket connection is deregistered, called by the event loop
 func (s *Session) removeConn(c *client.Connection) {
-	s.log.Info("Deregistering websocket connection from pty session",
+	s.log.Info("RemoveConn Deregistering websocket connection from pty session",
 		zap.String("userSessionId", c.Claims.Connection.UserSession.Id))
 
 	s.mu.Lock()
@@ -128,6 +134,7 @@ func (s *Session) removeConn(c *client.Connection) {
 	s.mu.Unlock()
 
 	c.DoClose()
+	c.CloseDb()
 
 	pkt := protocol.Packet{Header: protocol.PtySessionEvent, Data: []byte(c.Claims.Subject + " has left")}
 	s.logPacket(pkt)

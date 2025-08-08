@@ -18,9 +18,10 @@ type Connection struct {
 	WsWriteCh        chan protocol.Packet
 	OnceCloseWriteCh sync.Once
 
-	Close  func()
-	Ctx    context.Context
-	Cancel context.CancelFunc
+	Close   func()
+	CloseDb func()
+	Ctx     context.Context
+	Cancel  context.CancelFunc
 
 	Log *zap.Logger
 	cfg *config.Config
@@ -41,6 +42,7 @@ func (c *Connection) DoClose() {
 		if c.Cancel != nil {
 			c.Cancel()
 		}
+		c.Log.Debug("DoClose called, closing connection", zap.String("userSessionId", c.Claims.Connection.UserSession.Id))
 
 		if c.Sock != nil {
 			c.Log.Debug("Closing websocket connection")

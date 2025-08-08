@@ -15,8 +15,13 @@ import (
 
 // todo: refactor absolute garbage
 func (s *Session) handleConnPacket(pkt protocol.Packet) {
+	var released bool
 	s.mu.RLock()
-	defer s.mu.RUnlock()
+	defer func() {
+		if !released {
+			s.mu.RUnlock()
+		}
+	}()
 
 	var logMsg string
 	var err error
@@ -148,8 +153,11 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		}
 	} else if pkt.Header == protocol.ClientEndSession {
 		s.log.Debug("Handling ClientEndSession packet")
+		released = true
+		s.mu.RUnlock()
 		s.logL(session_logging.FormatLogLine(pkt.Header.String(), "Received end session from client"))
 		s.EndSession()
+		return
 	} else {
 		logMsg, err = s.purpose.HandleOther(s, pkt)
 	}

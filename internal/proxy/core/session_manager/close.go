@@ -21,7 +21,6 @@ func (m *Service) connCloseCallback(connId string) {
 	m.log.Info("Handling connection close callback", zap.String("connectionId", connId))
 
 	err := m.connSvc.UpdateStatusAndLeaveTime(connId, types.ConnectionStatusClosed)
-
 	if err != nil {
 		m.log.Error("Failed to update connection on close", zap.Error(err))
 	}

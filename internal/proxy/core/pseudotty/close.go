@@ -29,6 +29,7 @@ func (s *Session) EndSession() {
 		if s.onClose != nil {
 			s.onClose(s.Id)
 		}
+		s.log.Debug("Session closed")
 	})
 }
 
@@ -54,6 +55,7 @@ func (s *Session) deregisterAllWsConnections() {
 	if primary != nil {
 		s.removeConn(primary)
 	}
+
 	for _, o := range observers {
 		s.removeConn(o)
 	}

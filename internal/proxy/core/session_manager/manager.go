@@ -26,12 +26,13 @@ type Service struct {
 
 func New(ptySessionsSvc *pty_sessions.Service, connSvc *connections.Service, log *zap.Logger, cfg *config.Config,
 	puppetClient *puppet.Client, filterSvc *filter.Service) *Service {
-	log.Info("Initializing Session Manager Service...")
 	hostname, err := os.Hostname()
 	if err != nil {
 		log.Error("Failed to get hostname", zap.Error(err))
 		os.Exit(1)
 	}
+	log.Info("Initializing Session Manager Service", zap.String("hostname", hostname))
+
 	return &Service{
 		ptySessions:    make(map[string]*pseudotty.Session),
 		ptySessionsSvc: ptySessionsSvc,
