@@ -15,7 +15,9 @@ import (
 	"den-den-mushi-Go/pkg/util/cyberark"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/labstack/gommon/log"
 	"go.uber.org/zap"
+	"strings"
 )
 
 type Service struct {
@@ -59,7 +61,7 @@ func (s Service) ListExpressRequests(f filters.ListIexpress, c *gin.Context) (*o
 	for _, group := range userImplGroups {
 		impGroups = append(impGroups, group.GroupName)
 	}
-	f.ImplementorGroups = &impGroups
+	f.ImplementorGroups = EnrichImpGroupsWithGOV_(impGroups)
 
 	// get total count
 	var totalCount int
@@ -248,4 +250,20 @@ func convertToPtySessionSummaries(sessions []*ptysessionspkg.Record) *[]oapi.Pty
 		})
 	}
 	return &out
+}
+
+// EnrichImpGroupsWithGOV_ makes the implementor a GOV guy, if he is an INF guy
+func EnrichImpGroupsWithGOV_(groups []string) *[]string {
+	var r []string
+
+	for _, g := range groups {
+		r = append(r, g)
+		if strings.HasPrefix(g, "INF_") {
+			infGroup := strings.Replace(g, "INF_", "GOV_", 1)
+			r = append(r, infGroup)
+		}
+	}
+
+	log.Debug("EnrichImpGroupsWithGOV_", zap.Any("groups", r))
+	return &r
 }

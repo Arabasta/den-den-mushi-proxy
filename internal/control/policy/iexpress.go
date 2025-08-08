@@ -1,6 +1,7 @@
 package policy
 
 import (
+	"den-den-mushi-Go/internal/control/app/iexpress"
 	"den-den-mushi-Go/internal/control/app/pty_token/request"
 	implementor_groups2 "den-den-mushi-Go/internal/control/core/implementor_groups"
 	"den-den-mushi-Go/internal/control/core/os_adm_users"
@@ -58,6 +59,11 @@ func (p *IexpressPolicy[T]) Check(r T) error {
 		p.log.Warn("Failed to find implementor groups for user", zap.String("userId", r.GetUserId()), zap.Error(err))
 		return err
 	}
+	enrichedImpG := make([]string, 0)
+	for _, group := range impGroups {
+		enrichedImpG = append(enrichedImpG, group.GroupName)
+	}
+	enrichedImpG = *iexpress.EnrichImpGroupsWithGOV_(enrichedImpG)
 
 	// 4. check if ticket valid
 	if !p.v.IsValidWindow(*exp.StartTime, *exp.EndTime) {
