@@ -32,7 +32,7 @@ type Service struct {
 }
 
 func NewService(iexpSvc *iexpress.Service, ptySessionsSvc *pty_sessions.Service,
-	hostSvc *host.Service, impGrpSvc *implementor_groups.Service, osAdmUsersSvc *os_adm_users.Service, log *zap.Logger) *Service {
+	hostSvc *host.Service, impGrpSvc *implementor_groups.Service, osAdmUsersSvc *os_adm_users.Service, log *zap.Logger, cfg *config.Config) *Service {
 	log.Info("Initializing Make Change Service")
 	return &Service{
 		iexpressSvc:    iexpSvc,
@@ -41,6 +41,7 @@ func NewService(iexpSvc *iexpress.Service, ptySessionsSvc *pty_sessions.Service,
 		impGrpSvc:      impGrpSvc,
 		osAdmUsersSvc:  osAdmUsersSvc,
 		log:            log,
+		cfg:            cfg,
 	}
 }
 

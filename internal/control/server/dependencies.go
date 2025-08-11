@@ -127,7 +127,7 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 
 	makeChangeService := make_change.NewService(changeService, ptySessionService, hostService, impGroupsService, osAdmUsersService, log, cfg)
 	healthcheckService := healthcheck.NewService(ptySessionService, hostService, osAdmUsersService, log, cfg)
-	iexpresssvcEp := iexpress2.NewService(iexpressService, ptySessionService, hostService, impGroupsService, osAdmUsersService, log)
+	iexpresssvcEp := iexpress2.NewService(iexpressService, ptySessionService, hostService, impGroupsService, osAdmUsersService, log, cfg)
 	return &Deps{
 		Issuer:                   issuer,
 		ProxyService:             proxyLbService,
