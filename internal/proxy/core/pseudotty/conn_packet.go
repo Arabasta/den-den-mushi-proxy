@@ -61,7 +61,7 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		} else {
 			s.logAndResetLineEditorIfInputEnter(pkt)
 		}
-	} else if pkt.Header == protocol.Sudo && s.startClaims.Connection.Purpose == types.Change {
+	} else if pkt.Header == protocol.Sudo && (s.startClaims.Connection.Purpose == types.Change || s.startClaims.Connection.Purpose == types.IExpress) {
 		s.logPacket(pkt)
 		/// todo: refactor this garbage
 		//// packet should contain username to sudo to
