@@ -5,7 +5,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const TaskInjectPublicKey PuppetTask = "inject_public_key"
+const TaskInjectPublicKey Task = "inject_public_key"
 
 func (p *Client) KeyInject(publicKey string, conn dto.Connection) error {
 	params := taskBody{

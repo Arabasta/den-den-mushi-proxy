@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-type PuppetTask string
+type Task string
 
 type taskBody struct {
 	Environment string           `json:"environment"`
@@ -28,7 +28,7 @@ type taskScope struct {
 	Nodes []string `json:"nodes"`
 }
 
-func (p *Client) createPuppetRequest(t PuppetTask, payload interface{}) (*http.Request, error) {
+func (p *Client) createPuppetRequest(t Task, payload interface{}) (*http.Request, error) {
 	url := p.cfg.Endpoint
 	if url == "" {
 		return nil, fmt.Errorf("invalid puppet task: %s", t)
@@ -57,7 +57,7 @@ func (p *Client) createPuppetRequest(t PuppetTask, payload interface{}) (*http.R
 	return req, nil
 }
 
-func (p *Client) callPuppetTask(task PuppetTask, payload interface{}) (*http.Response, error) {
+func (p *Client) callPuppetTask(task Task, payload interface{}) (*http.Response, error) {
 	req, err := p.createPuppetRequest(task, payload)
 	if err != nil {
 		return nil, err

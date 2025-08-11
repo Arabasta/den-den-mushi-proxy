@@ -5,7 +5,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const TaskRemovePublicKey PuppetTask = "remove_public_key"
+const TaskRemovePublicKey Task = "remove_public_key"
 
 func (p *Client) KeyRemove(publicKey string, conn dto.Connection) error {
 	params := taskBody{

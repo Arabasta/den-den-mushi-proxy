@@ -11,7 +11,7 @@ import (
 
 // todo: refactor, rush for demo as usual
 
-const TaskCyberarkDrawKey PuppetTask = "cyberark_draw_key"
+const TaskCyberarkDrawKey Task = "cyberark_draw_key"
 
 type taskBody2 struct {
 	Environment string                    `json:"environment"`
@@ -108,7 +108,7 @@ func (p *Client) queryOrchestratorJobForCyberarkPasswordWhatever(jobId string) (
 		p.log.Debug("Query orchestrator job response status", zap.Int("status", resp.StatusCode))
 
 		body, err := io.ReadAll(resp.Body)
-		resp.Body.Close()
+		err = resp.Body.Close()
 		if err != nil {
 			p.log.Warn("failed to read orchestrator response body", zap.Error(err))
 			time.Sleep(p.Cfgtmp.PuppetTasks.QueryJobs.QueryIntervalSeconds * time.Second)

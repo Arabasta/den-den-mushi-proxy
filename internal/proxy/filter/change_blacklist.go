@@ -40,11 +40,11 @@ func (c *ChangeBlacklistFilter) IsValid(cmd string, ouGroup string) (string, boo
 }
 
 // todo load from db
-func (b *ChangeBlacklistFilter) load(_ map[string][]regexp.Regexp) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
+func (c *ChangeBlacklistFilter) load(_ map[string][]regexp.Regexp) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
-	b.ouGroupRegexFiltersMap["default"] = []regexp.Regexp{
+	c.ouGroupRegexFiltersMap["default"] = []regexp.Regexp{
 		*regexp.MustCompile(`(?i)^\s*su\s*$`),         // su
 		*regexp.MustCompile(`(?i)^\s*su\s*-$`),        // su -
 		*regexp.MustCompile(`(?i)^\s*su\s+-\s*root$`), // su - root

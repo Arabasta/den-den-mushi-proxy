@@ -8,6 +8,7 @@ import (
 	"den-den-mushi-Go/pkg/constants"
 	"den-den-mushi-Go/pkg/types"
 	"den-den-mushi-Go/pkg/util/cyberark"
+	"errors"
 	"go.uber.org/zap"
 	"slices"
 	"time"
@@ -55,7 +56,7 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		}
 
 		logMsg, err = s.purpose.HandleInput(s, pkt)
-		if err != nil && err == CommandBlockedError {
+		if err != nil && errors.Is(err, CommandBlockedError) {
 			// skip
 		} else {
 			s.logAndResetLineEditorIfInputEnter(pkt)

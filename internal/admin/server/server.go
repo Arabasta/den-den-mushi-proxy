@@ -15,10 +15,6 @@ type Server struct {
 	log    *zap.Logger
 }
 
-func setupSecurityHeaders(r *gin.Engine) {
-
-}
-
 func New(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Server {
 	deps := initDependencies(ddmDb, cfg, log)
 
