@@ -48,33 +48,18 @@ func (p *Client) DrawCyberarkKey(object string, serverFQDN string) (string, erro
 
 	p.log.Debug("Calling puppet task to draw key with params", zap.Any("params", params))
 
-	resp, err := p.callPuppetTask(TaskCyberarkDrawKey, params)
+	res, err := p.callPuppetTask(TaskCyberarkDrawKey, params)
 	if err != nil {
 		return "", fmt.Errorf("failed to call puppet task to draw cyberark key: %w", err)
 	}
 
-	// extract the taskname from the response
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("failed to read response body: %w", err)
-	}
-	if body == nil {
-		return "", fmt.Errorf("puppet task returned no response")
+	taskName := p.getPuppetTaskName(res)
+	p.log.Debug("Cyberark draw key task called", zap.String("Task name", taskName))
+	if taskName == "" {
+		return "", fmt.Errorf("failed to get puppet task name from response, task may not have been created")
 	}
 
-	var result struct {
-		Job struct {
-			Id     string `json:"id"`
-			TaskID string `json:"name"`
-		} `json:"job"`
-	}
-
-	if err := json.Unmarshal(body, &result); err != nil {
-		return "", fmt.Errorf("failed to unmarshal response: %w", err)
-	}
-
-	password, err := p.queryOrchestratorJobForCyberarkPasswordWhatever(result.Job.TaskID)
+	password, err := p.queryOrchestratorJobForCyberarkPasswordWhatever(taskName)
 	if err != nil {
 		return "", fmt.Errorf("failed to query orchestrator job: %w", err)
 	}

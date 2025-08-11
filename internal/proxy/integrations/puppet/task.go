@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go.uber.org/zap"
+	"io"
 	"net/http"
 )
 
@@ -72,4 +73,42 @@ func (p *Client) callPuppetTask(task PuppetTask, payload interface{}) (*http.Res
 
 	p.log.Debug("Puppet task completed", zap.String("task", string(task)))
 	return resp, nil
+}
+
+var result struct {
+	Job struct {
+		Id     string `json:"id"`
+		TaskID string `json:"name"`
+	} `json:"job"`
+}
+
+func (p *Client) getPuppetTaskName(res *http.Response) string {
+	// extract the taskname from the response
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			p.log.Error("Failed to close response body", zap.Error(err))
+		}
+	}(res.Body)
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		p.log.Error("Failed to read response body", zap.Error(err))
+		return ""
+	}
+	if body == nil {
+		p.log.Error("Puppet task returned no response")
+		return ""
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		p.log.Error("Failed to unmarshal response body", zap.Error(err))
+		return ""
+	}
+	if result.Job.TaskID == "" {
+		p.log.Error("Puppet task returned empty task ID", zap.String("response", string(body)))
+		return ""
+	}
+
+	return result.Job.TaskID
 }

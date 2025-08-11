@@ -23,6 +23,7 @@ func (p *Client) KeyInject(publicKey string, conn dto.Connection) error {
 
 	p.log.Debug("Preparing to inject public key", zap.Any("params", params))
 
-	_, err := p.callPuppetTask(TaskInjectPublicKey, params)
+	res, err := p.callPuppetTask(TaskInjectPublicKey, params)
+	p.log.Debug("Inject key task called", zap.String("Task name", p.getPuppetTaskName(res)))
 	return err
 }
