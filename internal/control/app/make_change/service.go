@@ -173,14 +173,12 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.C
 				sessions = agg.sessions
 			}
 
-			s.log.Debug("CR CyberArk Objects", zap.Any("cyberarkObjects", cr.CyberArkObjects))
 			hostDetails = append(hostDetails, oapi.HostSessionDetailsV2{
 				Host:            hostInfo,
 				OsUsers:         &osUsers,
 				PtySessions:     convertToPtySessionSummaries(sessions),
 				CyberarkObjects: cyberark.ExtractObjectsForIp(hostInfo.IpAddress, cr.CyberArkObjects),
 			})
-			s.log.Debug("Host cyberark objects", zap.Any("cyberarkObjects", hostDetails[len(hostDetails)-1].CyberarkObjects))
 		}
 
 		r = append(r, oapi.ChangeRequestSessionsResponse{

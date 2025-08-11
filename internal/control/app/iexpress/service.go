@@ -33,7 +33,7 @@ type Service struct {
 
 func NewService(iexpSvc *iexpress.Service, ptySessionsSvc *pty_sessions.Service,
 	hostSvc *host.Service, impGrpSvc *implementor_groups.Service, osAdmUsersSvc *os_adm_users.Service, log *zap.Logger, cfg *config.Config) *Service {
-	log.Info("Initializing Make Change Service")
+	log.Info("Initializing IExpress Service")
 	return &Service{
 		iexpressSvc:    iexpSvc,
 		ptySessionsSvc: ptySessionsSvc,
