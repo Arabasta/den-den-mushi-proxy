@@ -208,7 +208,7 @@ func (s Service) ListExpressRequestDetails(id string, c *gin.Context) (*oapi.Get
 		hostDetails = append(hostDetails, oapi.HostSessionDetailsV2{
 			Host:            hostInfo,
 			OsUsers:         &osUsers,
-			CyberarkObjects: &exp.CyberArkObjects,
+			CyberarkObjects: cyberark.ExtractObjectsForIp(hostInfo.IpAddress, exp.CyberArkObjects),
 			PtySessions:     convertToPtySessionSummaries(sessions),
 		})
 	}

@@ -123,7 +123,7 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.C
 		}
 		//s.log.Debug("Grouped PTY sessions by IP", zap.Any("ipSessionsMap", ipSessionsMap))
 
-		var hostDetails []oapi.HostSessionDetails
+		var hostDetails []oapi.HostSessionDetailsV2
 		for ip, hostRec := range hostMap {
 			hostInfo := &oapi.Host{
 				AppCode:     hostRec.Appcode,
@@ -162,10 +162,11 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.C
 				sessions = agg.sessions
 			}
 
-			hostDetails = append(hostDetails, oapi.HostSessionDetails{
-				Host:        hostInfo,
-				OsUsers:     &osUsers,
-				PtySessions: convertToPtySessionSummaries(sessions),
+			hostDetails = append(hostDetails, oapi.HostSessionDetailsV2{
+				Host:            hostInfo,
+				OsUsers:         &osUsers,
+				PtySessions:     convertToPtySessionSummaries(sessions),
+				CyberarkObjects: cyberark.ExtractObjectsForIp(hostInfo.IpAddress, cr.CyberArkObjects),
 			})
 		}
 

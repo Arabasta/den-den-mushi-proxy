@@ -17,6 +17,8 @@ import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
 
 // @ts-ignore
+import { ConnectionPurpose } from '../model/connectionPurpose';
+// @ts-ignore
 import { GetPtySessionResponse } from '../model/getPtySessionResponse';
 // @ts-ignore
 import { PtySessionState } from '../model/ptySessionState';
@@ -39,11 +41,14 @@ export class PTYSessionService extends BaseService {
 
     /**
      * Get all PTY sessions matching the filter
-     * @param ticketIds 
+     * @param sessionIds Pty session IDs
+     * @param ticketIds CR Number
      * @param targetServerHostname 
      * @param targetServerIp 
+     * @param createdBy userid of the user who created the PTY session
      * @param implementors userid of implementors
      * @param observers userid of observers
+     * @param purpose change request or health check
      * @param startTime Expected format - RFC3339
      * @param endTime Expected format - RFC3339
      * @param ptySessionState 
@@ -53,22 +58,42 @@ export class PTYSessionService extends BaseService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiV1AdminPtySessionsGet(ticketIds?: Array<string>, targetServerHostname?: string, targetServerIp?: string, implementors?: Array<string>, observers?: Array<string>, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, totalCount?: boolean, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<GetPtySessionResponse>>;
-    public apiV1AdminPtySessionsGet(ticketIds?: Array<string>, targetServerHostname?: string, targetServerIp?: string, implementors?: Array<string>, observers?: Array<string>, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, totalCount?: boolean, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<GetPtySessionResponse>>>;
-    public apiV1AdminPtySessionsGet(ticketIds?: Array<string>, targetServerHostname?: string, targetServerIp?: string, implementors?: Array<string>, observers?: Array<string>, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, totalCount?: boolean, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<GetPtySessionResponse>>>;
-    public apiV1AdminPtySessionsGet(ticketIds?: Array<string>, targetServerHostname?: string, targetServerIp?: string, implementors?: Array<string>, observers?: Array<string>, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, totalCount?: boolean, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public apiV1AdminPtySessionsGet(sessionIds?: Array<string>, ticketIds?: Array<string>, targetServerHostname?: Array<string>, targetServerIp?: Array<string>, createdBy?: Array<string>, implementors?: Array<string>, observers?: Array<string>, purpose?: ConnectionPurpose, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, totalCount?: boolean, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<GetPtySessionResponse>>;
+    public apiV1AdminPtySessionsGet(sessionIds?: Array<string>, ticketIds?: Array<string>, targetServerHostname?: Array<string>, targetServerIp?: Array<string>, createdBy?: Array<string>, implementors?: Array<string>, observers?: Array<string>, purpose?: ConnectionPurpose, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, totalCount?: boolean, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<GetPtySessionResponse>>>;
+    public apiV1AdminPtySessionsGet(sessionIds?: Array<string>, ticketIds?: Array<string>, targetServerHostname?: Array<string>, targetServerIp?: Array<string>, createdBy?: Array<string>, implementors?: Array<string>, observers?: Array<string>, purpose?: ConnectionPurpose, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, totalCount?: boolean, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<GetPtySessionResponse>>>;
+    public apiV1AdminPtySessionsGet(sessionIds?: Array<string>, ticketIds?: Array<string>, targetServerHostname?: Array<string>, targetServerIp?: Array<string>, createdBy?: Array<string>, implementors?: Array<string>, observers?: Array<string>, purpose?: ConnectionPurpose, startTime?: string, endTime?: string, ptySessionState?: PtySessionState, page?: number, pageSize?: number, totalCount?: boolean, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        if (sessionIds) {
+            sessionIds.forEach((element) => {
+                localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+                  <any>element, 'session_ids');
+            })
+        }
         if (ticketIds) {
             ticketIds.forEach((element) => {
                 localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
                   <any>element, 'ticket_ids');
             })
         }
-        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-          <any>targetServerHostname, 'target_server_hostname');
-        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-          <any>targetServerIp, 'target_server_ip');
+        if (targetServerHostname) {
+            targetServerHostname.forEach((element) => {
+                localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+                  <any>element, 'target_server_hostname');
+            })
+        }
+        if (targetServerIp) {
+            targetServerIp.forEach((element) => {
+                localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+                  <any>element, 'target_server_ip');
+            })
+        }
+        if (createdBy) {
+            createdBy.forEach((element) => {
+                localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+                  <any>element, 'created_by');
+            })
+        }
         if (implementors) {
             implementors.forEach((element) => {
                 localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
@@ -81,6 +106,8 @@ export class PTYSessionService extends BaseService {
                   <any>element, 'observers');
             })
         }
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>purpose, 'purpose');
         localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
           <any>startTime, 'start_time');
         localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
@@ -95,6 +122,9 @@ export class PTYSessionService extends BaseService {
           <any>totalCount, 'total_count');
 
         let localVarHeaders = this.defaultHeaders;
+
+        // authentication (BearerAuth) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('BearerAuth', 'Authorization', localVarHeaders, 'Bearer ');
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
             'application/json'

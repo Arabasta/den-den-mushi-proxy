@@ -9,6 +9,7 @@ configuration.ts
 encoder.ts
 git_push.sh
 index.ts
+model/connectionPurpose.ts
 model/getPtySessionResponse.ts
 model/models.ts
 model/ptySessionState.ts

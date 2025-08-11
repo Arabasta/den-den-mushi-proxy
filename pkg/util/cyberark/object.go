@@ -111,3 +111,18 @@ func ExtractAllOsUsers(objects []string) []string {
 
 	return users
 }
+
+func ExtractObjectsForIp(ip string, objects []string) *[]string {
+	if ip == "" || len(objects) == 0 {
+		return nil
+	}
+
+	var result []string
+	for _, o := range objects {
+		if ExtractIPFromObject(o) == ip {
+			result = append(result, o)
+		}
+	}
+
+	return &result
+}

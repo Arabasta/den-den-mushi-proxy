@@ -7,7 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { HostSessionDetails } from './hostSessionDetails';
+import { HostSessionDetailsV2 } from './hostSessionDetailsV2';
 
 
 export interface ChangeRequestSessionsResponse { 
@@ -19,6 +19,6 @@ export interface ChangeRequestSessionsResponse {
     change_end_time?: string;
     change_request_status?: string;
     summary?: string;
-    host_session_details?: Array<HostSessionDetails>;
+    host_session_details?: Array<HostSessionDetailsV2>;
 }
 
