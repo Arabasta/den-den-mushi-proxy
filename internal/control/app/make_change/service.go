@@ -1,6 +1,7 @@
 package make_change
 
 import (
+	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/core/change_request"
 	"den-den-mushi-Go/internal/control/core/host"
 	"den-den-mushi-Go/internal/control/core/implementor_groups"
@@ -25,10 +26,12 @@ type Service struct {
 	osAdmUsersSvc  *os_adm_users.Service
 
 	log *zap.Logger
+	cfg *config.Config
 }
 
 func NewService(crSvc *change_request.Service, ptySessionsSvc *pty_sessions.Service,
-	hostSvc *host.Service, impGrpSvc *implementor_groups.Service, osAdmUsersSvc *os_adm_users.Service, log *zap.Logger) *Service {
+	hostSvc *host.Service, impGrpSvc *implementor_groups.Service, osAdmUsersSvc *os_adm_users.Service, log *zap.Logger,
+	cfg *config.Config) *Service {
 	log.Info("Initializing Make Change Service")
 	return &Service{
 		crSvc:          crSvc,
@@ -37,11 +40,11 @@ func NewService(crSvc *change_request.Service, ptySessionsSvc *pty_sessions.Serv
 		impGrpSvc:      impGrpSvc,
 		osAdmUsersSvc:  osAdmUsersSvc,
 		log:            log,
+		cfg:            cfg,
 	}
 }
 
 // todo refactor garbage, need to make it 1 query and SRP ... will do it when there are no more changes or maybe not
-// todo return cyberark objects
 func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.Context) ([]oapi.ChangeRequestSessionsResponse, int64, error) {
 	var r []oapi.ChangeRequestSessionsResponse
 
@@ -130,6 +133,14 @@ func (s *Service) ListChangeRequestsWithSessions(filter filters.ListCR, c *gin.C
 				Environment: hostRec.Environment,
 				IpAddress:   hostRec.IpAddress,
 				Name:        hostRec.HostName,
+			}
+
+			// for prod environment, filter out non-prod hosts
+			// for non-prod, yirong say don't care
+			if s.cfg.App.Environment == "prod" {
+				if hostInfo.Environment != "PROD" {
+					continue
+				}
 			}
 
 			// todo refactor this, it is garbage

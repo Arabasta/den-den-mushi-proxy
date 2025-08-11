@@ -44,8 +44,11 @@ func (s *Service) getHostsAndAssociatedPtySessions(f filters.HealthcheckPtySessi
 	}
 
 	// todo: FindAllByFilter will eventually require ougroup
+	if s.cfg.App.Environment == "prod" {
+		*f.Environment = "PROD"
+	}
+
 	hosts, err := s.hostSvc.FindAllByFilter(f)
-	//	s.log.Debug("Got hosts", zap.Any("filter", f), zap.Any("hosts", len(hosts)))
 	if err != nil {
 		return nil, err
 	}

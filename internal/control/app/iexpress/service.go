@@ -175,6 +175,14 @@ func (s Service) ListExpressRequestDetails(id string, c *gin.Context) (*oapi.Get
 			Name:        hostRec.HostName,
 		}
 
+		// for prod environment, filter out non-prod hosts
+		// for non-prod, yirong say don't care
+		if s.cfg.App.Environment == "prod" {
+			if hostInfo.Environment != "PROD" {
+				continue
+			}
+		}
+
 		// todo refactor this, it is garbage
 		osUsers, ok := ipToUsers[ip]
 		if !ok {

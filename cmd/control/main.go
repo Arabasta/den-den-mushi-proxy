@@ -41,6 +41,8 @@ func main() {
 		_ = log.Sync()
 	}()
 
+	log.Info("Starting Den Den Mushi Control", zap.String("version", cfg.App.Version))
+
 	var db *gorm.DB
 	var err error
 
