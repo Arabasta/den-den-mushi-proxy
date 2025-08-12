@@ -58,6 +58,7 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		logMsg, err = s.purpose.HandleInput(s, pkt)
 		if err != nil && errors.Is(err, CommandBlockedError) {
 			// skip
+			s.line.Reset()
 		} else {
 			s.logAndResetLineEditorIfInputEnter(pkt)
 		}
