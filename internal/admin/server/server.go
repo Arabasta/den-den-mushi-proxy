@@ -38,7 +38,8 @@ func Start(s *Server, cfg *config.Config, log *zap.Logger) error {
 		log.Info("Starting server without TLS", zap.String("address", addr))
 		return s.engine.Run(addr)
 	} else {
-		log.Info("Starting server with TLS")
+		addr = fmt.Sprintf("127.0.0.1:%d", cfg.App.Port)
+		log.Info("Starting server on localhost with TLS")
 		log.Debug("Cert details", zap.String("cert", cfg.Ssl.CertFile),
 			zap.String("key", cfg.Ssl.KeyFile))
 		return s.engine.RunTLS(addr, cfg.Ssl.CertFile, cfg.Ssl.KeyFile)
