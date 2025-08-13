@@ -19,7 +19,7 @@ func SetAuthContext() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID, ok := c.Get("user_id")
 		if !ok {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing user_id in context"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing user_id in auth context"})
 			return
 		}
 

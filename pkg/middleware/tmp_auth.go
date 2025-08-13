@@ -35,13 +35,13 @@ func TmpAuth(log *zap.Logger, cfg *config.Tmpauth) gin.HandlerFunc {
 			queryToken := c.Query("Authorization")
 			if queryToken != "" {
 				tokenStr = queryToken
-				log.Debug("Using Authorization token from query param", zap.String("token", tokenStr))
+				log.Debug("Using Authorization token from query param")
 			}
 		}
 
 		if tokenStr == "" {
 			log.Error("Authorization token missing (header and query param)")
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authorization token missing (header / query param)"})
 			return
 		}
 
@@ -62,7 +62,7 @@ func TmpAuth(log *zap.Logger, cfg *config.Tmpauth) gin.HandlerFunc {
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
 			log.Warn("invalid jwt claims")
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid jwt claims"})
 			return
 		}
 

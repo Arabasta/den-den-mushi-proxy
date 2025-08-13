@@ -24,16 +24,14 @@ func (v *Validator) ExtractProxyTokenFromHeader(h string) (string, error) {
 	// get second part of header
 	tokenString := strings.TrimSpace(h[len(expectedPrefix):])
 	if tokenString == "" {
-		v.log.Error("Empty token after header prefix",
-			zap.String("header", h))
+		v.log.Error("Empty token after header prefix", zap.String("header", h))
 		return "", errors.New("empty session token")
 	}
 
 	// simple JWT format validation
 	parts := strings.Split(tokenString, ".")
 	if len(parts) != 3 {
-		v.log.Error("Invalid JWT format - wrong number of segments",
-			zap.String("token", tokenString))
+		v.log.Error("Invalid JWT format - wrong number of segments")
 		return "", errors.New("invalid JWT format")
 	}
 
@@ -42,7 +40,7 @@ func (v *Validator) ExtractProxyTokenFromHeader(h string) (string, error) {
 
 // GetTokenAndClaims parses jwt, verifies signature. Returns token and custom claims
 func (v *Validator) GetTokenAndClaims(tokenString string) (*jwt.Token, *token.Claims, error) {
-	v.log.Debug("Extracting token and claims from raw token", zap.String("token", tokenString))
+	v.log.Debug("Extracting token and claims from token")
 	claims := new(token.Claims)
 
 	// ParseWithClaims handles RFC8725 3.1 algorithm verification, algo passed in NewParser
@@ -50,6 +48,7 @@ func (v *Validator) GetTokenAndClaims(tokenString string) (*jwt.Token, *token.Cl
 		return v.secret, nil
 	})
 	if err != nil {
+		v.log.Error("Failed to parse JWT", zap.Error(err))
 		return nil, nil, err
 	}
 

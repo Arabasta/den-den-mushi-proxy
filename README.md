@@ -97,3 +97,10 @@ btw users can stack base64 / gzip 100x
 ## Service file thing
 
 - todo: read https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files
+
+## Vuln scan
+
+```bash
+go install golang.org/x/vuln/cmd/govulncheck@latest
+govulncheck ./...
+```

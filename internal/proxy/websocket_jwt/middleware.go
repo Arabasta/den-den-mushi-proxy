@@ -26,14 +26,14 @@ func Middleware(v *Validator, log *zap.Logger, cfg *config.Config) gin.HandlerFu
 
 		token, claims, err := v.GetTokenAndClaims(rawToken)
 		if err != nil {
-			log.Error("Failed to parse JWT", zap.String("rawToken", rawToken), zap.Error(err))
+			log.Error("Failed to parse JWT", zap.Error(err))
 			c.AbortWithStatusJSON(401, gin.H{"error": "JWT validation failed"})
 			return
 		}
 
 		err = v.ValidateClaims(claims, token, authCtx, cfg.TmpAuth)
 		if err != nil {
-			log.Error("Failed to validate claims", zap.Any("claims", claims), zap.Any("token", token), zap.Error(err))
+			log.Error("Failed to validate claims", zap.Any("claims", claims), zap.Error(err))
 			c.AbortWithStatusJSON(401, gin.H{"error": "JWT validation failed"})
 			return
 		}
