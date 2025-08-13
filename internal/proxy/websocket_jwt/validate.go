@@ -64,5 +64,5 @@ func (v *Validator) isExpectedTyp(typ string, expectedTyp string) bool {
 	if strings.TrimSpace(typ) == "" || strings.TrimSpace(expectedTyp) == "" {
 		return false
 	}
-	return strings.TrimSpace(typ) == expectedTyp
+	return strings.TrimSpace(typ) == strings.TrimSpace(expectedTyp)
 }
