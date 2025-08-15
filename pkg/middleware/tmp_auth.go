@@ -67,12 +67,18 @@ func TmpAuth(log *zap.Logger, cfg *config.Tmpauth) gin.HandlerFunc {
 		}
 
 		subject, _ := claims[cfg.UserIdKey].(string)
+		if subject == "" {
+			log.Warn("user_id claim is empty")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "user_id claim is empty"})
+			return
+		}
 		c.Set("user_id", subject)
 
 		// each user should only have 1 ou group, this is handled by the auth service
 		ouGroup, _ := claims[cfg.OuGroupKey].(string)
 		if ouGroup == "" {
-			log.Debug("ou_group claim is empty")
+			log.Warn("ou_group claim is empty", zap.String("user_id", subject))
+			// still allow
 		}
 		c.Set("ou_group", ouGroup)
 

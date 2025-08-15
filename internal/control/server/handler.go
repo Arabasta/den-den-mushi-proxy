@@ -4,6 +4,7 @@ import (
 	"den-den-mushi-Go/internal/control/app/healthcheck"
 	"den-den-mushi-Go/internal/control/app/iexpress"
 	"den-den-mushi-Go/internal/control/app/make_change"
+	"den-den-mushi-Go/internal/control/app/meta"
 	"den-den-mushi-Go/internal/control/app/pty_token"
 	"den-den-mushi-Go/internal/control/app/whiteblacklist"
 	oapi "den-den-mushi-Go/openapi/control"
@@ -16,6 +17,7 @@ type MasterHandler struct {
 	WhiteBlacklistHandler *whiteblacklist.Handler
 	HealthcheckHandler    *healthcheck.Handler
 	IExpressHandler       *iexpress.Handler
+	MetaHandler           *meta.Handler
 }
 
 func (h *MasterHandler) GetApiV1Iexpress(c *gin.Context, params oapi.GetApiV1IexpressParams) {
@@ -74,4 +76,8 @@ func (h *MasterHandler) DeleteApiV1BlacklistRegexId(c *gin.Context, id int) {
 
 func (h *MasterHandler) GetApiV1Healthcheck(c *gin.Context, params oapi.GetApiV1HealthcheckParams) {
 	h.HealthcheckHandler.GetApiV1Healthcheck(c, params)
+}
+
+func (h *MasterHandler) GetApiV1Metadata(c *gin.Context) {
+	h.MetaHandler.GetApiV1Metadata(c)
 }

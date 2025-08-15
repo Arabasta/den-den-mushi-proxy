@@ -23,7 +23,13 @@ import (
 )
 
 const (
-	ApiKeyAuthScopes = "ApiKeyAuth.Scopes"
+	BearerAuthScopes = "BearerAuth.Scopes"
+)
+
+// Defines values for ConnectionPurpose.
+const (
+	ChangeRequest ConnectionPurpose = "change_request"
+	HealthCheck   ConnectionPurpose = "health_check"
 )
 
 // Defines values for PtySessionState.
@@ -32,6 +38,9 @@ const (
 	Closed  PtySessionState = "closed"
 	Created PtySessionState = "created"
 )
+
+// ConnectionPurpose Type of connection being established
+type ConnectionPurpose string
 
 // GetPtySessionResponse defines model for GetPtySessionResponse.
 type GetPtySessionResponse struct {
@@ -68,15 +77,25 @@ type PtySessionState string
 
 // GetApiV1AdminPtySessionsParams defines parameters for GetApiV1AdminPtySessions.
 type GetApiV1AdminPtySessionsParams struct {
+	// SessionIds Pty session IDs
+	SessionIds *[]string `form:"session_ids,omitempty" json:"session_ids,omitempty"`
+
+	// TicketIds CR Number
 	TicketIds            *[]string `form:"ticket_ids,omitempty" json:"ticket_ids,omitempty"`
-	TargetServerHostname *string   `form:"target_server_hostname,omitempty" json:"target_server_hostname,omitempty"`
-	TargetServerIp       *string   `form:"target_server_ip,omitempty" json:"target_server_ip,omitempty"`
+	TargetServerHostname *[]string `form:"target_server_hostname,omitempty" json:"target_server_hostname,omitempty"`
+	TargetServerIp       *[]string `form:"target_server_ip,omitempty" json:"target_server_ip,omitempty"`
+
+	// CreatedBy userid of the user who created the PTY session
+	CreatedBy *[]string `form:"created_by,omitempty" json:"created_by,omitempty"`
 
 	// Implementors userid of implementors
 	Implementors *[]string `form:"implementors,omitempty" json:"implementors,omitempty"`
 
 	// Observers userid of observers
 	Observers *[]string `form:"observers,omitempty" json:"observers,omitempty"`
+
+	// Purpose change request or health check
+	Purpose *ConnectionPurpose `form:"purpose,omitempty" json:"purpose,omitempty"`
 
 	// StartTime Expected format - RFC3339
 	StartTime *time.Time `form:"start_time,omitempty" json:"start_time,omitempty"`
@@ -200,6 +219,22 @@ func NewGetApiV1AdminPtySessionsRequest(server string, params *GetApiV1AdminPtyS
 	if params != nil {
 		queryValues := queryURL.Query()
 
+		if params.SessionIds != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "session_ids", runtime.ParamLocationQuery, *params.SessionIds); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.TicketIds != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "ticket_ids", runtime.ParamLocationQuery, *params.TicketIds); err != nil {
@@ -248,6 +283,22 @@ func NewGetApiV1AdminPtySessionsRequest(server string, params *GetApiV1AdminPtyS
 
 		}
 
+		if params.CreatedBy != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created_by", runtime.ParamLocationQuery, *params.CreatedBy); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Implementors != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "implementors", runtime.ParamLocationQuery, *params.Implementors); err != nil {
@@ -267,6 +318,22 @@ func NewGetApiV1AdminPtySessionsRequest(server string, params *GetApiV1AdminPtyS
 		if params.Observers != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "observers", runtime.ParamLocationQuery, *params.Observers); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Purpose != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "purpose", runtime.ParamLocationQuery, *params.Purpose); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -512,10 +579,18 @@ func (siw *ServerInterfaceWrapper) GetApiV1AdminPtySessions(c *gin.Context) {
 
 	var err error
 
-	c.Set(ApiKeyAuthScopes, []string{})
+	c.Set(BearerAuthScopes, []string{})
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetApiV1AdminPtySessionsParams
+
+	// ------------- Optional query parameter "session_ids" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "session_ids", c.Request.URL.Query(), &params.SessionIds)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter session_ids: %w", err), http.StatusBadRequest)
+		return
+	}
 
 	// ------------- Optional query parameter "ticket_ids" -------------
 
@@ -541,6 +616,14 @@ func (siw *ServerInterfaceWrapper) GetApiV1AdminPtySessions(c *gin.Context) {
 		return
 	}
 
+	// ------------- Optional query parameter "created_by" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "created_by", c.Request.URL.Query(), &params.CreatedBy)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created_by: %w", err), http.StatusBadRequest)
+		return
+	}
+
 	// ------------- Optional query parameter "implementors" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "implementors", c.Request.URL.Query(), &params.Implementors)
@@ -554,6 +637,14 @@ func (siw *ServerInterfaceWrapper) GetApiV1AdminPtySessions(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "observers", c.Request.URL.Query(), &params.Observers)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter observers: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "purpose" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "purpose", c.Request.URL.Query(), &params.Purpose)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter purpose: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -648,23 +739,25 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/7RWb2/jtg/+KgJ/P2BvfLFzvWKb32X3Z+t2G4prt2EoikCR6UQ3W9JJdNesyHcfKDuJ",
-	"Ezu9rtte5Q/F5yFF8qEeQNnaWYOGAuQPENQKaxm/fot0SesrDEFb8wGDsyYgG5y3Dj1pjMfQFHPSdbQU",
-	"GJTXjrQ1kMNbUwi2CFsKWqG4vP5NhBZOaCM+vHt9dnb2tSitryVBAt2XHApJ+CJiJkBrh5BDIK/NEjYJ",
-	"6GLI9LPRnxoUukBDutToGfSYcxSsdhXWaMj6MIR9rwNx8P1TX4gmoBcXbwIkoAnr6DcA7v6Q3ss1/7aL",
-	"gP4OH2PZHXkmRSDp6UQprtj2HxQjkKRI93+PJeTwv3TfTmnXS+m+i67icY5d+iXSvE14vrKBjByL+7vO",
-	"so269ROt31hAh8DaDSEvLoUsCo8hPB1Uq9+R5mOddx1N4uKNkCFYpSVhIf7QtPp89+1LaBcfUREzHV/V",
-	"WCFprIaQAJqmhvwGlEeOAhKQivQd101VNmABt2MxBFSN17S+4mq1I/0NSo9+1tCKfy3ir3fbfvj+12tI",
-	"Wp1gpNa6z25F5GDDwNqUdpjArKi1EbPLiziitTRyqc2yn0oQ0hRCWWNQsRNPAWmqsO8NCfCotJjTSTbJ",
-	"4pQ5NNJpyOFskk3OIAEnaRVzSqXT6d00lYyQOlrPt3RsXSLxB+uaZM6LAnIWwJnTv0wj6b4yIcJ6WSPF",
-	"eb55AM1RfGrQryGBtpP3TRO21yWZ4qnzvElOwI5PTp9iUOOnIGn3OYzDOrJE6eJYHVmwRqiOjjzvNk7x",
-	"76V1nLxv/zeY3947VDzmrUSKF1vxPMHf0+V+AE8R2H9OvtvOz6EeA+xNzrxV/z7y31oDJynk8hC1wFI2",
-	"FUE+TaDWRtcsdNNdyNoQLtE/DjgP+s8TqC+zBGp538Fm2fNIyJKs5so2hsZpSlkF3OEtrK1QGthsbhPw",
-	"3esqNuTLLOMPZQ2hibIknau0isKUfgzcBw9jnfzY5Y8/5obdvkmOGu5AmD2S13iHhQiNUhhC2VRVfHy8",
-	"yl4Ntf4nS6K0jSn4xHmb1tEyNoTeyKpbvgK9t/5gLUV9nTn9A67bhXRzyzcWmrqWft2qtJBVdbhBaklq",
-	"xXuF12SpK2pXlFyyXsecuquA203L1j3ObgZPyxmvu8ZX3W4LeZreZ9NQ35OXUzkJbtJImhSLMFHWu/z8",
-	"PMu+hOHgvrdKVgdIeZpW/CdreHT7CjizLshj/x95Ux6s/LDvvX5CQ+qe6+FW7Xm/3hlgc7v5KwAA//9E",
-	"x5Z/FgwAAA==",
+	"H4sIAAAAAAAC/7RWXW/bNhT9K8TdgL2oltw02Ka3LG23DF1hJOmGIQgEmrq22EokQ16l8QL/94GUbMsW",
+	"kwVZ+mSLH+ccflyecw9CN0YrVOQgvwcnKmx4+HuqlUJBUqtZa4126BtLdMJK41shh8uVQaYXTGyHsjlK",
+	"tWToiM9r6SosIQFUbQP5FYiKqyUWFm9adAQJVMhrqgpRofgC1wnQyiDk4MhKtYR1Ar8izWh1gc5Jrc7R",
+	"Ga06HcZqg5YkBqmoyoJkE1H4TpXM93iVVCGbXf7NXAfHpGLn70+Pjo5+ZgttG+4V9X9yKDnhq4AZkSXL",
+	"MdMnJW9aZLJERXIh0XrQQ84oWGNqbFCRtm4M+0E68uKHo35grUPLzt46SEASNmHeCLhv4Nbylf/Wc4f2",
+	"Fh9j2Q55JoUjbumBo7jwfd/gMBxxCnTfW1xADt+luyud9vc53d2iizDca+d2iVR0Cy4q7UjxmO7f+p6N",
+	"6m4e6+bFBO0DSzOGPJsxXpYWnXs6qBRfkIrYzbsMXezsLePOaSE5Ycm+Sqr++/btjlDPP6Mgz3S4VbGD",
+	"pNgZDivdolcBCXBB8tafm6i1wzJS5f4IUbRW0urCn1ZX0r8gt2hPWqr81zx8vd/ch9//uoSke6s8Ute7",
+	"W11FZGDtgaVa6PECTspGKnYyOwsl2nDFl/7RGizFMa7KwbPmq4Ak1TicDQn4Uukwp5NskoUqM6i4kZDD",
+	"0SSbHEEChlMV1pRyI9Pbaco9QmpoVWzofO8Syf/4d417zrMScv8Anhj55zSQ7k7GBVjLG6RQz1eHS5zR",
+	"altafRH75psW7QoS6G469CMKWbrNfnKv4akFv04OeU/P2ce2mYfTiDFur/HzCaOw8Vr+dhTSvNCG+WdW",
+	"lptqCo/u10qzvoAiJRbT1o8u5qsXV7XnTnH2gyEvy78zrTj5sP8lmLuMwvqMwrRlXUhhXUiJizB9QBpK",
+	"eMyNxtEqouTdnUHh70Bng+zVxiAfKuad9w51PMVE/z/5NoE9hzq6pbvXsegc/qmbO7L6Byn4ch+1xAVv",
+	"a4J8mkAjlWy8mU23kqUiXKJ9HLBw8p8HUF9nCTT8rofNsueRkCZeF0K3iuI0C1473OLNta6RK1ivrxOw",
+	"fYIOpfE6y/yP0IpQBevhxtRSBPNJPzt/D+5jNfXY5scD+7ju1smhYQ3N1yJZibdYMtcKgc4t2roOAfNN",
+	"9mbs5x81sYVuVelHHHfLOghcitAqXvcBi6G12u5Fj+Chw9Bxde13zLVNw+2qc2LG63o/JTScROWzg3+n",
+	"F7KmLobwpffksKZ+K+B63bH1AXxk2J9OfKRpbd3nF5en6V02dc0dWT7lE2cmLadJOXcToa3Jj4+z7EcY",
+	"F+4HLXi9h5Snae0bvSuGaT+BX1kv8nD+Hz4N7XmO29294YLG1IOp+8lpMHv38sH6ev1vAAAA//9B+aXk",
+	"fg4AAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

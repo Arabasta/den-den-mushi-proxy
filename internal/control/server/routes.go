@@ -4,6 +4,7 @@ import (
 	"den-den-mushi-Go/internal/control/app/healthcheck"
 	"den-den-mushi-Go/internal/control/app/iexpress"
 	"den-den-mushi-Go/internal/control/app/make_change"
+	"den-den-mushi-Go/internal/control/app/meta"
 	"den-den-mushi-Go/internal/control/app/pty_token"
 	"den-den-mushi-Go/internal/control/app/whiteblacklist"
 	"den-den-mushi-Go/internal/control/config"
@@ -42,6 +43,10 @@ func registerProtectedRoutes(r *gin.Engine, deps *Deps, cfg *config.Config, log 
 		},
 		IExpressHandler: &iexpress.Handler{
 			Service: deps.IexpressService,
+			Log:     log,
+		},
+		MetaHandler: &meta.Handler{
+			Service: deps.UserMetadataService,
 			Log:     log,
 		},
 	}

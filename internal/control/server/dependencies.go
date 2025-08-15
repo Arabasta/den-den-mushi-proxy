@@ -4,6 +4,7 @@ import (
 	"den-den-mushi-Go/internal/control/app/healthcheck"
 	iexpress2 "den-den-mushi-Go/internal/control/app/iexpress"
 	"den-den-mushi-Go/internal/control/app/make_change"
+	"den-den-mushi-Go/internal/control/app/meta"
 	"den-den-mushi-Go/internal/control/app/pty_token"
 	"den-den-mushi-Go/internal/control/app/pty_token/request"
 	"den-den-mushi-Go/internal/control/app/whiteblacklist"
@@ -38,6 +39,7 @@ type Deps struct {
 	WhiteBlacklistService    *whiteblacklist.Service
 	HealthcheckService       *healthcheck.Service
 	IexpressService          *iexpress2.Service
+	UserMetadataService      *meta.Service
 }
 
 func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps {
@@ -128,6 +130,8 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 	makeChangeService := make_change.NewService(changeService, ptySessionService, hostService, impGroupsService, osAdmUsersService, log, cfg)
 	healthcheckService := healthcheck.NewService(ptySessionService, hostService, osAdmUsersService, log, cfg)
 	iexpresssvcEp := iexpress2.NewService(iexpressService, ptySessionService, hostService, impGroupsService, osAdmUsersService, log, cfg)
+	userMetadataService := meta.NewService(impGroupsService, log)
+
 	return &Deps{
 		Issuer:                   issuer,
 		ProxyService:             proxyLbService,
@@ -141,5 +145,6 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 		WhiteBlacklistService:    whiteblacklistSvc,
 		HealthcheckService:       healthcheckService,
 		IexpressService:          iexpresssvcEp,
+		UserMetadataService:      userMetadataService,
 	}
 }

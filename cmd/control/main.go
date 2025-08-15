@@ -4,7 +4,6 @@ import (
 	"den-den-mushi-Go"
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/server"
-	"den-den-mushi-Go/internal/control/testdata"
 	"den-den-mushi-Go/internal/proxy/websocket_jwt/jti"
 	"den-den-mushi-Go/pkg/dto/change_request"
 	"den-den-mushi-Go/pkg/dto/connections"
@@ -24,9 +23,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"os"
-	"os/signal"
 	"path/filepath"
-	"syscall"
 )
 
 func main() {
@@ -75,7 +72,7 @@ func main() {
 			log.Fatal("AutoMigrate failed", zap.Error(err))
 		}
 		if cfg.Development.IsAutoMigrateEnabled {
-			testdata.CallAll(db)
+			// testdata.CallAll(db)
 		}
 	}
 
@@ -97,7 +94,6 @@ func main() {
 			//testdata.CreateProxyHostAndLb(db, cfg)
 		}
 	}
-	reapChildren()
 	s := server.New(db, root.Files, cfg, log)
 	if err := server.Start(s, cfg, log); err != nil {
 		log.Fatal("failed to start server", zap.Error(err))
@@ -120,20 +116,4 @@ func configPath() string {
 	}
 
 	return finalPath
-}
-
-func reapChildren() {
-	go func() {
-		sig := make(chan os.Signal, 1)
-		signal.Notify(sig, syscall.SIGCHLD)
-		for range sig {
-			for {
-				var status syscall.WaitStatus
-				pid, err := syscall.Wait4(-1, &status, syscall.WNOHANG, nil)
-				if pid <= 0 || err != nil {
-					break
-				}
-			}
-		}
-	}()
 }

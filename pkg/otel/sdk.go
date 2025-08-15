@@ -17,7 +17,8 @@ import (
 
 // source: https://opentelemetry.io/docs/languages/go/getting-started/#initialize-the-opentelemetry-sdk
 
-// setupOTelSDK bootstraps the OpenTelemetry pipeline.
+// setupOTelSDK bootstr
+// aps the OpenTelemetry pipeline.
 // If it does not return an error, make sure to call shutdown for proper cleanup.
 func setupOTelSDK(ctx context.Context) (shutdown func(context.Context) error, err error) {
 	var shutdownFuncs []func(context.Context) error

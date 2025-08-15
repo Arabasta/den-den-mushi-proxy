@@ -9,9 +9,9 @@ import (
 	"go.uber.org/zap"
 )
 
-func serveSwagger(r *gin.Engine, cfg *config.App, log *zap.Logger) {
-	if cfg.Environment == "dev" {
-		log.Info("Serving Swagger UI in dev environment")
+func serveSwagger(r *gin.Engine, cfg *config.Swagger, log *zap.Logger) {
+	if cfg.IsEnabled {
+		log.Info("Serving Swagger UI")
 		r.StaticFile("/swagger-spec/control.yaml", "./swagger/control.yaml")
 
 		r.GET("/swagger-spec/control.json", func(c *gin.Context) {
@@ -28,8 +28,7 @@ func serveSwagger(r *gin.Engine, cfg *config.App, log *zap.Logger) {
 			"/swagger-spec/control.json",
 			"/swagger/control/",
 		)))
-
 	} else {
-		log.Info("Not serving Swagger UI in non-dev environment")
+		log.Info("Not serving Swagger UI")
 	}
 }
