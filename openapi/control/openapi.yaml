@@ -12,6 +12,8 @@ servers:
 
 
 tags:
+  - name: Metadata
+    description: Metadata endpoints for the Control API
   - name: PTY Token
     description: Get tokens for starting and joining PTY sessions
   - name: Make Change
@@ -56,6 +58,25 @@ paths:
 #        '500':
 #          description: Internal server error
 
+
+  /api/v1/metadata/:
+    get:
+      tags:
+      - Metadata
+      summary: Get user metadata
+      security:
+        - BearerAuth: [ ]
+      responses:
+        '200':
+          description: user metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserMetadata'
+        '4XX':
+          description: Invalid request
+        '5XX':
+          description: Server error
 
   ######################################################################## Pty Token Use Case
 
@@ -1068,3 +1089,22 @@ components:
         updated_at:
             type: string
             format: date-time
+
+    UserMetadata:
+      type: object
+      required: [ user_id, implementor_groups, ou_group, roles ]
+      properties:
+        user_id:
+          type: string
+          description: Unique identifier for the user
+        implementor_groups:
+          type: array
+          items:
+            type: string
+        ou_group:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+          description: Currently unused, placeholder

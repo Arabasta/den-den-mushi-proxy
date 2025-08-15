@@ -7,6 +7,7 @@ api/api.ts
 api/healthcheck.service.ts
 api/iExpress.service.ts
 api/makeChange.service.ts
+api/metadata.service.ts
 api/pTYToken.service.ts
 api/whitelistBlacklist.service.ts
 configuration.ts
@@ -37,6 +38,7 @@ model/serverInfo.ts
 model/startRequest.ts
 model/startRole.ts
 model/tokenResponse.ts
+model/userMetadata.ts
 ng-package.json
 package.json
 param.ts

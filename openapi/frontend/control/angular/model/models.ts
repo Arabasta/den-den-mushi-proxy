@@ -21,3 +21,4 @@ export * from './serverInfo';
 export * from './startRequest';
 export * from './startRole';
 export * from './tokenResponse';
+export * from './userMetadata';
