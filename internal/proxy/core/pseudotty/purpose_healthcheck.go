@@ -94,8 +94,11 @@ func init() {
 		//string(constants.LeftBrace):         (*HealthcheckPurpose).handleBlockedControlChar,
 		//string(constants.RightBrace):        (*HealthcheckPurpose).handleBlockedControlChar,
 		//string(constants.EqualSign):         (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.OutputRedirection): (*HealthcheckPurpose).handleBlockedControlChar,
-		string(constants.InputRedirection):  (*HealthcheckPurpose).handleBlockedControlChar,
+
+		// Edwin said to not block <>
+		// string(constants.OutputRedirection): (*HealthcheckPurpose).handleBlockedControlChar,
+		// string(constants.InputRedirection):  (*HealthcheckPurpose).handleBlockedControlChar,
+
 		//string(constants.SingleQuote):       (*HealthcheckPurpose).handleBlockedControlChar,
 		//string(constants.DoubleQuote):       (*HealthcheckPurpose).handleBlockedControlChar,
 		//string(constants.Backtick):          (*HealthcheckPurpose).handleBlockedControlChar,
