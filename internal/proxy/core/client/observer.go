@@ -1,11 +1,18 @@
 package client
 
 import (
+	"github.com/labstack/gommon/log"
 	"go.uber.org/zap"
 )
 
 // ObserverReadLoop is for reading close messages from Observers ONLY
 func (c *Connection) ObserverReadLoop() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("panic", zap.Any("panic", r), zap.Stack("stack"))
+		}
+	}()
+
 	for {
 		if c.Ctx.Err() != nil {
 			c.Log.Info("ObserverReadLoop: context done")

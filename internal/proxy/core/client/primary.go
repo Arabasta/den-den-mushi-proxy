@@ -3,12 +3,19 @@ package client
 import (
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"github.com/gorilla/websocket"
+	"github.com/labstack/gommon/log"
 	"go.uber.org/zap"
 	"strings"
 )
 
 // PrimaryReadLoop should only be accessible by the primary connection
 func (c *Connection) PrimaryReadLoop(onPacket func(protocol.Packet)) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("panic", zap.Any("panic", r), zap.Stack("stack"))
+		}
+	}()
+
 	for {
 		if c.Ctx.Err() != nil {
 			c.Log.Info("PrimaryReadLoop: context done")

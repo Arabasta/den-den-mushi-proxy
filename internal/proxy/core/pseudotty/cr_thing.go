@@ -2,6 +2,7 @@ package pseudotty
 
 import (
 	"den-den-mushi-Go/internal/proxy/protocol"
+	"github.com/labstack/gommon/log"
 	"go.uber.org/zap"
 	"strconv"
 	"time"
@@ -16,6 +17,12 @@ var WarningThresholds = []time.Duration{
 }
 
 func (s *Session) monitorCrEndTime() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("panic", zap.Any("panic", r), zap.Stack("stack"))
+		}
+	}()
+
 	now := time.Now()
 
 	if s.crEndTime.After(now) {
@@ -59,6 +66,12 @@ func (s *Session) monitorCrEndTime() {
 }
 
 func (s *Session) scheduleWarning(delay time.Duration, threshold time.Duration) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("panic", zap.Any("panic", r), zap.Stack("stack"))
+		}
+	}()
+
 	select {
 	case <-time.After(delay):
 		s.log.Debug("Sending Ticket timeout warning, session ending in ", zap.Duration("minutes", threshold))

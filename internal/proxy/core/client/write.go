@@ -3,11 +3,18 @@ package client
 import (
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"github.com/gorilla/websocket"
+	"github.com/labstack/gommon/log"
 	"go.uber.org/zap"
 	"io"
 )
 
 func (c *Connection) WriteClient() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("panic", zap.Any("panic", r), zap.Stack("stack"))
+		}
+	}()
+
 	for {
 		if c.Ctx.Err() != nil {
 			c.Log.Info("WriteClient: context done")

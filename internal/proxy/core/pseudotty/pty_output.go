@@ -2,6 +2,7 @@ package pseudotty
 
 import (
 	"den-den-mushi-Go/internal/proxy/protocol"
+	"github.com/labstack/gommon/log"
 	"go.uber.org/zap"
 	"io"
 	"time"
@@ -9,6 +10,12 @@ import (
 
 // readPtyLoop and add data to outbound channel
 func (s *Session) readPtyLoop() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("panic", zap.Any("panic", r), zap.Stack("stack"))
+		}
+	}()
+
 	//maxBufSize := s.cfg.Proxy.Pty.MaxBufferSize
 	buf := make([]byte, 4096)
 	for {

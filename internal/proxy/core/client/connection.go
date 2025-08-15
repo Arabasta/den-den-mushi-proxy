@@ -28,6 +28,11 @@ type Connection struct {
 }
 
 func New(sock *websocket.Conn, claims *token.Claims, cfg *config.Config) *Connection {
+
+	// don't do this cause the conn will be closed and ppl complain
+	// sock.SetReadLimit(1 << 20) // 1 mb
+	// sock.SetReadDeadline(time.Now().Add(30 * time.Second))
+
 	return &Connection{
 		Id:        claims.Connection.UserSession.Id,
 		Sock:      sock,

@@ -13,6 +13,7 @@ import (
 	"den-den-mushi-Go/pkg/token"
 	"den-den-mushi-Go/pkg/types"
 	"errors"
+	"github.com/labstack/gommon/log"
 	"go.uber.org/zap"
 	"os"
 	"sync"
@@ -113,7 +114,12 @@ func New(id string, pty *os.File, now time.Time, onClose func(string), log *zap.
 
 func (s *Session) Setup(claims *token.Claims) error {
 	s.mu.Lock()
-	defer s.mu.Unlock()
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("panic", zap.Any("panic", r), zap.Stack("stack"))
+		}
+		s.mu.Unlock()
+	}()
 
 	s.log.Debug("Setting up session", zap.String("id", s.Id))
 	s.startClaims = claims
