@@ -91,6 +91,8 @@ func (r *GormRepository) FindAllByFilter(f filters.HealthcheckPtySession) ([]*dt
 		query = query.Where("SYSTEM_TYPE = ?", *f.SystemType)
 	}
 
+	query = query.Order("HOSTNAME DESC")
+
 	page := f.Page
 	if page < 1 {
 		page = 1
@@ -111,4 +113,54 @@ func (r *GormRepository) FindAllByFilter(f filters.HealthcheckPtySession) ([]*dt
 	}
 
 	return dto.FromModels(models), nil
+}
+
+func (r *GormRepository) CountAllByFilter(f filters.HealthcheckPtySession) (int64, error) {
+	var count int64
+	query := r.db.Model(&dto.Model{})
+
+	if f.Ip != nil && len(*f.Ip) > 0 {
+		query = query.Where("IPADDRESS = ?", *f.Ip)
+	}
+
+	if f.Appcode != nil && len(*f.Appcode) > 0 {
+		query = query.Where("APPLICATION_CODE = ?", *f.Appcode)
+	}
+
+	if f.Environment != nil && len(*f.Environment) > 0 {
+		query = query.Where("ENVIRONMENT = ?", *f.Environment)
+	}
+
+	if f.Country != nil && len(*f.Country) > 0 {
+		query = query.Where("COUNTRY = ?", *f.Country)
+	}
+
+	if f.Lob != nil && len(*f.Lob) > 0 {
+		query = query.Where("LOB = ?", *f.Lob)
+	}
+
+	if f.OsType != nil && len(*f.OsType) > 0 {
+		query = query.Where("PLATFORM = ?", *f.OsType)
+	}
+
+	if f.Hostname != nil && len(*f.Hostname) > 0 {
+		query = query.Where("HOSTNAME = ?", *f.Hostname)
+	}
+
+	if f.Status != nil && len(*f.Status) > 0 {
+		query = query.Where("STATUS = ?", *f.Status)
+	}
+
+	if f.SystemType != nil && len(*f.SystemType) > 0 {
+		query = query.Where("SYSTEM_TYPE = ?", *f.SystemType)
+	}
+
+	err := query.Count(&count).Error
+	if err != nil {
+		r.log.Error("DB error while counting hosts by filter", zap.Any("filter", f), zap.Error(err))
+		return 0, err
+	}
+
+	r.log.Debug("DB count", zap.Int64("count", count))
+	return count, nil
 }

@@ -10,4 +10,5 @@ type Repository interface {
 	FindByIp(ip string) (*dto.Record, error)
 	FindAllLinuxOsByIps(ips []string) ([]*dto.Record, error)
 	FindAllByFilter(f filters.HealthcheckPtySession) ([]*dto.Record, error)
+	CountAllByFilter(f filters.HealthcheckPtySession) (int64, error)
 }

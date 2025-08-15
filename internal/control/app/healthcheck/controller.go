@@ -33,19 +33,29 @@ func (h *Handler) GetApiV1Healthcheck(c *gin.Context, params oapi.GetApiV1Health
 		PageSize:        convert.DerefOr(params.PageSize, 20),
 	}
 
-	results, err := h.Service.getHostsAndAssociatedPtySessions(f, c)
+	results, totalCount, err := h.Service.getHostsAndAssociatedPtySessions(f, c)
 	if err != nil {
 		h.Log.Error("Failed to fetch healthcheck sessions", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	//lol
+	var response struct {
+		TotalCount *int64                           `json:"total_count,omitempty"`
+		Items      oapi.HealthcheckSessionsResponse `json:"items"`
+	}
+
+	response.Items = oapi.HealthcheckSessionsResponse{
+		HostSessionDetails: results,
+	}
+	response.TotalCount = &totalCount
+
 	if len(*results) == 0 {
 		h.Log.Debug("No hosts found for the given filter", zap.Any("filter", f))
-		c.JSON(http.StatusOK, []oapi.HealthcheckSessionsResponse{})
+		c.JSON(http.StatusOK, response)
 		return
 	}
 
-	c.JSON(http.StatusOK, oapi.HealthcheckSessionsResponse{
-		HostSessionDetails: results,
-	})
+	c.JSON(http.StatusOK, response)
 }

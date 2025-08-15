@@ -35,12 +35,12 @@ func NewService(ptySessionsSvc *pty_sessions.Service,
 	}
 }
 
-func (s *Service) getHostsAndAssociatedPtySessions(f filters.HealthcheckPtySession, c *gin.Context) (*[]oapi.HostSessionDetails, error) {
+func (s *Service) getHostsAndAssociatedPtySessions(f filters.HealthcheckPtySession, c *gin.Context) (*[]oapi.HostSessionDetails, int64, error) {
 	//s.log.Debug("Fetching hosts and PTY sessions", zap.Any("filter", f))
 	authCtx, ok := middleware.GetAuthContext(c.Request.Context())
 	if !ok {
 		s.log.Error("Auth context missing in request")
-		return nil, errors.New("auth context missing in request")
+		return nil, 0, errors.New("auth context missing in request")
 	}
 
 	// todo: FindAllByFilter will eventually require ougroup
@@ -48,9 +48,16 @@ func (s *Service) getHostsAndAssociatedPtySessions(f filters.HealthcheckPtySessi
 		*f.Environment = "PROD"
 	}
 
+	// get total count
+	totalCount, err := s.hostSvc.CountAllByFilter(f)
+	if err != nil {
+		s.log.Error("CountAllByFilter", zap.Error(err))
+		return nil, 0, err
+	}
+
 	hosts, err := s.hostSvc.FindAllByFilter(f)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	hostips := make([]string, len(hosts))
@@ -62,7 +69,7 @@ func (s *Service) getHostsAndAssociatedPtySessions(f filters.HealthcheckPtySessi
 	//s.log.Debug("Got sessions", zap.Any("filter", f), zap.Any("sessions", len(sessions)))
 	if err != nil {
 		s.log.Error("Failed to fetch PTY sessions", zap.Error(err))
-		return nil, err
+		return nil, 0, err
 	}
 
 	var result []oapi.HostSessionDetails
@@ -87,7 +94,7 @@ func (s *Service) getHostsAndAssociatedPtySessions(f filters.HealthcheckPtySessi
 	}
 
 	//s.log.Debug("Returning host session details", zap.Int("count", len(result)))
-	return &result, nil
+	return &result, totalCount, nil
 }
 
 func filterSessionsForHost(sessions []*ptysessionspkg.Record, ip string) []*ptysessionspkg.Record {

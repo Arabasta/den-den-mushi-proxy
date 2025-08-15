@@ -34,3 +34,7 @@ func (s *Service) FindAllByFilter(f filters.HealthcheckPtySession) ([]*dto.Recor
 	s.log.Debug("Finding hosts by filter", zap.Any("filter", f))
 	return s.repo.FindAllByFilter(f)
 }
+
+func (s *Service) CountAllByFilter(f filters.HealthcheckPtySession) (int64, error) {
+	return s.repo.CountAllByFilter(f)
+}
