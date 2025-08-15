@@ -56,7 +56,48 @@ Apache JMeter 5.6.3
 
 5. Open [simple_load_test.jmx](simple_load_test.jmx)
 
-# Why blacklist filter won't work
+
+## Service file thing
+
+- todo: read https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files
+
+## Vuln scan
+
+```bash
+go install golang.org/x/vuln/cmd/govulncheck@latest
+govulncheck ./...
+```
+
+## Go Profiler: Pprof
+http://127.0.0.1:6060/debug/pprof/
+
+### Enabling Pprof
+config.json
+```json
+  "Pprof": {
+    "IsEnabled": true,
+    "Port": 6060
+  },
+```
+
+### Launch Web Profiler
+Options
+- heap
+- goroutine
+- profile (CPU)
+
+```bash
+go tool pprof -http=:8081 'http://127.0.0.1:6060/debug/pprof/<option>'
+```
+![pprof_graph.png](assets/pprof_graph.png)
+
+### Exporting
+```bash
+curl http://127.0.0.1:6060/debug/pprof/ --output pprof.tar.gz
+```
+
+
+## Why blacklist filter won't work
 
 
 ### base64 to gzip to bash
@@ -92,15 +133,3 @@ echo su% | bash
 su
 ```
 btw users can stack base64 / gzip 100x
-
-
-## Service file thing
-
-- todo: read https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files
-
-## Vuln scan
-
-```bash
-go install golang.org/x/vuln/cmd/govulncheck@latest
-govulncheck ./...
-```
