@@ -20,6 +20,7 @@ type Config struct {
 		IsUsingInvDb         bool
 		IsAutoMigrateEnabled bool
 		IsSMX                bool
+		IsDevRoutesEnabled   bool
 	}
 
 	Pty struct {
@@ -28,6 +29,10 @@ type Config struct {
 	}
 
 	Logger *config.Logger
+
+	Security *config.Security
+
+	Pprof *config.Pprof
 
 	Puppet *config.Puppet
 
@@ -42,13 +47,11 @@ type Config struct {
 	Ssh *config.Ssh
 
 	Websocket struct {
-		PingPong struct {
-			PingIntervalSeconds time.Duration
-			PingTimeoutSeconds  time.Duration
-			PongWaitSeconds     time.Duration
-			MaxPingMissed       int
-		}
-	}
+		ReadBufferSize  int      `json:"ReadBufferSize"`
+		WriteBufferSize int      `json:"WriteBufferSize"`
+		AllowedOrigins  []string `json:"AllowedOrigins"`
+		Subprotocols    string   `json:"Subprotocols"`
+	} `json:"Websocket"`
 
 	PuppetTasks struct {
 		QueryJobs struct {

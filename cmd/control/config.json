@@ -3,7 +3,8 @@
     "name": "den-den-mushi-control",
     "environment": "dev",
     "version": "1.0.0",
-    "port": 55007
+    "port": 55007,
+    "IsLocalHost": true
   },
   "development": {
     "isSMX": false,
@@ -11,21 +12,35 @@
     "IsUsingInvDb": false,
     "IsAutoMigrateEnabled": true,
     "IsLocalSshKeyIfNotIsPuppetKey": true,
-    "TargetSshPort": "22",
-    "proxyHostIpForRejoinRouting": "127.0.1",
-    "proxyHostNameJustForLookup": "ddm-proxy",
-    "proxyLoadbalancerEndpointForDiffProxyGroups": "localhost:45007"
+    "TargetSshPort": "22"
   },
   "ssl": {
     "enabled": false
   },
   "Cors": {
-    "allowOrigins": ["*"],
+    "allowOrigins": ["http://localhost:55007"],
     "allowMethods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     "allowHeaders": ["Authorization", "Content-Type", "X-Requested-With"],
-    "exposeHeaders": [],
-    "allowCredentials": true,
-    "allowMaxAge": 3600
+    "exposeHeaders": ["ETag"],
+    "allowCredentials": false,
+    "allowMaxAge": 600
+  },
+  "Security": {
+    "isEnabled": true,
+    "enforceCsp": true,
+    "allowStyleAttribute": false,
+    "connectSrc": [
+      "http://localhost:55007",
+      "ws://localhost:45007"
+    ]
+  },
+  "Swagger": {
+    "IsEnabled": true,
+    "Title": "Den Den Mushi Control API"
+  },
+  "Pprof": {
+    "IsEnabled": true,
+    "Port": 6060
   },
   "Logger": {
     "level": "debug",

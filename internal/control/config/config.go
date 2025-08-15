@@ -24,6 +24,10 @@ type Config struct {
 
 	Cors *config.Cors
 
+	Security *config.Security
+
+	Pprof *config.Pprof
+
 	Logger *config.Logger
 
 	JwtIssuer *config.JwtIssuer
@@ -43,4 +47,6 @@ type Config struct {
 	} `json:"OuGroup"`
 
 	TmpAuth *config.Tmpauth
+
+	Swagger *config.Swagger
 }

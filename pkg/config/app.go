@@ -5,4 +5,5 @@ type App struct {
 	Environment string
 	Version     string
 	Port        int
+	IsLocalHost bool
 }

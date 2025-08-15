@@ -3,7 +3,8 @@
     "name": "den-den-mushi-proxy",
     "environment": "dev",
     "version": "1.0.0",
-    "port": 45007
+    "port": 45007,
+    "IsLocalHost": true
   },
   "ssl": {
     "enabled": true
@@ -13,7 +14,8 @@
     "UseSqlJtiRepo": true,
     "UseRedis": false,
     "IsUsingInvDb": true,
-    "IsAutoMigrateEnabled": false
+    "IsAutoMigrateEnabled": false,
+    "isDevRoutesEnabled": true
   },
   "logger": {
     "level": "debug",
@@ -23,11 +25,24 @@
   },
   "Cors": {
     "allowOrigins": ["*"],
-    "allowMethods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    "allowMethods": ["GET", "POST", "OPTIONS"],
     "allowHeaders": ["Authorization", "Content-Type", "X-Requested-With"],
     "exposeHeaders": [],
-    "allowCredentials": true,
-    "allowMaxAge": 3600
+    "allowCredentials": false,
+    "allowMaxAge": 600
+  },
+  "Security": {
+    "isEnabled": true,
+    "enforceCsp": true,
+    "allowStyleAttribute": false,
+    "connectSrc": [
+      "http://localhost:55007",
+      "ws://localhost:45007"
+    ]
+  },
+  "Pprof": {
+    "IsEnabled": false,
+    "Port": 6060
   },
   "Puppet": {
     "InjectPublicKeyTaskName": "injectkey",
@@ -42,12 +57,10 @@
       "ExpectedTyp": "proxy/ws+jwt"
   },
   "Websocket": {
-    "PingPong": {
-      "PingIntervalSeconds": 30,
-      "PingTimeoutSeconds": 10,
-      "MaxPingMissed": 10,
-      "PongWaitSeconds": 10
-    }
+    "ReadBufferSize": 1024,
+    "WriteBufferSize": 1024,
+    "AllowedOrigins": [],
+    "Subprotocols": "X-Proxy-Session-Token"
   },
   "DdmDB": {
     "user": "root",
