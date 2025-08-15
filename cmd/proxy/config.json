@@ -59,7 +59,7 @@
   "Websocket": {
     "ReadBufferSize": 1024,
     "WriteBufferSize": 1024,
-    "AllowedOrigins": [],
+    "AllowedOrigins": ["http://localhost:55007"],
     "Subprotocols": "X-Proxy-Session-Token"
   },
   "DdmDB": {

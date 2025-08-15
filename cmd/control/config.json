@@ -22,7 +22,7 @@
     "allowMethods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     "allowHeaders": ["Authorization", "Content-Type", "X-Requested-With"],
     "exposeHeaders": ["ETag"],
-    "allowCredentials": false,
+    "allowCredentials": true,
     "allowMaxAge": 600
   },
   "Security": {

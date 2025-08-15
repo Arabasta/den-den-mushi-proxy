@@ -32,24 +32,38 @@ func CsrfGuardNoCookies(log *zap.Logger) gin.HandlerFunc {
 				names = append(names, ck.Name)
 			}
 			// don't log cookie values
-			log.Warn("Blocked unsafe request with cookies",
+			log.Info("Ignoring cookies on unsafe request",
 				zap.String("method", c.Request.Method),
 				zap.String("path", c.FullPath()),
 				zap.Strings("cookie_names", names),
 			)
-			c.AbortWithStatus(http.StatusForbidden)
-			return
+
+			// remove cookies from request header
+			c.Request.Header.Del("Cookie")
+			c.Request.Header["Cookie"] = nil
+			c.Request.Header.Del("Cookie2")
 		}
 		c.Next()
 	}
 }
 
-func StripSetCookie() gin.HandlerFunc {
+func StripSetCookies() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next() // run handlers
 		h := c.Writer.Header()
 		if len(h.Values("Set-Cookie")) > 0 {
 			h.Del("Set-Cookie")
 		}
+	}
+}
+
+func StripIncomingCookies() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if len(c.Request.Header.Values("Cookie")) > 0 {
+			c.Request.Header.Del("Cookie")
+			c.Request.Header["Cookie"] = nil
+			c.Request.Header.Del("Cookie2")
+		}
+		c.Next()
 	}
 }

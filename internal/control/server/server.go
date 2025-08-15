@@ -38,7 +38,6 @@ func New(ddmDb *gorm.DB, staticFiles embed.FS, cfg *config.Config, log *zap.Logg
 		middleware.Cors(cfg.Cors, log),
 		middleware.CsrfGuardNoCookies(log),
 		middleware.Security(cfg.Security, cfg.Ssl.Enabled),
-		middleware.StripSetCookie(),
 		middleware.MaxBody(10<<20), // 10 mb
 	)
 
