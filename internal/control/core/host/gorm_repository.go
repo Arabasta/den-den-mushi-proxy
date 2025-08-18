@@ -89,7 +89,8 @@ func (r *GormRepository) FindAllByFilter(f filters.HealthcheckPtySession) ([]*dt
 	}
 
 	if f.Status != nil && len(*f.Status) > 0 {
-		query = query.Where("STATUS LIKE ?", "%"+*f.Status+"%")
+		validStatus := []string{"Active", "Pre-Production", "Staging", "Tech Live", "TH_WIP"}
+		query = query.Where("STATUS IN ?", validStatus)
 	}
 
 	if f.SystemType != nil && len(*f.SystemType) > 0 {
@@ -157,7 +158,8 @@ func (r *GormRepository) CountAllByFilter(f filters.HealthcheckPtySession) (int6
 	}
 
 	if f.Status != nil && len(*f.Status) > 0 {
-		query = query.Where("STATUS LIKE ?", "%"+*f.Status+"%")
+		validStatus := []string{"Active", "Pre-Production", "Staging", "Tech Live", "TH_WIP"}
+		query = query.Where("STATUS IN ?", validStatus)
 	}
 
 	if f.SystemType != nil && len(*f.SystemType) > 0 {
