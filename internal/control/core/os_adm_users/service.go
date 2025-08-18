@@ -27,14 +27,20 @@ func (s *Service) GetNonCrOsUsers(userId string) []string {
 	if err != nil {
 		return nil
 	}
-	osUsers := make([]string, 0, len(records)+1)
+
+	if len(records) == 0 {
+		return []string{userId}
+	}
+
+	osUsers := make([]string, 0, len(records))
 	for _, r := range records {
 		if r.OsUser != "" {
 			osUsers = append(osUsers, r.OsUser)
 		}
 	}
 
-	osUsers = append(osUsers, userId)
+	// yr said don't add userId to osUsers if has admin user cause the SAs are dumb and will tihnk they have user
+	// osUsers = append(osUsers, userId)
 
 	return osUsers
 }
