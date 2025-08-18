@@ -24,15 +24,16 @@
     "filePath": "./log/ddm-proxy.log"
   },
   "Cors": {
-    "allowOrigins": ["http://localhost:55007"],
+    "isEnabled": true,
+    "allowOrigins": ["http://localhost:55007","http://localhost:45007"],
     "allowMethods": ["GET", "POST", "OPTIONS"],
     "allowHeaders": ["Authorization", "Content-Type", "X-Requested-With"],
     "exposeHeaders": [],
-    "allowCredentials": false,
+    "allowCredentials": true,
     "allowMaxAge": 600
   },
   "Security": {
-    "isEnabled": true,
+    "isEnabled": false,
     "enforceCsp": true,
     "allowStyleAttribute": false,
     "connectSrc": [
@@ -59,7 +60,7 @@
   "Websocket": {
     "ReadBufferSize": 1024,
     "WriteBufferSize": 1024,
-    "AllowedOrigins": ["http://localhost:55007"],
+    "AllowedOrigins": ["http://localhost:55007","http://localhost:45007"],
     "Subprotocols": "X-Proxy-Session-Token"
   },
   "DdmDB": {

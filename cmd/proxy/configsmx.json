@@ -24,6 +24,7 @@
     "filePath": "./log/ddm-proxy.log"
   },
   "Cors": {
+    "isEnabled": true,
     "allowOrigins": ["*"],
     "allowMethods": ["GET", "POST", "OPTIONS"],
     "allowHeaders": ["Authorization", "Content-Type", "X-Requested-With"],

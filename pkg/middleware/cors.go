@@ -10,6 +10,12 @@ import (
 )
 
 func Cors(cfg *config.Cors, log *zap.Logger) gin.HandlerFunc {
+	if !cfg.IsEnabled {
+		return func(c *gin.Context) {
+			c.Next()
+		}
+	}
+
 	allowedMethods := strings.Join(cfg.AllowMethods, ",")
 	expHeaders := strings.Join(cfg.ExposeHeaders, ",")
 

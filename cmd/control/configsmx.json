@@ -18,6 +18,7 @@
     "enabled": true
   },
   "Cors": {
+    "isEnabled": true,
     "allowOrigins": ["https://frontend.com:45006"],
     "allowMethods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     "allowHeaders": ["Authorization", "Content-Type", "X-Requested-With"],
