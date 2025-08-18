@@ -267,8 +267,16 @@ func EnrichImpGroupsWithGOV_(groups []string) *[]string {
 
 	for _, g := range groups {
 		r = append(r, g)
-		if strings.HasPrefix(g, "INF_") {
-			infGroup := strings.Replace(g, "INF_", "GOV_", 1)
+		infGroup := g
+		if strings.Contains(g, "INF_") {
+			infGroup = strings.Replace(g, "INF_", "GOV_", 1)
+		}
+
+		if len(infGroup) > 0 && infGroup[0] != 'P' {
+			infGroup = "P" + infGroup
+		}
+
+		if infGroup != g {
 			r = append(r, infGroup)
 		}
 	}
