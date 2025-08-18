@@ -198,6 +198,10 @@ func (s *Session) updateLineEditor(b []byte) {
 		s.line.MoveRight()
 	case string(constants.ArrowLeft):
 		s.line.MoveLeft()
+	case string(constants.ArrowUp):
+		s.line.Reset()
+	case string(constants.ArrowDown):
+		s.line.Reset()
 	case string(constants.Backspace):
 		s.line.Backspace()
 	case string(constants.CtrlC):

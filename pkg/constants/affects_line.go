@@ -4,6 +4,8 @@ var ControlCharAffectsLine = map[string]struct{}{
 	string(Backspace):  {},
 	string(ArrowLeft):  {},
 	string(ArrowRight): {},
+	string(ArrowDown):  {},
+	string(ArrowUp):    {},
 	string(CtrlC):      {},
 	string(Home):       {},
 	string(End):        {},
