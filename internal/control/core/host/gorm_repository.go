@@ -6,6 +6,7 @@ import (
 	"errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"strings"
 )
 
 type GormRepository struct {
@@ -60,35 +61,39 @@ func (r *GormRepository) FindAllByFilter(f filters.HealthcheckPtySession) ([]*dt
 	}
 
 	if f.Appcode != nil && len(*f.Appcode) > 0 {
-		query = query.Where("APPLICATION_CODE = ?", *f.Appcode)
+		appcode := strings.ToUpper(*f.Appcode)
+		query = query.Where("APPLICATION_CODE LIKE ?", "%"+appcode+"%")
 	}
 
 	if f.Environment != nil && len(*f.Environment) > 0 {
-		query = query.Where("ENVIRONMENT = ?", *f.Environment)
+		env := strings.ToUpper(*f.Environment)
+		query = query.Where("ENVIRONMENT = ?", env)
 	}
 
 	if f.Country != nil && len(*f.Country) > 0 {
-		query = query.Where("COUNTRY = ?", *f.Country)
+		country := strings.ToUpper(*f.Country)
+		query = query.Where("COUNTRY LIKE ?", "%"+country+"%")
 	}
 
 	if f.Lob != nil && len(*f.Lob) > 0 {
-		query = query.Where("LOB = ?", *f.Lob)
+		lob := strings.ToUpper(*f.Lob)
+		query = query.Where("LOB LIKE ?", "%"+lob+"%")
 	}
 
 	if f.OsType != nil && len(*f.OsType) > 0 {
-		query = query.Where("PLATFORM = ?", *f.OsType)
+		query = query.Where("PLATFORM LIKE ?", "%"+*f.OsType+"%")
 	}
 
 	if f.Hostname != nil && len(*f.Hostname) > 0 {
-		query = query.Where("HOSTNAME = ?", *f.Hostname)
+		query = query.Where("HOSTNAME LIKE ?", "%"+*f.Hostname+"%")
 	}
 
 	if f.Status != nil && len(*f.Status) > 0 {
-		query = query.Where("STATUS = ?", *f.Status)
+		query = query.Where("STATUS LIKE ?", "%"+*f.Status+"%")
 	}
 
 	if f.SystemType != nil && len(*f.SystemType) > 0 {
-		query = query.Where("SYSTEM_TYPE = ?", *f.SystemType)
+		query = query.Where("SYSTEM_TYPE LIKE ?", "%"+*f.SystemType+"%")
 	}
 
 	query = query.Order("HOSTNAME DESC")
@@ -124,35 +129,39 @@ func (r *GormRepository) CountAllByFilter(f filters.HealthcheckPtySession) (int6
 	}
 
 	if f.Appcode != nil && len(*f.Appcode) > 0 {
-		query = query.Where("APPLICATION_CODE = ?", *f.Appcode)
+		appcode := strings.ToUpper(*f.Appcode)
+		query = query.Where("APPLICATION_CODE LIKE ?", "%"+appcode+"%")
 	}
 
 	if f.Environment != nil && len(*f.Environment) > 0 {
-		query = query.Where("ENVIRONMENT = ?", *f.Environment)
+		env := strings.ToUpper(*f.Environment)
+		query = query.Where("ENVIRONMENT = ?", env)
 	}
 
 	if f.Country != nil && len(*f.Country) > 0 {
-		query = query.Where("COUNTRY = ?", *f.Country)
+		country := strings.ToUpper(*f.Country)
+		query = query.Where("COUNTRY LIKE ?", "%"+country+"%")
 	}
 
 	if f.Lob != nil && len(*f.Lob) > 0 {
-		query = query.Where("LOB = ?", *f.Lob)
+		lob := strings.ToUpper(*f.Lob)
+		query = query.Where("LOB LIKE ?", "%"+lob+"%")
 	}
 
 	if f.OsType != nil && len(*f.OsType) > 0 {
-		query = query.Where("PLATFORM = ?", *f.OsType)
+		query = query.Where("PLATFORM LIKE ?", "%"+*f.OsType+"%")
 	}
 
 	if f.Hostname != nil && len(*f.Hostname) > 0 {
-		query = query.Where("HOSTNAME = ?", *f.Hostname)
+		query = query.Where("HOSTNAME LIKE ?", "%"+*f.Hostname+"%")
 	}
 
 	if f.Status != nil && len(*f.Status) > 0 {
-		query = query.Where("STATUS = ?", *f.Status)
+		query = query.Where("STATUS LIKE ?", "%"+*f.Status+"%")
 	}
 
 	if f.SystemType != nil && len(*f.SystemType) > 0 {
-		query = query.Where("SYSTEM_TYPE = ?", *f.SystemType)
+		query = query.Where("SYSTEM_TYPE LIKE ?", "%"+*f.SystemType+"%")
 	}
 
 	err := query.Count(&count).Error

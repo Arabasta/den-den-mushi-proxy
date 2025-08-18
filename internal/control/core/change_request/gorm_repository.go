@@ -58,7 +58,7 @@ func (r *GormRepository) FindApprovedChangeRequestsByFilter(f filters.ListCR) ([
 	}
 
 	if f.LOB != nil {
-		query = query.Where("LOB = ?", *f.LOB)
+		query = query.Where("LOB LIKE ?", "%"+*f.LOB+"%")
 	}
 
 	if f.Country != nil {
@@ -127,7 +127,7 @@ func (r *GormRepository) CountApprovedChangeRequestsByFilter(f filters.ListCR) (
 	}
 
 	if f.LOB != nil {
-		query = query.Where("LOB = ?", *f.LOB)
+		query = query.Where("LOB LIKE ?", "%"+*f.LOB+"%")
 	}
 
 	if f.Country != nil {

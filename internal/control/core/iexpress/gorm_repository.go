@@ -47,14 +47,16 @@ func (r *GormRepository) FindApprovedByFilter(f filters.ListIexpress) ([]*dto.Re
 
 	query = query.Where("State = ?", "Approved")
 
-	if f.ImplementorGroups != nil && len(*f.ImplementorGroups) > 0 {
+	var cleanGroups []string
+	for _, group := range *f.ImplementorGroups {
+		if strings.TrimSpace(group) != "" {
+			cleanGroups = append(cleanGroups, group)
+		}
+	}
+	if len(cleanGroups) > 0 {
 		query = query.Where(
-			"("+
-				"COALESCE(Approver_Group_1, '') IN ? OR "+
-				"COALESCE(Approver_Group_2, '') IN ? OR "+
-				"COALESCE(MD_Approver_Group, '') IN ?"+
-				")",
-			*f.ImplementorGroups, *f.ImplementorGroups, *f.ImplementorGroups,
+			"Approver_Group_1 IN ? OR Approver_Group_2 IN ? OR MD_Approver_Group IN ?",
+			cleanGroups, cleanGroups, cleanGroups,
 		)
 	}
 
@@ -69,15 +71,17 @@ func (r *GormRepository) FindApprovedByFilter(f filters.ListIexpress) ([]*dto.Re
 	}
 
 	if f.Requestor != nil {
-		query = query.Where("Requestor = ?", *f.Requestor)
+		query = query.Where("Requestor LIKE ?", "%"+*f.Requestor+"%")
 	}
 
 	if f.LOB != nil {
-		query = query.Where("Unit = ?", *f.LOB)
+		lob := strings.ToUpper(*f.LOB)
+		query = query.Where("Unit LIKE ?", "%"+lob+"%")
 	}
 
 	if f.Country != nil {
-		query = query.Where("Country_of_Origin = ?", *f.Country)
+		country := strings.ToUpper(*f.Country)
+		query = query.Where("Country_of_Origin LIKE ?", "%"+country+"%")
 	}
 
 	// note that this is stored as text in DB
@@ -101,7 +105,7 @@ func (r *GormRepository) FindApprovedByFilter(f filters.ListIexpress) ([]*dto.Re
 	}
 
 	pageSize := f.PageSize
-	if pageSize <= 0 || pageSize > 1000 {
+	if pageSize <= 0 || pageSize > 10000 {
 		pageSize = 20
 	}
 
@@ -131,14 +135,16 @@ func (r *GormRepository) CountApprovedByFilter(f filters.ListIexpress) (int, err
 
 	query = query.Where("State = ?", "Approved")
 
-	if f.ImplementorGroups != nil && len(*f.ImplementorGroups) > 0 {
+	var cleanGroups []string
+	for _, group := range *f.ImplementorGroups {
+		if strings.TrimSpace(group) != "" {
+			cleanGroups = append(cleanGroups, group)
+		}
+	}
+	if len(cleanGroups) > 0 {
 		query = query.Where(
-			"("+
-				"COALESCE(Approver_Group_1, '') IN ? OR "+
-				"COALESCE(Approver_Group_2, '') IN ? OR "+
-				"COALESCE(MD_Approver_Group, '') IN ?"+
-				")",
-			*f.ImplementorGroups, *f.ImplementorGroups, *f.ImplementorGroups,
+			"Approver_Group_1 IN ? OR Approver_Group_2 IN ? OR MD_Approver_Group IN ?",
+			cleanGroups, cleanGroups, cleanGroups,
 		)
 	}
 
@@ -152,12 +158,18 @@ func (r *GormRepository) CountApprovedByFilter(f filters.ListIexpress) (int, err
 		query = query.Where("("+strings.Join(likeClauses, " OR ")+")", args...)
 	}
 
+	if f.Requestor != nil {
+		query = query.Where("Requestor LIKE ?", "%"+*f.Requestor+"%")
+	}
+
 	if f.LOB != nil {
-		query = query.Where("Unit = ?", *f.LOB)
+		lob := strings.ToUpper(*f.LOB)
+		query = query.Where("Unit LIKE ?", "%"+lob+"%")
 	}
 
 	if f.Country != nil {
-		query = query.Where("Country_of_Origin = ?", *f.Country)
+		country := strings.ToUpper(*f.Country)
+		query = query.Where("Country_of_Origin LIKE ?", "%"+country+"%")
 	}
 
 	// note that this is stored as text in DB
