@@ -86,6 +86,10 @@ func init() {
 	healthcheckBlockedControlHandlers = map[string]func(*HealthcheckPurpose, *Session, protocol.Packet) (string, error){
 		// for now block unhandled
 		string(constants.RightBackslash): (*HealthcheckPurpose).handleBlockedControlChar, // \
+
+		string(constants.ArrowUp):   (*HealthcheckPurpose).handleBlockedControlChar,
+		string(constants.ArrowDown): (*HealthcheckPurpose).handleBlockedControlChar,
+
 		//string(constants.LeftBackslash):     (*HealthcheckPurpose).handleBlockedControlChar, // /
 		//string(constants.LeftParenthesis):   (*HealthcheckPurpose).handleBlockedControlChar,
 		//string(constants.RightParenthesis):  (*HealthcheckPurpose).handleBlockedControlChar,
