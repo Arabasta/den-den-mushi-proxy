@@ -81,45 +81,53 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 	iexpressRepo := iexpress3.NewGormRepository(ddmDb, log)
 	iexpressService := iexpress3.NewService(iexpressRepo, log)
 
-	// validator for policy chains  ============================================================================================
+	// validator for policy chains  ===============================================================================
 	validator := validators.NewValidator(log, cfg)
 
 	//// policy chains ============================================================================================
 	var changeRequestPolicyChain policy.Policy[request.Ctx]
 	var healthcheckPolicyChain policy.Policy[request.Ctx]
+	var iexpressPolicyChain policy.Policy[request.Ctx]
 
 	// policies for change request
 	ptySessionPolicyCR := policy.NewPtySessionPolicy[request.Ctx](ptySessionService, connectionService, log)
 	implementorPolicyCR := policy.NewImplementorPolicy[request.Ctx](hostService, log, validator)
+	observerPolicyCR := policy.NewObserverPolicy[request.Ctx](log, validator)
 	changePolicy := policy.NewChangePolicy[request.Ctx](impGroupsService, osAdmUsersService, validator, log)
 
 	ptySessionPolicyCR.SetNext(implementorPolicyCR)
 	implementorPolicyCR.SetNext(changePolicy)
+	changePolicy.SetNext(observerPolicyCR)
 	changeRequestPolicyChain = ptySessionPolicyCR
 
 	// policies for health check
 	ptySessionPolicyHC := policy.NewPtySessionPolicy[request.Ctx](ptySessionService, connectionService, log)
 	implementorPolicyHC := policy.NewImplementorPolicy[request.Ctx](hostService, log, validator)
+	observerPolicyHC := policy.NewObserverPolicy[request.Ctx](log, validator)
 	healthcheckPolicy := policy.NewHealthcheckPolicy[request.Ctx](hostService, impGroupsService, osAdmUsersService, log, validator)
 
 	ptySessionPolicyHC.SetNext(healthcheckPolicy)
 	healthcheckPolicy.SetNext(implementorPolicyHC)
+	implementorPolicyHC.SetNext(observerPolicyHC)
 	healthcheckPolicyChain = ptySessionPolicyHC
 
 	// policies for iexpress
 	ptySessionPolicyIExpress := policy.NewPtySessionPolicy[request.Ctx](ptySessionService, connectionService, log)
 	implementorPolicyIExpress := policy.NewImplementorPolicy[request.Ctx](hostService, log, validator)
+	observerPolicyIExpress := policy.NewObserverPolicy[request.Ctx](log, validator)
 	iexpressPolicy := policy.NewIExpressPolicy[request.Ctx](impGroupsService, osAdmUsersService, validator, log)
 
 	ptySessionPolicyIExpress.SetNext(iexpressPolicy)
 	iexpressPolicy.SetNext(implementorPolicyIExpress)
-	iexpressPolicyChain := ptySessionPolicyIExpress
+	implementorPolicyIExpress.SetNext(observerPolicyIExpress)
+	iexpressPolicyChain = ptySessionPolicyIExpress
 
 	if cfg.Development.SkipPolicyChecks {
 		log.Info("Skip policy checks enabled. Using noop policy")
 		noopPolicy := policy.NewNoopPolicy[request.Ctx](log)
 		changeRequestPolicyChain = noopPolicy
 		healthcheckPolicyChain = noopPolicy
+		iexpressPolicyChain = noopPolicy
 	}
 
 	// pass policy chains to service
