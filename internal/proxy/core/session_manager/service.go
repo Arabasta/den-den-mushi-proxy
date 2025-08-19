@@ -46,7 +46,7 @@ func (m *Service) CreatePtySession(pty *os.File, cmd *exec.Cmd, claims *token.Cl
 	s, err := pseudotty.New(id, pty, cmd, now, m.ptyCloseCallback, log, m.cfg, m.puppetClient, m.filterSvc)
 	if err != nil {
 		m.log.Error("Failed to create pty session", zap.Error(err), zap.String("ptySessionId", id))
-		s.EndSession()
+		s.ForceEndSession("Failed to create pty session: " + err.Error())
 		return "", err
 	}
 
@@ -61,7 +61,7 @@ func (m *Service) CreatePtySession(pty *os.File, cmd *exec.Cmd, claims *token.Cl
 	err = s.Setup(claims)
 	if err != nil {
 		m.log.Error("Failed to setup session", zap.Error(err))
-		s.EndSession()
+		s.ForceEndSession("Failed to setup session: " + err.Error())
 		return "", err
 	}
 

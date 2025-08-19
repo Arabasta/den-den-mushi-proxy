@@ -53,7 +53,7 @@ func (s *Session) monitorCrEndTime() {
 			s.ptyOutput.Add(pkt)
 			s.fanout(pkt, nil)
 			time.Sleep(time.Millisecond * 3000) // allow pkt to be sent
-
+			s.logL("Ticket end time reached, closing PTY session")
 			s.EndSession()
 		case <-s.ctx.Done():
 			s.log.Info("Session cancelled before Ticket timeout")

@@ -128,18 +128,25 @@ func (s *Session) Setup(claims *token.Claims) error {
 	s.startClaims = claims
 
 	if s.startClaims.Connection.Purpose == types.Change || s.startClaims.Connection.Purpose == types.IExpress {
-		s.crEndTime = &s.startClaims.Connection.ChangeRequest.EndTime
+		if s.crEndTime != nil {
+			s.log.Debug("Setting up cr")
+			s.crEndTime = &s.startClaims.Connection.ChangeRequest.EndTime
 
-		// if cr ending in 1min or already ended, don't allow session to start
-		// else it will crash the conn loop
-		if s.crEndTime.Before(time.Now().Add(1 * time.Minute)) {
-			return errors.New("ticket already expired")
+			// if cr ending in 1min or already ended, don't allow session to start
+			// else it will crash the conn loop
+			if s.crEndTime.Before(time.Now().Add(1 * time.Minute)) {
+				s.log.Error("Ticket already expired or ending soon", zap.Time("endTime", *s.crEndTime))
+				s.logL("Ticket already expired or ending soon")
+				s.EndSession()
+				return errors.New("ticket already expired")
+			}
 		}
 	}
 
 	err := setPurpose(s, s.startClaims.Connection.Purpose)
 	if err != nil {
-		s.log.Error("Failed to set up session", zap.String("id", s.Id), zap.Error(err))
+		s.log.Error("invalid session purpose", zap.String("id", s.Id), zap.Error(err))
+		s.logL("Invalid session purpose")
 		s.EndSession()
 		return err
 	}
@@ -149,6 +156,7 @@ func (s *Session) Setup(claims *token.Claims) error {
 	if s.filter == nil {
 		err = errors.New("invalid filter type")
 		s.log.Error("Failed to register initial connection", zap.Error(err))
+		s.logL("Invalid filter type")
 		s.EndSession()
 		return err
 	}
@@ -159,6 +167,7 @@ func (s *Session) Setup(claims *token.Claims) error {
 	go s.readPtyLoop()
 
 	if s.crEndTime != nil {
+		s.log.Debug("Starting cr end time monitor", zap.Time("endTime", *s.crEndTime))
 		go s.monitorCrEndTime()
 	}
 	return nil
