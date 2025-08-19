@@ -15,7 +15,8 @@
     "UseRedis": false,
     "IsUsingInvDb": true,
     "IsAutoMigrateEnabled": false,
-    "isDevRoutesEnabled": true
+    "isDevRoutesEnabled": true,
+    "IsAllowImplementingWithoutObserver": true
   },
   "logger": {
     "level": "debug",

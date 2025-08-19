@@ -27,11 +27,10 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 	var logMsg string
 	var err error
 
-	// todo enable for next week cr
-	//if !s.isImplementingAllowed(pkt) {
-	//	core_helpers.SendToConn(s.ActivePrimary, protocol.Packet{Header: protocol.NoActiveObserver})
-	//	return
-	//}
+	if !s.isImplementingAllowed(pkt) {
+		core_helpers.SendToConn(s.ActivePrimary, protocol.Packet{Header: protocol.NoActiveObserver})
+		return
+	}
 
 	if pkt.Header == protocol.Input {
 		pkt.Data = constants.StripPaste(pkt.Data)
@@ -235,6 +234,10 @@ func (s *Session) isImplementingAllowed(pkt protocol.Packet) bool {
 	}
 
 	if pkt.Header != protocol.Input && pkt.Header != protocol.Sudo {
+		return true
+	}
+
+	if s.cfg.Development.IsAllowImplementingWithoutObserver {
 		return true
 	}
 

@@ -15,12 +15,13 @@ type Config struct {
 	Host *config.Host
 
 	Development struct {
-		UseSqlJtiRepo        bool
-		UseRedis             bool
-		IsUsingInvDb         bool
-		IsAutoMigrateEnabled bool
-		IsSMX                bool
-		IsDevRoutesEnabled   bool
+		UseSqlJtiRepo                      bool
+		UseRedis                           bool
+		IsUsingInvDb                       bool
+		IsAutoMigrateEnabled               bool
+		IsSMX                              bool
+		IsDevRoutesEnabled                 bool
+		IsAllowImplementingWithoutObserver bool
 	}
 
 	Pty struct {
