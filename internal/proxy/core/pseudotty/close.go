@@ -6,6 +6,7 @@ import (
 	"den-den-mushi-Go/pkg/types"
 	"go.uber.org/zap"
 	"io"
+	"syscall"
 	"time"
 )
 
@@ -37,6 +38,7 @@ func (s *Session) closeTheWorld() {
 	s.log.Debug("Closing the world")
 	s.deregisterAllWsConnections()
 	s.closePty()
+	s.terminateSshProcess()
 	s.endTime = time.Now()
 	s.logL(session_logging.FormatFooter(s.endTime))
 	s.closeLogWriter()
@@ -89,4 +91,52 @@ func (s *Session) closeLogWriter() {
 			s.log.Info("Closed log writer")
 		}
 	}
+}
+
+func (s *Session) terminateSshProcess() {
+	if s.cmd == nil || s.cmd.Process == nil {
+		s.log.Warn("SSH process is nil, cannot terminate")
+		return
+	}
+
+	pid := s.cmd.Process.Pid
+	s.log.Info("Terminating SSH process", zap.Int("pid", pid))
+
+	err := s.cmd.Process.Signal(syscall.SIGTERM)
+	if err != nil {
+		s.log.Warn("Failed to send SIGTERM to SSH process", zap.Error(err))
+	}
+
+	done := make(chan error, 1)
+	go func() {
+		done <- s.cmd.Wait()
+	}()
+
+	select {
+	case err := <-done:
+		if err != nil {
+			s.log.Info("SSH process terminated with error", zap.Error(err))
+		} else {
+			s.log.Info("SSH process terminated gracefully")
+		}
+		return
+	case <-time.After(10 * time.Second):
+		s.log.Warn("SSH process didn't terminate gracefully, forcing kill")
+	}
+
+	// force kill if graceful termination failed
+	err = s.cmd.Process.Kill()
+	if err != nil {
+		s.log.Error("Failed to force kill SSH process", zap.Error(err))
+	} else {
+		s.log.Info("SSH process force killed")
+	}
+
+	go func() {
+		err := s.cmd.Wait()
+		if err != nil {
+			s.log.Error("SSH process wait returned error after kill", zap.Error(err))
+			return
+		}
+	}()
 }

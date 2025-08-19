@@ -11,11 +11,12 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"os"
+	"os/exec"
 	"strconv"
 	"time"
 )
 
-func (m *Service) CreatePtySession(pty *os.File, claims *token.Claims, log *zap.Logger) (string, error) {
+func (m *Service) CreatePtySession(pty *os.File, cmd *exec.Cmd, claims *token.Claims, log *zap.Logger) (string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.log.Debug("Creating pty session")
@@ -42,7 +43,7 @@ func (m *Service) CreatePtySession(pty *os.File, claims *token.Claims, log *zap.
 		return "", err
 	}
 
-	s, err := pseudotty.New(id, pty, now, m.ptyCloseCallback, log, m.cfg, m.puppetClient, m.filterSvc)
+	s, err := pseudotty.New(id, pty, cmd, now, m.ptyCloseCallback, log, m.cfg, m.puppetClient, m.filterSvc)
 	if err != nil {
 		m.log.Error("Failed to create pty session", zap.Error(err), zap.String("ptySessionId", id))
 		s.EndSession()

@@ -8,6 +8,7 @@ import (
 	"den-den-mushi-Go/pkg/token"
 	"go.uber.org/zap"
 	"os"
+	"os/exec"
 	"time"
 )
 
@@ -19,11 +20,11 @@ type SshOrchestratorKeyConnection struct {
 }
 
 // todo refactor garbage
-func (c *SshOrchestratorKeyConnection) Connect(_ context.Context, claims *token.Claims) (*os.File, error) {
+func (c *SshOrchestratorKeyConnection) Connect(_ context.Context, claims *token.Claims) (*os.File, *exec.Cmd, error) {
 	keyPath, pubKey, cleanup, err := pty_util.GenerateEphemeralKey(c.cfg, c.log)
 	if err != nil {
 		c.log.Error("failed to generate ephemeral key", zap.Error(err))
-		return nil, err
+		return nil, nil, err
 	}
 
 	err = c.puppet.KeyInject(pubKey, claims.Connection)
@@ -43,13 +44,14 @@ func (c *SshOrchestratorKeyConnection) Connect(_ context.Context, claims *token.
 	time.Sleep(c.cfg.Ssh.ConnectDelayAfterInjectSeconds * time.Second) // wait for key to be injected
 
 	var pty *os.File
+	var cmd *exec.Cmd
 	for i := 0; i <= c.cfg.Pty.SpawnRetryCount; i++ {
 		c.log.Debug("Spawning pseudo terminal for SSH connection", zap.Int("attempt", i+1))
 		cmd := c.commandBuilder.BuildSshCmd(keyPath, claims.Connection.Server)
 
-		pty, err = pty_util.Spawn(cmd)
+		pty, cmd, err = pty_util.Spawn(cmd, c.log)
 		if err == nil {
-			c.log.Info("Pseudo terminal spawned successfully", zap.String("keyPath", keyPath))
+			c.log.Info("Pseudo terminal spawned", zap.String("keyPath", keyPath))
 			break
 		}
 
@@ -60,7 +62,7 @@ func (c *SshOrchestratorKeyConnection) Connect(_ context.Context, claims *token.
 		if c.cfg.Ssh.IsRemoveInjectKeyEnabled {
 			_ = c.puppet.KeyRemove(pubKey, claims.Connection)
 		}
-		return nil, err
+		return nil, nil, err
 	}
 
 	go func() {
@@ -76,5 +78,5 @@ func (c *SshOrchestratorKeyConnection) Connect(_ context.Context, claims *token.
 		}
 	}()
 
-	return pty, nil
+	return pty, cmd, nil
 }

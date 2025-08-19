@@ -2,16 +2,19 @@ package pty_util
 
 import (
 	"github.com/creack/pty"
-	"github.com/labstack/gommon/log"
 	"go.uber.org/zap"
 	"os"
 	"os/exec"
 )
 
-func Spawn(cmd *exec.Cmd) (*os.File, error) {
+func Spawn(cmd *exec.Cmd, log *zap.Logger) (*os.File, *exec.Cmd, error) {
+	//cmd.SysProcAttr = &syscall.SysProcAttr{
+	//	Setpgid: true,
+	//}
+
 	ptmx, err := pty.Start(cmd)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	go func() {
@@ -23,7 +26,7 @@ func Spawn(cmd *exec.Cmd) (*os.File, error) {
 		}
 	}()
 
-	return ptmx, nil
+	return ptmx, cmd, nil
 }
 
 func Resize(ptmx *os.File, cols, rows uint16) error {

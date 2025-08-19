@@ -28,7 +28,7 @@ type Deps struct {
 
 func initDependencies(db *gorm.DB, redis *redis.Client, cfg *config.Config, log *zap.Logger) *Deps {
 	puppetClient := puppet.NewClient(cfg.Puppet, cfg, log)
-	connectionMethodFactory := connect.NewConnectionMethodFactory(
+	connMethodStrategy := connect.NewRegistry(
 		connect.NewDeps(
 			puppetClient,
 			pty_util.NewBuilder(log, cfg.Ssh),
@@ -61,7 +61,7 @@ func initDependencies(db *gorm.DB, redis *redis.Client, cfg *config.Config, log 
 	filterSvc := filter.NewService(regexFiltersSvc, log, cfg)
 
 	sessionManager := session_manager.New(ptySessionsSvc, connectionSvc, log, cfg, puppetClient, filterSvc)
-	websocketService := websocket.NewService(connectionMethodFactory, sessionManager, log, cfg)
+	websocketService := websocket.NewService(connMethodStrategy, sessionManager, log, cfg)
 
 	return &Deps{
 		WebsocketService: websocketService,

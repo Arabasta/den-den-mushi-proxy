@@ -16,6 +16,7 @@ import (
 	"github.com/labstack/gommon/log"
 	"go.uber.org/zap"
 	"os"
+	"os/exec"
 	"sync"
 	"time"
 )
@@ -23,6 +24,7 @@ import (
 type Session struct {
 	Id  string
 	pty *os.File
+	cmd *exec.Cmd
 
 	startClaims *token.Claims // claims from the creator of the session, this must not be modified
 	crEndTime   *time.Time
@@ -69,11 +71,12 @@ type Session struct {
 	filterSvc    *filter.Service
 }
 
-func New(id string, pty *os.File, now time.Time, onClose func(string), log *zap.Logger, cfg *config.Config,
+func New(id string, pty *os.File, cmd *exec.Cmd, now time.Time, onClose func(string), log *zap.Logger, cfg *config.Config,
 	puppetClient *puppet.Client, filterSvc *filter.Service) (*Session, error) {
 	s := &Session{
 		Id:        id,
 		pty:       pty,
+		cmd:       cmd,
 		startTime: now,
 		log:       log.With(zap.String("ptySession", id)),
 		cfg:       cfg,

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"go.uber.org/zap"
 	"os"
+	"os/exec"
 )
 
 type LocalSshKeyConnection struct {
@@ -16,11 +17,11 @@ type LocalSshKeyConnection struct {
 	commandBuilder *pty_util.Builder
 }
 
-func (c *LocalSshKeyConnection) Connect(_ context.Context, claims *token.Claims) (*os.File, error) {
+func (c *LocalSshKeyConnection) Connect(_ context.Context, claims *token.Claims) (*os.File, *exec.Cmd, error) {
 	if !c.cfg.IsLocalSshKeyEnabled {
-		return nil, errors.New("LocalSshKey is not supported in this build")
+		return nil, nil, errors.New("LocalSshKey is not supported in this build")
 	}
 
 	cmd := c.commandBuilder.BuildSshCmd(c.cfg.LocalSshKeyPath, claims.Connection.Server)
-	return pty_util.Spawn(cmd)
+	return pty_util.Spawn(cmd, c.log)
 }

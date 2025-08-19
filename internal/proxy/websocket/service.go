@@ -12,20 +12,20 @@ import (
 )
 
 type Service struct {
-	connectionMethodFactory *connect.ConnectionMethodFactory
-	sessionManager          *session_manager.Service
-	log                     *zap.Logger
-	cfg                     *config.Config
+	connStrategy   *connect.Strategy
+	sessionManager *session_manager.Service
+	log            *zap.Logger
+	cfg            *config.Config
 }
 
-func NewService(c *connect.ConnectionMethodFactory, sm *session_manager.Service, log *zap.Logger,
+func NewService(c *connect.Strategy, sm *session_manager.Service, log *zap.Logger,
 	cfg *config.Config) *Service {
 	log.Info("Initializing WebSocket Service...")
 	return &Service{
-		connectionMethodFactory: c,
-		sessionManager:          sm,
-		log:                     log,
-		cfg:                     cfg,
+		connStrategy:   c,
+		sessionManager: sm,
+		log:            log,
+		cfg:            cfg,
 	}
 }
 
@@ -36,8 +36,8 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 	conn := client.New(ws, claims, s.cfg)
 
 	if claims.Connection.PtySession.IsNew {
-		connMethod := s.connectionMethodFactory.Create(claims.Connection.Type)
-		if connMethod == nil {
+		connMethod, err := s.connStrategy.Get(claims.Connection.Type)
+		if err != nil {
 			s.log.Error("Unsupported connection type", zap.String("type", string(claims.Connection.Type)))
 			s.closeWs(ws)
 			// todo: handle close properly
@@ -45,7 +45,7 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 		}
 
 		s.log.Debug("Establishing pty connection", zap.String("type", string(claims.Connection.Type)))
-		pty, err := connMethod.Connect(ctx, claims)
+		pty, cmd, err := connMethod.Connect(ctx, claims)
 		if err != nil {
 			s.log.Error("Failed to connect to pseudo terminal", zap.Error(err),
 				zap.String("type", string(claims.Connection.Type)))
@@ -56,7 +56,7 @@ func (s *Service) run(ctx context.Context, ws *websocket.Conn, claims *token.Cla
 
 		s.log.Debug("Connected to pty ", zap.String("type", string(claims.Connection.Type)))
 
-		ptySessionId, err := s.sessionManager.CreatePtySession(pty, claims, s.log)
+		ptySessionId, err := s.sessionManager.CreatePtySession(pty, cmd, claims, s.log)
 		if err != nil {
 			s.log.Error("Failed to create pty session", zap.Error(err))
 			s.closeWs(ws)
