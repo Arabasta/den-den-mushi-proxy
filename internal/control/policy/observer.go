@@ -38,10 +38,10 @@ func (p *ObserverPolicy[T]) Check(r T) error {
 		return nil
 	}
 
-	p.log.Debug("Request is for Observer role, checking for OU presence")
-	// user must have OU group
-	if err := p.v.HasOuGroup(r.GetUserOuGroup()); err != nil {
-		p.log.Warn("User does not have OU group", zap.String("userId", r.GetUserId()), zap.Error(err))
+	p.log.Debug("Request is for Observer role, checking for L2/L3 OU group")
+	// user be L2 / L3
+	if err := p.v.IsL2L3OuGroup(r.GetUserOuGroup()); err != nil {
+		p.log.Warn("expected L2/L3 OU Group", zap.String("userId", r.GetUserId()), zap.Error(err))
 		return err
 	}
 
