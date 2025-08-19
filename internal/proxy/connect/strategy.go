@@ -21,6 +21,9 @@ func NewRegistry(deps Deps) *Strategy {
 			types.SshOrchestratorKey: &SshOrchestratorKeyConnection{
 				puppet: deps.puppet, cfg: deps.cfg, log: deps.log, commandBuilder: deps.commandBuilder,
 			},
+			types.SshVaultKey: &SshVaultKeyConnection{
+				cfg: deps.cfg, log: deps.log, commandBuilder: deps.commandBuilder,
+			},
 		},
 	}
 }

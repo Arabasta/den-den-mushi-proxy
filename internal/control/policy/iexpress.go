@@ -72,7 +72,7 @@ func (p *IexpressPolicy[T]) Check(r T) error {
 	}
 
 	groups := nonEmptyStrings(exp.ApproverGroup1, exp.ApproverGroup2, exp.MDApproverGroup)
-	if !validators.IsUsersGroupsInCRImplementerGroups(impGroups, groups) {
+	if !p.v.IsUserInAnyIexpressGroup(groups, enrichedImpG) {
 		p.log.Warn("User is not in iexpress implementer group", zap.String("user", r.GetUserId()))
 		return errors.New("user is not in iexpress implementer group")
 	}
