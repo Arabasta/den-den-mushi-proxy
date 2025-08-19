@@ -157,10 +157,10 @@ func (r *GormRepository) CountAllByFilter(f filters.HealthcheckPtySession) (int6
 		query = query.Where("HOSTNAME LIKE ?", "%"+*f.Hostname+"%")
 	}
 
-	if f.Status != nil && len(*f.Status) > 0 {
-		validStatus := []string{"Active", "Pre-Production", "Staging", "Tech Live", "TH_WIP"}
-		query = query.Where("STATUS IN ?", validStatus)
-	}
+	//if f.Status != nil && len(*f.Status) > 0 {
+	validStatus := []string{"Active", "Pre-Production", "Staging", "Tech Live", "TH_WIP", "Decommissioning"}
+	query = query.Where("STATUS IN ?", validStatus)
+	//}
 
 	if f.SystemType != nil && len(*f.SystemType) > 0 {
 		query = query.Where("SYSTEM_TYPE LIKE ?", "%"+*f.SystemType+"%")
