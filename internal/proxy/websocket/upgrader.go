@@ -37,6 +37,10 @@ func (s *Service) websocketUpgrader() websocket.Upgrader {
 		ReadBufferSize:  s.cfg.Websocket.ReadBufferSize,
 		WriteBufferSize: s.cfg.Websocket.WriteBufferSize,
 		CheckOrigin: func(r *http.Request) bool {
+			if len(s.cfg.Websocket.AllowedOrigins) > 0 && s.cfg.Websocket.AllowedOrigins[0] == "*" {
+				return true // allow all origins
+			}
+
 			origin := r.Header.Get("Origin")
 			if origin == "" || origin == "null" {
 				// must have origin header
