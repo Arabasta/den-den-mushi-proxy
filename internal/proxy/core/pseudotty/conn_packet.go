@@ -29,6 +29,7 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 
 	// todo enable for next week cr
 	//if !s.isImplementingAllowed(pkt) {
+	//	core_helpers.SendToConn(s.ActivePrimary, protocol.Packet{Header: protocol.NoActiveObserver})
 	//	return
 	//}
 

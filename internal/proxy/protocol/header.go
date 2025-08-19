@@ -42,6 +42,8 @@ func (h Header) String() string {
 		return "PtyCRTimeout"
 	case ClientEndSession:
 		return "ClientEndSession"
+	case NoActiveObserver:
+		return "NoActiveObserver"
 	case ParseError:
 		return "ParseError"
 	default:
@@ -110,6 +112,9 @@ const (
 
 	// ClientEndSession is sent to the pty from the client to end the session
 	ClientEndSession Header = 0x18
+
+	// NoActiveObserver is sent when there is no active observer for the pty session and the input is discarded
+	NoActiveObserver Header = 0x19
 
 	// ParseError indicates an error in parsing the header
 	ParseError Header = 0xff

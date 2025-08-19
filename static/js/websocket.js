@@ -55,6 +55,9 @@ const socketManager = {
                     // note to frontend dev, should NOT use the same toast as blocked control char
                     showToast("CR session will end in " + new TextDecoder().decode(payload) + " minutes");
                     break;
+                case 0x19: // no active observer, packet dropped
+                    showToast("No active observer...");
+                    break;
                 default:
                     console.warn("Unknown header:", header);
             }
