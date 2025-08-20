@@ -19,11 +19,12 @@ import (
 	"den-den-mushi-Go/pkg/logger"
 	"den-den-mushi-Go/pkg/mysql"
 	"flag"
+	"os"
+	"path/filepath"
+
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"os"
-	"path/filepath"
 )
 
 func main() {
@@ -76,7 +77,7 @@ func main() {
 		}
 	}
 
-	if cfg.Development.IsSMX {
+	if cfg.Development.IsSMX && cfg.Development.IsAutoMigrateEnabled {
 		log.Info("Running AutoMigrate")
 		if err := db.AutoMigrate(
 			&proxy_lb.Model{},
@@ -88,10 +89,6 @@ func main() {
 			&os_adm_users.Model{},
 		); err != nil {
 			log.Fatal("AutoMigrate failed", zap.Error(err))
-		}
-
-		if cfg.Development.IsAutoMigrateEnabled {
-			//testdata.CreateProxyHostAndLb(db, cfg)
 		}
 	}
 	s := server.New(db, root.Files, cfg, log)

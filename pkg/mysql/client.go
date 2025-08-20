@@ -3,16 +3,17 @@ package mysql
 import (
 	"den-den-mushi-Go/pkg/config"
 	"fmt"
+	"time"
+
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"time"
 )
 
 func Client(cfg *config.SqlDb, sslCfg *config.Ssl, log *zap.Logger) (*gorm.DB, error) {
 	log.Info("Connecting to SQL database...")
-	log.Debug("Connection parameters",
+	log.Info("Connection parameters",
 		zap.String("User", cfg.User),
 		zap.String("Host", cfg.Host),
 		zap.Int("Port", cfg.Port),
@@ -21,7 +22,7 @@ func Client(cfg *config.SqlDb, sslCfg *config.Ssl, log *zap.Logger) (*gorm.DB, e
 	)
 
 	if cfg.SSLEnabled {
-		log.Debug("SSL enabled, using CA file", zap.String("CAFile", sslCfg.CAFile))
+		log.Info("SSL enabled, using CA file", zap.String("CAFile", sslCfg.CAFile))
 		if err := registerMySQLTLSCA(sslCfg.CAFile); err != nil {
 			return nil, err
 		}
@@ -61,7 +62,6 @@ func Client(cfg *config.SqlDb, sslCfg *config.Ssl, log *zap.Logger) (*gorm.DB, e
 		return nil, fmt.Errorf("ping error: %w", err)
 	}
 
-	log.Info("Connected to SQL database", zap.String("dsn", dsn))
-
+	log.Info("Connected to SQL database")
 	return db, nil
 }

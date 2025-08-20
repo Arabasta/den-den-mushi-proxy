@@ -19,8 +19,9 @@ import (
 	"den-den-mushi-Go/pkg/types"
 	"den-den-mushi-Go/pkg/util/cyberark"
 	"errors"
-	"go.uber.org/zap"
 	"strings"
+
+	"go.uber.org/zap"
 )
 
 type Service struct {

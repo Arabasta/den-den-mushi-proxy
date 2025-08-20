@@ -14,15 +14,16 @@ import (
 	"den-den-mushi-Go/pkg/mysql"
 	redispkg "den-den-mushi-Go/pkg/redis"
 	"flag"
-	"github.com/joho/godotenv"
-	"github.com/redis/go-redis/v9"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"syscall"
 	"time"
+
+	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 func main() {
