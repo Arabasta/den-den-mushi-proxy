@@ -16,7 +16,7 @@ const socketManager = {
         const jwt2 = "kei"
 
         // connect to proxy
-        let websocketUrl = `ws://${window.location.hostname}:45007/v1/ws?Authorization=${encodeURIComponent(jwt2)}`;
+        let websocketUrl = `wss://${window.location.hostname}:45007/v1/ws?Authorization=${encodeURIComponent(jwt2)}`;
         console.log(websocketUrl);
         this.socket = new WebSocket(websocketUrl, ['X-Proxy-Session-Token', jwt]);
 
@@ -57,6 +57,13 @@ const socketManager = {
                     break;
                 case 0x19: // no active observer, packet dropped
                     showToast("No active observer...");
+                    break;
+                case 0x1a: // health check session timeout
+                    term.write(`\r\n\x1b[33mRead-only session closed due to inactivity, bye bye.\r\nSessionId: ${new TextDecoder().decode(payload)}\x1b[0m\r\n`);
+                    break;
+                case 0x1b: // health check session warning
+                    // note to frontend dev, should NOT use the same toast as blocked control char
+                    showToast("Read-only session will end in " + new TextDecoder().decode(payload) + " seconds due to inactivity.");
                     break;
                 default:
                     console.warn("Unknown header:", header);

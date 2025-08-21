@@ -44,6 +44,10 @@ func (h Header) String() string {
 		return "ClientEndSession"
 	case NoActiveObserver:
 		return "NoActiveObserver"
+	case HealthcheckInactiveTimeout:
+		return "HealthcheckInactiveTimeout"
+	case HealthcheckInactiveWarning:
+		return "HealthcheckInactiveWarning"
 	case ParseError:
 		return "ParseError"
 	default:
@@ -115,6 +119,12 @@ const (
 
 	// NoActiveObserver is sent when there is no active observer for the pty session and the input is discarded
 	NoActiveObserver Header = 0x19
+
+	// HealthcheckInactiveTimeout is sent when the healthcheck session has been inactive for x seconds
+	HealthcheckInactiveTimeout Header = 0x1a
+
+	// HealthcheckInactiveWarning is sent when the healthcheck session is about to close due to inactivity
+	HealthcheckInactiveWarning Header = 0x1b
 
 	// ParseError indicates an error in parsing the header
 	ParseError Header = 0xff
