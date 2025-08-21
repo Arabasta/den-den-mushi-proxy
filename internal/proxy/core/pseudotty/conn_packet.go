@@ -9,9 +9,10 @@ import (
 	"den-den-mushi-Go/pkg/types"
 	"den-den-mushi-Go/pkg/util/cyberark"
 	"errors"
-	"go.uber.org/zap"
 	"slices"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 // todo: refactor absolute garbage
@@ -204,9 +205,13 @@ func (s *Session) updateLineEditor(b []byte) {
 	case string(constants.ArrowLeft):
 		s.line.MoveLeft()
 	case string(constants.ArrowUp):
-		s.line.Reset()
+		if s.startClaims.Connection.Purpose == types.Change {
+			s.line.Reset()
+		}
 	case string(constants.ArrowDown):
-		s.line.Reset()
+		if s.startClaims.Connection.Purpose == types.Change {
+			s.line.Reset()
+		}
 	case string(constants.Backspace):
 		s.line.Backspace()
 	case string(constants.CtrlC):
