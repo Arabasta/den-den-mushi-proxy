@@ -91,6 +91,7 @@ func main() {
 			log.Fatal("AutoMigrate failed", zap.Error(err))
 		}
 	}
+
 	s := server.New(db, root.Files, cfg, log)
 	if err := server.Start(s, cfg, log); err != nil {
 		log.Fatal("failed to start server", zap.Error(err))

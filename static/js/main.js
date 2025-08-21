@@ -2,6 +2,7 @@ import socketManager from './websocket.js';
 import {terminal} from './terminal.js';
 // Import for side effects: sets up settings menu event listeners
 import "./settings/settingsMenu.js";
+import showAsciiArt from "./welcome.js";
 
 const {term, fitAddon} = terminal;
 
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setTimeout(() => {
         term.open(terminalElement);
+        showAsciiArt(term);
         socketManager.connect();
 
         fitAddon.fit();
