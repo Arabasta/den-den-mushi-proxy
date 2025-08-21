@@ -14,7 +14,7 @@ build:
 	mkdir -p $(BIN_DIR)
 	@for b in $(BINARIES); do \
 		echo "Building $$b..."; \
-		cd $(CMD_DIR)/$$b && $(GO) build -o ../../$(BIN_DIR)/$$b; \
+		cd $(CMD_DIR)/$$b && $(GO) build -buildvcs=false-o ../../$(BIN_DIR)/$$b; \
 		cd - > /dev/null; \
 	done
 
