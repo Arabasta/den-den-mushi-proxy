@@ -7,8 +7,9 @@ import (
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"den-den-mushi-Go/pkg/constants"
 	"fmt"
-	"go.uber.org/zap"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 // todo: very very bad need to refactor
@@ -23,8 +24,13 @@ func (p *HealthcheckPurpose) HandleInput(s *Session, pkt protocol.Packet) (strin
 		return "", fmt.Errorf("expected Input header, got %s", string(pkt.Header))
 	}
 
-	for _, b := range pkt.Data {
+	if len(pkt.Data) == 3 {
+		if handlerFunc, ok := healthcheckBlockedControlHandlers[string(pkt.Data)]; ok {
+			return handlerFunc(p, s, pkt)
+		}
+	}
 
+	for _, b := range pkt.Data {
 		if handlerFunc, ok := healthcheckBlockedControlHandlers[string([]byte{b})]; ok {
 			return handlerFunc(p, s, pkt)
 		}
