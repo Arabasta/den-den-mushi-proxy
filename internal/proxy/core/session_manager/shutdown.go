@@ -3,11 +3,9 @@ package session_manager
 import (
 	"context"
 	"den-den-mushi-Go/internal/proxy/core/pseudotty"
-	"go.uber.org/zap"
 )
 
 func (m *Service) CleanupActiveSessionsAndConnections() error {
-	m.log.Info("Cleaning up old active sessions with connections", zap.String("proxyHost", m.hostname))
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
