@@ -167,6 +167,15 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		s.EndSession()
 		return
 	} else {
+		if pkt.Header == protocol.SudoInputUser || pkt.Header == protocol.SudoInputPassword {
+			s.log.Error("Received SudoInputUser or SudoInputPassword packet from client, this guy trying to hack lol", zap.Any("pkt", pkt))
+			core_helpers.SendToConn(s.ActivePrimary, protocol.Packet{
+				Header: protocol.Warn,
+				Data:   []byte("What u doing?? Ending your session, bye"),
+			})
+			time.Sleep(3000 * time.Millisecond)
+			s.ForceEndSession("This guy trying to hack")
+		}
 		logMsg, err = s.purpose.HandleOther(s, pkt)
 	}
 
