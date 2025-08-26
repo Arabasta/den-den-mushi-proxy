@@ -2,13 +2,14 @@ package pty_util
 
 import (
 	"den-den-mushi-Go/internal/proxy/config"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/charmbracelet/keygen"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 func GenerateEphemeralKey(cfg *config.Config, log *zap.Logger) (string, string, func(), error) {
@@ -44,8 +45,16 @@ func GenerateEphemeralKey(cfg *config.Config, log *zap.Logger) (string, string, 
 
 	cleanup := func() {
 		if cfg.Ssh.IsCleanupEnabled {
-			os.Remove(keyPath)
-			os.Remove(keyPath + ".pub")
+			err := os.Remove(keyPath)
+			if err != nil {
+				log.Error("Failed to remove ephemeral SSH private key", zap.String("keyPath", keyPath), zap.Error(err))
+				// don't return here, try to remove the public key
+			}
+			err = os.Remove(keyPath + ".pub")
+			if err != nil {
+				log.Error("Failed to remove ephemeral SSH public key", zap.String("keyPath", keyPath+".pub"), zap.Error(err))
+				return // gg
+			}
 			log.Debug("Ephemeral SSH key pair removed", zap.String("keyPath", keyPath))
 		}
 	}
