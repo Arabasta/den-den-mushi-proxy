@@ -6,8 +6,9 @@ import (
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"den-den-mushi-Go/pkg/constants"
 	"fmt"
-	"go.uber.org/zap"
 	"os"
+
+	"go.uber.org/zap"
 )
 
 func (s *Session) initSessionLogger() error {
@@ -87,9 +88,14 @@ func (s *Session) handleOutputLogging(pkt protocol.Packet) {
 
 	s.logL(session_logging.FormatLogLine(pkt.Header.String(), string(clean)))
 }
-
 func (s *Session) logAndResetLineEditorIfInputEnter(pkt protocol.Packet) {
-	if bytes.Equal(pkt.Data, constants.Enter) {
+	if pkt.Data == nil || len(pkt.Data) == 0 {
+		return
+	}
+	lastByte := pkt.Data[len(pkt.Data)-1]
+
+	if bytes.Equal([]byte{lastByte}, constants.Enter) {
+
 		// log to pty session log
 		s.logPacket(protocol.Packet{
 			Header: protocol.Input,
@@ -102,11 +108,9 @@ func (s *Session) logAndResetLineEditorIfInputEnter(pkt protocol.Packet) {
 		line := session_logging.FormatInputOnlyLogLine(userId, s.line.String())
 		if s.sessionLoggerForAIThing == nil {
 			s.log.Error("Log writer is not initialized, cannot log")
-			return
 		}
 		if err := s.sessionLoggerForAIThing.WriteLine(line); err != nil {
 			s.log.Warn("Failed writing to session log", zap.Error(err), zap.String("line", line))
-			return
 		}
 		s.line.Reset()
 	}
