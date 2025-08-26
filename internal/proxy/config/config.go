@@ -81,4 +81,9 @@ type Config struct {
 		IsHealthcheckWhitelistEnabled bool
 		IsChangeBlacklistEnabled      bool
 	}
+
+	Healthcheck struct {
+		IsInactiveTimeoutEnabled bool          `json:"IsInactiveTimeoutEnabled"`
+		InactiveTimeoutSeconds   time.Duration `json:"InactiveTimeoutSeconds"`
+	}
 }

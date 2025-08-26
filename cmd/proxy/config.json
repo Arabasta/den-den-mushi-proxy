@@ -130,5 +130,9 @@
     "IsHealthcheckBlacklistEnabled": true,
     "IsHealthcheckWhitelistEnabled": true,
     "IsChangeBlacklistEnabled": true
+  },
+  "Healthcheck": {
+    "IsInactiveTimeoutEnabled": true,
+    "InactiveTimeoutSeconds": 120
   }
 }
