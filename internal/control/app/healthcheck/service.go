@@ -10,6 +10,7 @@ import (
 	ptysessionspkg "den-den-mushi-Go/pkg/dto/pty_sessions"
 	"den-den-mushi-Go/pkg/middleware"
 	"errors"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -25,7 +26,7 @@ type Service struct {
 
 func NewService(ptySessionsSvc *pty_sessions.Service,
 	hostSvc *host.Service, osAdmUsersSvc *os_adm_users.Service, log *zap.Logger, cfg *config.Config) *Service {
-	log.Info("Initializing Make Change Service")
+	log.Info("Initializing Healthcheck Service")
 	return &Service{
 		ptySessionsSvc: ptySessionsSvc,
 		hostSvc:        hostSvc,
