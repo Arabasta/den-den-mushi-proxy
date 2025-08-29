@@ -7,11 +7,13 @@ import (
 	"den-den-mushi-Go/pkg/profiler"
 	"embed"
 	"fmt"
+	"net/http"
+	"time"
+
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"net/http"
-	"time"
 )
 
 type Server struct {
@@ -32,6 +34,7 @@ func New(ddmDb *gorm.DB, staticFiles embed.FS, cfg *config.Config, log *zap.Logg
 	r := gin.New()
 	r.RedirectTrailingSlash = false
 	r.RedirectFixedPath = false
+	r.Use(ginzap.Ginzap(log, "", true))
 	r.Use(
 		gin.Recovery(),
 		middleware.RequestLogger(log),

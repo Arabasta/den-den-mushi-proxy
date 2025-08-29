@@ -5,6 +5,9 @@ import (
 	"den-den-mushi-Go/pkg/middleware"
 	"embed"
 	"fmt"
+
+	ginzap "github.com/gin-contrib/zap"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -25,6 +28,9 @@ func New(ddmDb *gorm.DB, staticFiles embed.FS, cfg *config.Config, log *zap.Logg
 
 	gin.SetMode(gin.DebugMode)
 	r := gin.New()
+	r.RedirectTrailingSlash = false
+	r.RedirectFixedPath = false
+	r.Use(ginzap.Ginzap(log, "", true))
 	r.Use(
 		middleware.RequestLogger(log),
 		middleware.Cors(cfg.Cors, log),
