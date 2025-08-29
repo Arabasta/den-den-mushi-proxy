@@ -4,9 +4,10 @@ import (
 	"den-den-mushi-Go/internal/control/filters"
 	dto "den-den-mushi-Go/pkg/dto/host"
 	"errors"
+	"strings"
+
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"strings"
 )
 
 type GormRepository struct {
@@ -85,7 +86,7 @@ func (r *GormRepository) FindAllByFilter(f filters.HealthcheckPtySession) ([]*dt
 	}
 
 	if f.Hostname != nil && len(*f.Hostname) > 0 {
-		query = query.Where("HOSTNAME LIKE ?", "%"+*f.Hostname+"%")
+		query = query.Where("LOWER(HOSTNAME) LIKE ?", "%"+strings.ToLower(*f.Hostname)+"%")
 	}
 
 	//if f.Status != nil && len(*f.Status) > 0 {
@@ -154,7 +155,7 @@ func (r *GormRepository) CountAllByFilter(f filters.HealthcheckPtySession) (int6
 	}
 
 	if f.Hostname != nil && len(*f.Hostname) > 0 {
-		query = query.Where("HOSTNAME LIKE ?", "%"+*f.Hostname+"%")
+		query = query.Where("LOWER(HOSTNAME) LIKE ?", "%"+strings.ToLower(*f.Hostname)+"%")
 	}
 
 	//if f.Status != nil && len(*f.Status) > 0 {
