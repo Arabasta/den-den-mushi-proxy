@@ -4,6 +4,7 @@ import (
 	"context"
 	"den-den-mushi-Go"
 	"den-den-mushi-Go/internal/proxy/config"
+	"den-den-mushi-Go/internal/proxy/heartbeat"
 	"den-den-mushi-Go/internal/proxy/server"
 	"den-den-mushi-Go/internal/proxy/websocket_jwt/jti"
 	configpkg "den-den-mushi-Go/pkg/config"
@@ -62,7 +63,7 @@ func main() {
 	}
 
 	if cfg.Development.IsSMX && cfg.Development.IsAutoMigrateEnabled {
-		if err := db.AutoMigrate(&pty_sessions.Model{}, &connections.Model{}, &proxy_host.Model{},
+		if err := db.AutoMigrate(&pty_sessions.Model{}, &connections.Model{}, &proxy_host.Model{}, &proxy_host.Model2{},
 			&jti.Model{}); err != nil {
 			log.Fatal("Failed to auto-migrate", zap.Error(err))
 		}
@@ -112,6 +113,8 @@ func main() {
 		log.Info("Shutdown complete")
 		os.Exit(0)
 	}()
+
+	heartbeat.NewScheduler(db, cfg, log).Pulse(context.TODO())
 
 	if err := server.Start(s, cfg, log); err != nil {
 		log.Fatal("failed to start server: %v", zap.Error(err))
