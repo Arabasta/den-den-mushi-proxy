@@ -15,6 +15,7 @@ func (s *Session) connLoop() {
 	for {
 		select {
 		case c := <-s.connRegisterCh:
+			s.touchActivity()
 			s.addConn(c)
 		case c := <-s.connDeregisterCh:
 			s.removeConn(c)

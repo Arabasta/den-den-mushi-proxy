@@ -25,6 +25,8 @@ func (s *Session) handleConnPacket(pkt protocol.Packet) {
 		}
 	}()
 
+	s.touchActivity()
+
 	var logMsg string
 	var err error
 

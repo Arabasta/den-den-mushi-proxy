@@ -35,7 +35,7 @@ func NewTracker(ctx context.Context, timeout time.Duration, onTimeout func(), on
 	t := &Tracker{
 		ctx:        ctx,
 		lastActive: time.Now(),
-		timeout:    timeout,
+		timeout:    timeout * time.Second,
 		stopCh:     make(chan struct{}),
 		onTimeout:  onTimeout,
 		onWarning:  onWarning,

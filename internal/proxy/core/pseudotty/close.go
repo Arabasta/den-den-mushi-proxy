@@ -4,10 +4,11 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/client"
 	"den-den-mushi-Go/internal/proxy/core/pseudotty/session_logging"
 	"den-den-mushi-Go/pkg/types"
-	"go.uber.org/zap"
 	"io"
 	"syscall"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 func (s *Session) ForceEndSession(reason string) {
@@ -18,7 +19,7 @@ func (s *Session) ForceEndSession(reason string) {
 
 func (s *Session) EndSession() {
 	s.once.Do(func() {
-		s.cancel() // exit conn loop
+		s.cancel() // exit conn loop and end activity tracker
 		if s.State == types.Closed {
 			return
 		}

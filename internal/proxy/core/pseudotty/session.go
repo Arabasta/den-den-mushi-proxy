@@ -14,8 +14,6 @@ import (
 	"den-den-mushi-Go/pkg/token"
 	"den-den-mushi-Go/pkg/types"
 	"errors"
-	"github.com/labstack/gommon/log"
-	"go.uber.org/zap"
 	"os"
 	"os/exec"
 	"sync"
@@ -72,6 +70,8 @@ type Session struct {
 
 	puppetClient *puppet.Client
 	filterSvc    *filter.Service
+
+	activityTracker *activity.Tracker
 }
 
 func New(id string, pty *os.File, cmd *exec.Cmd, now time.Time, onClose func(string), log *zap.Logger, cfg *config.Config,
@@ -173,5 +173,8 @@ func (s *Session) Setup(claims *token.Claims) error {
 		s.log.Debug("Starting cr end time monitor", zap.Time("endTime", *s.crEndTime))
 		go s.monitorCrEndTime()
 	}
+
+	s.initActivityTracker()
+
 	return nil
 }

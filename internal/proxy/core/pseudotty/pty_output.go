@@ -56,6 +56,7 @@ func (s *Session) readPtyLoop() {
 			Data:   data,
 		}
 
+		s.touchActivity()
 		s.ptyOutput.Add(pkt)
 		s.fanout(pkt, nil)
 		s.logPacket(pkt)
