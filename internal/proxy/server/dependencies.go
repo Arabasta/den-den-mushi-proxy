@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"den-den-mushi-Go/internal/proxy/config"
 	"den-den-mushi-Go/internal/proxy/connect"
 	"den-den-mushi-Go/internal/proxy/core/session_manager"
@@ -14,6 +15,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/websocket"
 	"den-den-mushi-Go/internal/proxy/websocket_jwt"
 	"den-den-mushi-Go/internal/proxy/websocket_jwt/jti"
+
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -61,6 +63,7 @@ func initDependencies(db *gorm.DB, redis *redis.Client, cfg *config.Config, log 
 	filterSvc := filter.NewService(regexFiltersSvc, log, cfg)
 
 	sessionManager := session_manager.New(ptySessionsSvc, connectionSvc, log, cfg, puppetClient, filterSvc)
+	sessionManager.StartLoadMonitoring(context.TODO(), db)
 	websocketService := websocket.NewService(connMethodStrategy, sessionManager, log, cfg)
 
 	return &Deps{

@@ -22,6 +22,7 @@ type Service struct {
 	puppetClient   *puppet.Client
 	filterSvc      *filter.Service
 	hostname       string
+	loadMonitor    *LoadMonitoringScheduler
 }
 
 func New(ptySessionsSvc *pty_sessions.Service, connSvc *connections.Service, log *zap.Logger, cfg *config.Config,
