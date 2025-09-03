@@ -8,12 +8,13 @@ import (
 	"den-den-mushi-Go/pkg/token"
 	"den-den-mushi-Go/pkg/types"
 	"errors"
-	"github.com/google/uuid"
-	"go.uber.org/zap"
 	"os"
 	"os/exec"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (m *Service) CreatePtySession(pty *os.File, cmd *exec.Cmd, claims *token.Claims, log *zap.Logger) (string, error) {

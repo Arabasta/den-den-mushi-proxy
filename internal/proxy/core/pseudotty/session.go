@@ -3,6 +3,7 @@ package pseudotty
 import (
 	"context"
 	"den-den-mushi-Go/internal/proxy/config"
+	"den-den-mushi-Go/internal/proxy/core/activity"
 	"den-den-mushi-Go/internal/proxy/core/client"
 	"den-den-mushi-Go/internal/proxy/core/pseudotty/session_logging"
 	"den-den-mushi-Go/internal/proxy/filter"
@@ -19,6 +20,8 @@ import (
 	"os/exec"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type Session struct {
@@ -119,7 +122,7 @@ func (s *Session) Setup(claims *token.Claims) error {
 	s.mu.Lock()
 	defer func() {
 		if r := recover(); r != nil {
-			log.Error("panic", zap.Any("panic", r), zap.Stack("stack"))
+			s.log.Error("panic", zap.Any("panic", r), zap.Stack("stack"))
 		}
 		s.mu.Unlock()
 	}()

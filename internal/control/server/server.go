@@ -44,7 +44,7 @@ func New(ddmDb *gorm.DB, staticFiles embed.FS, cfg *config.Config, log *zap.Logg
 		middleware.MaxBody(10<<20), // 10 mb
 	)
 
-	profiler.StartSidecar(cfg.Pprof, log)
+	profiler.Start(cfg.Pprof, log)
 
 	serveSwagger(r, cfg.Swagger, log)
 	registerProtectedRoutes(r, deps, cfg, log)

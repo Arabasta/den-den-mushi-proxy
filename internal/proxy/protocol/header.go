@@ -40,14 +40,16 @@ func (h Header) String() string {
 		return "PtyConnectionSuccess"
 	case PtyCRTimeout:
 		return "PtyCRTimeout"
+	case PtyCRTimeoutWarning:
+		return "PtyCRTimeoutWarning"
 	case ClientEndSession:
 		return "ClientEndSession"
 	case NoActiveObserver:
 		return "NoActiveObserver"
-	case HealthcheckInactiveTimeout:
-		return "HealthcheckInactiveTimeout"
-	case HealthcheckInactiveWarning:
-		return "HealthcheckInactiveWarning"
+	case InactiveTimeout:
+		return "InactiveTimeout"
+	case InactiveWarning:
+		return "InactiveWarning"
 	case ParseError:
 		return "ParseError"
 	default:
@@ -120,11 +122,15 @@ const (
 	// NoActiveObserver is sent when there is no active observer for the pty session and the input is discarded
 	NoActiveObserver Header = 0x19
 
-	// HealthcheckInactiveTimeout is sent when the healthcheck session has been inactive for x seconds
-	HealthcheckInactiveTimeout Header = 0x1a
+	// InactiveTimeout is sent when the session has been inactive for x seconds
+	InactiveTimeout Header = 0x1a
 
-	// HealthcheckInactiveWarning is sent when the healthcheck session is about to close due to inactivity
-	HealthcheckInactiveWarning Header = 0x1b
+	// InactiveWarning is sent when the session is about to close due to inactivity
+	InactiveWarning Header = 0x1b
+
+	// ActiveConnectionsList is sent to the client to inform them of the current active connections
+	// Format: role:userId, e.g., "primary:123,observer:456,"
+	ActiveConnectionsList Header = 0x1c
 
 	// ParseError indicates an error in parsing the header
 	ParseError Header = 0xff

@@ -2,11 +2,12 @@ package middleware
 
 import (
 	"den-den-mushi-Go/pkg/config"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func Cors(cfg *config.Cors, log *zap.Logger) gin.HandlerFunc {

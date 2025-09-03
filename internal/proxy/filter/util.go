@@ -36,5 +36,6 @@ func isValid(cmd string, isBlacklist bool, filters []regexp.Regexp) bool {
 	if isBlacklist {
 		return !matched // blacklist, true if not matched
 	}
+
 	return matched // whitelist, true if matched
 }

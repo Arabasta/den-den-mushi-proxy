@@ -7,8 +7,9 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/session_manager/pty_sessions"
 	"den-den-mushi-Go/internal/proxy/filter"
 	"den-den-mushi-Go/internal/proxy/integrations/puppet"
-	"go.uber.org/zap"
 	"sync"
+
+	"go.uber.org/zap"
 )
 
 type Service struct {

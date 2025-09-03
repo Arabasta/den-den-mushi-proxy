@@ -2,10 +2,11 @@ package pseudotty
 
 import (
 	"den-den-mushi-Go/internal/proxy/protocol"
-	"github.com/labstack/gommon/log"
-	"go.uber.org/zap"
 	"io"
 	"time"
+
+	"github.com/labstack/gommon/log"
+	"go.uber.org/zap"
 )
 
 // readPtyLoop and add data to outbound channel

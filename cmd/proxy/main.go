@@ -50,6 +50,10 @@ func main() {
 
 	if !cfg.Development.IsUsingInvDb {
 		db, err = mysql.Client(cfg.DdmDB, cfg.Ssl, log)
+		if err := db.AutoMigrate(&pty_sessions.Model{}, &connections.Model{}, &proxy_host.Model{}, &proxy_host.Model2{},
+			&jti.Model{}); err != nil {
+			log.Fatal("Failed to auto-migrate", zap.Error(err))
+		}
 	} else {
 		db, err = mysql.Client(cfg.InvDB, cfg.Ssl, log)
 	}

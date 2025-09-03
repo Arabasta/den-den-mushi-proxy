@@ -51,7 +51,7 @@ func New(staticFiles embed.FS, db *gorm.DB, redis *redis.Client, cfg *config.Con
 		addStaticRoutes(r, staticFiles, cfg, log)
 	}
 
-	profiler.StartSidecar(cfg.Pprof, log)
+	profiler.Start(cfg.Pprof, log)
 
 	registerWebsocketRoutes(r, deps, cfg, log)
 

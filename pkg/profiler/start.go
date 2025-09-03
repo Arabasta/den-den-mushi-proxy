@@ -4,13 +4,14 @@ import (
 	"den-den-mushi-Go/pkg/config"
 	"errors"
 	"fmt"
-	"go.uber.org/zap"
 	"net/http"
 	"net/http/pprof"
 	"time"
+
+	"go.uber.org/zap"
 )
 
-func StartSidecar(cfg *config.Pprof, log *zap.Logger) {
+func Start(cfg *config.Pprof, log *zap.Logger) {
 	if !cfg.IsEnabled {
 		log.Info("pprof is disabled")
 		return

@@ -7,11 +7,12 @@ import (
 	"den-den-mushi-Go/pkg/logger"
 	"den-den-mushi-Go/pkg/mysql"
 	"flag"
+	"os"
+	"path/filepath"
+
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"os"
-	"path/filepath"
 )
 
 func main() {
