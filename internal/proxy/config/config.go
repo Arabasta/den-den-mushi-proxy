@@ -86,4 +86,14 @@ type Config struct {
 		IsInactiveTimeoutEnabled bool          `json:"IsInactiveTimeoutEnabled"`
 		InactiveTimeoutSeconds   time.Duration `json:"InactiveTimeoutSeconds"`
 	}
+
+	Heartbeat struct {
+		IsEnabled       bool          `json:"IsEnabled"`
+		IntervalSeconds time.Duration `json:"IntervalSeconds"`
+	}
+
+	LoadMonitoring struct {
+		IsEnabled                  bool          `json:"IsEnabled"`
+		BatchUpdateIntervalSeconds time.Duration `json:"BatchUpdateIntervalSeconds"`
+	}
 }

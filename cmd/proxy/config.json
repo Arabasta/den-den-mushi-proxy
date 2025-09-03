@@ -134,5 +134,13 @@
   "Healthcheck": {
     "IsInactiveTimeoutEnabled": true,
     "InactiveTimeoutSeconds": 120
+  },
+  "Heartbeat": {
+    "IsEnabled": true,
+    "IntervalSeconds": 10
+  },
+  "LoadMonitoring": {
+    "IsEnabled": true,
+    "BatchUpdateIntervalSeconds": 10
   }
 }

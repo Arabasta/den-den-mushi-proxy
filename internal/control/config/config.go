@@ -1,6 +1,7 @@
 package config
 
 import (
+	"den-den-mushi-Go/internal/control/lb/algo"
 	"den-den-mushi-Go/pkg/config"
 )
 
@@ -49,4 +50,9 @@ type Config struct {
 	TmpAuth *config.Tmpauth
 
 	Swagger *config.Swagger
+
+	LoadBalancer struct {
+		Algorithm              algo.Rithm
+		RefreshIntervalSeconds int `json:"RefreshIntervalSeconds"`
+	}
 }
