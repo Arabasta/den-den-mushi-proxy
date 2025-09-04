@@ -5,6 +5,7 @@ import (
 	"den-den-mushi-Go/internal/proxy/core/pseudotty/session_logging"
 	"den-den-mushi-Go/internal/proxy/protocol"
 	"den-den-mushi-Go/pkg/constants"
+	"den-den-mushi-Go/pkg/types"
 	"fmt"
 	"os"
 
@@ -124,4 +125,20 @@ func stripNonASCII(data []byte) []byte {
 		}
 	}
 	return []byte(string(out))
+}
+
+func (s *Session) logSessionDetails() {
+	s.log.Info("Session details",
+		zap.String("userId", s.startClaims.Subject),
+		zap.String("purpose", string(s.startClaims.Connection.Purpose)),
+		zap.String("server", s.startClaims.Connection.Server.IP),
+		zap.String("osUser", s.startClaims.Connection.Server.OSUser))
+	if s.startClaims.Connection.Purpose == types.Change || s.startClaims.Connection.Purpose == types.IExpress {
+		s.log.Info("Ticket details",
+			zap.String("ticket", s.startClaims.Connection.ChangeRequest.Id),
+			zap.String("endTime", s.startClaims.Connection.ChangeRequest.EndTime.Format("2006-01-02 15:04:05")),
+		)
+	} else {
+		s.log.Info("Filter type", zap.String("filterType", string(s.startClaims.Connection.FilterType)))
+	}
 }
