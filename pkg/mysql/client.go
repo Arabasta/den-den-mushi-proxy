@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"context"
 	"den-den-mushi-Go/pkg/config"
 	"fmt"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"moul.io/zapgorm2"
 )
 
 func Client(cfg *config.SqlDb, sslCfg *config.Ssl, log *zap.Logger) (*gorm.DB, error) {
@@ -38,9 +40,15 @@ func Client(cfg *config.SqlDb, sslCfg *config.Ssl, log *zap.Logger) (*gorm.DB, e
 		cfg.Params,
 	)
 
+	gormLog := zapgorm2.New(log)
+	gormLog.LogMode(logger.Info)
+	gormLog.Info(context.Background(), "Gorm logger set to Info level")
 	gormCfg := &gorm.Config{
-		Logger: logger.Default.LogMode(cfg.LogLevel),
+		Logger: gormLog,
 	}
+	//gormCfg := &gorm.Config{
+	//Logger: logger.Default.LogMode(cfg.LogLevel),
+	//}
 
 	db, err := gorm.Open(mysql.Open(dsn), gormCfg)
 	if err != nil {
