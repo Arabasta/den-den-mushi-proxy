@@ -115,6 +115,7 @@ func New(id string, pty *os.File, cmd *exec.Cmd, now time.Time, onClose func(str
 		return s, err
 	}
 
+	s.logSessionDetails()
 	return s, nil
 }
 
