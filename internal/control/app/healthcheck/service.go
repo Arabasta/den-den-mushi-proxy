@@ -46,7 +46,8 @@ func (s *Service) getHostsAndAssociatedPtySessions(f filters.HealthcheckPtySessi
 
 	// todo: FindAllByFilter will eventually require ougroup
 	if s.cfg.App.Environment == "prod" {
-		*f.Environment = "PROD"
+		env := "PROD"
+		f.Environment = &env
 	}
 
 	// get total count
