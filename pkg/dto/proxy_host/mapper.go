@@ -31,3 +31,31 @@ func ToModel(r *Record) *Model {
 		LoadBalancerEndpoint: r.LoadBalancerEndpoint,
 	}
 }
+
+func FromModel2(m *Model2) *Record2 {
+	if m == nil {
+		return nil
+	}
+	return &Record2{
+		HostName:        m.HostName,
+		ProxyType:       m.ProxyType,
+		Url:             m.Url,
+		IpAddress:       m.IpAddress,
+		Environment:     m.Environment,
+		Country:         m.Country,
+		LastHeartbeatAt: m.LastHeartbeatAt,
+		DrainingStartAt: m.DrainingStartAt,
+		DrainingEndAt:   m.DrainingEndAt,
+		DeploymentColor: m.DeploymentColor,
+		MaxSessions:     m.MaxSessions,
+		ActiveSessions:  m.ActiveSessions,
+	}
+}
+
+func FromModels2(ms []*Model2) []*Record2 {
+	rs := make([]*Record2, 0, len(ms))
+	for _, m := range ms {
+		rs = append(rs, FromModel2(m))
+	}
+	return rs
+}

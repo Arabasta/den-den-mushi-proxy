@@ -26,7 +26,7 @@ type Model2 struct {
 	ProxyType types.Proxy `gorm:"column:ProxyType;size:191"`
 
 	Url         string           `gorm:"column:Url;size:191;not null;unique"`
-	IpAddress   string           `gorm:"column:IpAddress;size:191"`
+	IpAddress   string           `gorm:"column:IpAddress;size:191;unique;not null"`
 	Environment ProxyEnvironment `gorm:"column:Environment;size:191;not null;default:'development'"`
 	Country     string           `gorm:"column:Country;size:191;not null;default:'unknown'"`
 
