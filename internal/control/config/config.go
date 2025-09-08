@@ -3,6 +3,7 @@ package config
 import (
 	"den-den-mushi-Go/internal/control/lb/algo"
 	"den-den-mushi-Go/pkg/config"
+	"time"
 )
 
 type Config struct {
@@ -52,7 +53,23 @@ type Config struct {
 	Swagger *config.Swagger
 
 	LoadBalancer struct {
-		Algorithm              algo.Rithm
+		Algorithm              algo.Type
 		RefreshIntervalSeconds int `json:"RefreshIntervalSeconds"`
+		Filters                struct {
+			CapacityFilter struct {
+				IsEnabled bool `json:"IsEnabled"`
+			} `json:"CapacityFilter"`
+			HealthFilter struct {
+				IsEnabled                 bool          `json:"IsEnabled"`
+				UnhealthyThresholdSeconds time.Duration `json:"UnhealthyThresholdSeconds"`
+			} `json:"HealthFilter"`
+			DeploymentColorFilter struct {
+				IsEnabled     bool   `json:"IsEnabled"`
+				AcceptedColor string `json:"AcceptedColor"`
+			} `json:"DeploymentColorFilter"`
+			DrainFilter struct {
+				IsEnabled bool `json:"IsEnabled"`
+			} `json:"DrainFilter"`
+		} `json:"Filters"`
 	}
 }

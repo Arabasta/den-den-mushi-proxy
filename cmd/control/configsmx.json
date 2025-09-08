@@ -90,5 +90,25 @@
     "IsEnabled": false,
     "UserIdKey": "username",
     "OuGroupKey": "ou"
+  },
+  "LoadBalancer": {
+    "Algorithm": "power_of_2_random",
+    "RefreshIntervalSeconds": 15,
+    "Filters": {
+      "CapacityFilter": {
+        "IsEnabled": true
+      },
+      "HealthFilter": {
+        "IsEnabled": true,
+        "UnhealthyThresholdSeconds": 20
+      },
+      "DeploymentColorFilter": {
+        "IsEnabled": false,
+        "AcceptedColor": "all"
+      },
+      "DrainFilter": {
+        "IsEnabled": false
+      }
+    }
   }
 }
