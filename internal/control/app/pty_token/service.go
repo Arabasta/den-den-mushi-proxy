@@ -81,15 +81,27 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request2.StartRequest]) (str
 	}
 
 	var err error
-
-	// find hostname by ip and then certname in puppettrusted what the heck
-	puppetTrusted, err := s.certNameSvc.FindCertnameByIp(r.Body.Server.IP)
-	if err != nil || puppetTrusted == nil || puppetTrusted.Certname == "" {
-		s.log.Error("Failed to find host certname by IP", zap.String("ip", r.Body.Server.IP), zap.Error(err))
-		return "", "", errors.New("failed to find host certname")
+	host, err := s.hostSvc.FindByIp(r.Body.Server.IP)
+	if err != nil || host == nil {
+		s.log.Error("Failed to find host by IP", zap.String("ip", r.Body.Server.IP), zap.Error(err))
+		return "", "", errors.New("host not found")
 	}
 
-	// todo: enable all these
+	// find hostname by ip and then certname in puppettrusted what the heck
+	// todo implement FindCertnameByHostname
+	puppetTrusted, err := s.certNameSvc.FindCertnameByIp(r.Body.Server.IP)
+	if err != nil || puppetTrusted == nil || puppetTrusted.Certname == "" {
+		hostConnMethod = types.SshVaultKey
+		s.log.Warn("Failed to find host certname by IP", zap.String("ip", r.Body.Server.IP), zap.Error(err))
+		return "", "", errors.New("not a puppet managed host. Only puppet managed hosts are supported for now")
+	}
+
+	if host.OSType == "AIX" {
+		hostConnMethod = types.SshTectiaKey
+		return "", "", errors.New("AIX hosts are not supported yet")
+	}
+
+	// todo: enable all these or maybe not idk just leave it till all integrations done
 	// hostConnMethod, err := s.hostS.FindHostConnectionMethodByIp(r.Server.IP) todo: grab server conn method how?
 
 	//hostType, err := s.hostSvc.FindTypeByIp(r.Body.Server.IP)
