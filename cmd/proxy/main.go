@@ -114,12 +114,12 @@ func main() {
 		os.Exit(0)
 	}()
 
-	heartbeat.NewScheduler(db, cfg, log).Pulse(context.TODO())
+	go heartbeat.NewScheduler(db, cfg, log).Pulse(context.TODO())
 
 	if err := server.Start(s, cfg, log); err != nil {
 		log.Fatal("failed to start server: %v", zap.Error(err))
 	}
-
+	// not reached
 	reapChildren()
 }
 
