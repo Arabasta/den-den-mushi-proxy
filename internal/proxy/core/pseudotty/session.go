@@ -115,7 +115,6 @@ func New(id string, pty *os.File, cmd *exec.Cmd, now time.Time, onClose func(str
 		return s, err
 	}
 
-	s.logSessionDetails()
 	return s, nil
 }
 
@@ -130,6 +129,7 @@ func (s *Session) Setup(claims *token.Claims) error {
 
 	s.log.Debug("Setting up session", zap.String("id", s.Id))
 	s.startClaims = claims
+	s.logSessionDetails()
 
 	if s.startClaims.Connection.Purpose == types.Change || s.startClaims.Connection.Purpose == types.IExpress {
 		if s.crEndTime != nil {
