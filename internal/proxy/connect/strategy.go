@@ -24,6 +24,9 @@ func NewRegistry(deps Deps) *Strategy {
 			types.SshVaultKey: &SshVaultKeyConnection{
 				cfg: deps.cfg, log: deps.log, commandBuilder: deps.commandBuilder,
 			},
+			types.SshTectiaKey: &SshTectiaKeyConnection{
+				cfg: deps.cfg, log: deps.log, commandBuilder: deps.commandBuilder,
+			},
 		},
 	}
 }

@@ -12,4 +12,5 @@ const (
 	SshOrchestratorKey ConnectionMethod = "ssh_orchestrator_key"
 	SshPassword        ConnectionMethod = "ssh_password"
 	SshVaultKey        ConnectionMethod = "ssh_vault_key"
+	SshTectiaKey       ConnectionMethod = "ssh_tectia_key"
 )
