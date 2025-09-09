@@ -10,6 +10,10 @@ import (
 )
 
 func (lb *LoadBalancer) startRefreshSnapshot(ctx context.Context, interval time.Duration) {
+	if err := lb.refreshSnapshot(ctx); err != nil {
+		lb.log.Warn("refresh snapshot failed", zap.Error(err))
+	}
+
 	t := time.NewTicker(interval)
 
 	go func() {
@@ -28,6 +32,7 @@ func (lb *LoadBalancer) startRefreshSnapshot(ctx context.Context, interval time.
 }
 
 func (lb *LoadBalancer) refreshSnapshot(ctx context.Context) error {
+	lb.log.Debug("refresh snapshot started")
 	raw, err := lb.provider.FindAll(ctx)
 	if err != nil {
 		lb.log.Error("snapshot fetch failed", zap.Error(err))

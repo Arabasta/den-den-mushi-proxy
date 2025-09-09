@@ -43,7 +43,6 @@ func NewLoadBalancer(provider *proxy_hosts.Service, cfg *config.Config, log *zap
 	lb.setFilters()
 
 	lb.snap.Store([]*proxy_host.Record2(nil))
-	lb.refreshSnapshot(context.TODO())
 	lb.startRefreshSnapshot(context.TODO(), time.Duration(cfg.LoadBalancer.RefreshIntervalSeconds)*time.Second)
 
 	return lb
