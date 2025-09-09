@@ -16,12 +16,15 @@ import (
 	iexpress3 "den-den-mushi-Go/internal/control/core/iexpress"
 	implementor_groups2 "den-den-mushi-Go/internal/control/core/implementor_groups"
 	os_adm_users2 "den-den-mushi-Go/internal/control/core/os_adm_users"
+	"den-den-mushi-Go/internal/control/core/proxy_hosts"
 	proxy_lb2 "den-den-mushi-Go/internal/control/core/proxy_lb"
 	pty_sessions2 "den-den-mushi-Go/internal/control/core/pty_sessions"
 	regex_filters2 "den-den-mushi-Go/internal/control/core/regex_filters"
 	"den-den-mushi-Go/internal/control/jwt"
+	"den-den-mushi-Go/internal/control/lb"
 	"den-den-mushi-Go/internal/control/policy"
 	"den-den-mushi-Go/internal/control/policy/validators"
+
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -81,6 +84,12 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 	iexpressRepo := iexpress3.NewGormRepository(ddmDb, log)
 	iexpressService := iexpress3.NewService(iexpressRepo, log)
 
+	proxyhostRepo := proxy_hosts.NewGormRepository(ddmDb, log)
+	proxyhostService := proxy_hosts.NewService(proxyhostRepo, log)
+
+	// internal load balancer  ===============================================================================
+	loadBalancer := lb.NewLoadBalancer(proxyhostService, cfg, log)
+
 	// validator for policy chains  ===============================================================================
 	validator := validators.NewValidator(log, cfg)
 
@@ -131,8 +140,8 @@ func initDependencies(ddmDb *gorm.DB, cfg *config.Config, log *zap.Logger) *Deps
 	}
 
 	// pass policy chains to service
-	ptyTokenService := pty_token.NewService(ptySessionService, proxyLbService, hostService, certNameSvc, issuer, changeService,
-		osAdmUsersService, iexpressService, changeRequestPolicyChain, healthcheckPolicyChain, iexpressPolicyChain,
+	ptyTokenService := pty_token.NewService(loadBalancer, ptySessionService, proxyLbService, hostService, certNameSvc, issuer, changeService,
+		osAdmUsersService, iexpressService, proxyhostService, changeRequestPolicyChain, healthcheckPolicyChain, iexpressPolicyChain,
 		log, cfg)
 
 	makeChangeService := make_change.NewService(changeService, ptySessionService, hostService, impGroupsService, osAdmUsersService, log, cfg)

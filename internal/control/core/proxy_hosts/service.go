@@ -23,3 +23,7 @@ func NewService(r Repository, log *zap.Logger) *Service {
 func (s *Service) FindAll(ctx context.Context) ([]*proxy_host.Record2, error) {
 	return s.repo.FindAll(ctx)
 }
+
+func (s *Service) FindByHostname(ctx context.Context, hostname string) (*proxy_host.Record2, error) {
+	return s.repo.FindByHostname(ctx, hostname)
+}

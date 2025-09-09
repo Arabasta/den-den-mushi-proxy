@@ -1,6 +1,7 @@
 package pty_token
 
 import (
+	"context"
 	request2 "den-den-mushi-Go/internal/control/app/pty_token/request"
 	"den-den-mushi-Go/internal/control/config"
 	"den-den-mushi-Go/internal/control/core/certname"
@@ -8,9 +9,11 @@ import (
 	"den-den-mushi-Go/internal/control/core/host"
 	"den-den-mushi-Go/internal/control/core/iexpress"
 	"den-den-mushi-Go/internal/control/core/os_adm_users"
+	"den-den-mushi-Go/internal/control/core/proxy_hosts"
 	"den-den-mushi-Go/internal/control/core/proxy_lb"
 	"den-den-mushi-Go/internal/control/core/pty_sessions"
 	"den-den-mushi-Go/internal/control/jwt"
+	"den-den-mushi-Go/internal/control/lb"
 	"den-den-mushi-Go/internal/control/policy"
 	"den-den-mushi-Go/pkg/dto"
 	changerequestpkg "den-den-mushi-Go/pkg/dto/change_request"
@@ -27,6 +30,7 @@ import (
 type Service struct {
 	issuer *jwt.Issuer
 
+	loadBalancer             *lb.LoadBalancer
 	psSvc                    *pty_sessions.Service
 	plbSvc                   *proxy_lb.Service
 	hostSvc                  *host.Service
@@ -37,19 +41,20 @@ type Service struct {
 	iexpressPolicyChain      policy.Policy[request2.Ctx]
 	osAdmUsersSvc            *os_adm_users.Service
 	iexpressSvc              *iexpress.Service
-
-	log *zap.Logger
-	cfg *config.Config
+	proxyhostsSvc            *proxy_hosts.Service
+	log                      *zap.Logger
+	cfg                      *config.Config
 }
 
-func NewService(psS *pty_sessions.Service, plbS *proxy_lb.Service, hostS *host.Service, certNameSvc *certname.Service,
-	issuer *jwt.Issuer, crS *change_request.Service, osAdmUsersSvc *os_adm_users.Service, iexpressSvc *iexpress.Service,
+func NewService(loadBalancer *lb.LoadBalancer, psS *pty_sessions.Service, plbS *proxy_lb.Service, hostS *host.Service, certNameSvc *certname.Service,
+	issuer *jwt.Issuer, crS *change_request.Service, osAdmUsersSvc *os_adm_users.Service, iexpressSvc *iexpress.Service, proxyhostsSvc *proxy_hosts.Service,
 	changeRequestPolicyChain policy.Policy[request2.Ctx],
 	healthCheckPolicyChain policy.Policy[request2.Ctx],
 	iexpressPolicyChain policy.Policy[request2.Ctx],
 	log *zap.Logger, cfg *config.Config) *Service {
 	log.Info("Initializing PTY Token Service")
 	return &Service{
+		loadBalancer:             loadBalancer,
 		psSvc:                    psS,
 		plbSvc:                   plbS,
 		hostSvc:                  hostS,
@@ -61,6 +66,7 @@ func NewService(psS *pty_sessions.Service, plbS *proxy_lb.Service, hostS *host.S
 		crSvc:                    crS,
 		osAdmUsersSvc:            osAdmUsersSvc,
 		iexpressSvc:              iexpressSvc,
+		proxyhostsSvc:            proxyhostsSvc,
 		log:                      log,
 		cfg:                      cfg,
 	}
@@ -180,13 +186,25 @@ func (s *Service) mintStartToken(r wrapper.WithAuth[request2.StartRequest]) (str
 		return "", "", err
 	}
 
-	proxyLbUrl, err := s.plbSvc.GetLBEndpointByProxyType(hostType)
+	//proxyLbUrl, err := s.plbSvc.GetLBEndpointByProxyType(hostType)
+	//if err != nil {
+	//	s.log.Error("Failed to get proxy load balancer URL", zap.String("hostType", string(hostType)), zap.Error(err))
+	//	return "", "", err
+	//}
+
+	proxy, err := s.loadBalancer.GetServer()
 	if err != nil {
-		s.log.Error("Failed to get proxy load balancer URL", zap.String("hostType", string(hostType)), zap.Error(err))
+		s.log.Error("Failed to get load balanced proxy server", zap.Error(err))
 		return "", "", err
+	} else if proxy == nil {
+		s.log.Error("No available proxy servers")
+		return "", "", errors.New("no available proxy servers")
+	} else if proxy.Url == "" {
+		s.log.Error("Proxy server has empty URL", zap.String("hostname", proxy.HostName))
+		return "", "", errors.New("proxy server has empty URL")
 	}
 
-	return tok, proxyLbUrl, nil
+	return tok, proxy.Url, nil
 }
 
 func (s *Service) mintJoinToken(r wrapper.WithAuth[request2.JoinRequest]) (string, string, error) {
@@ -256,6 +274,7 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request2.JoinRequest]) (strin
 	conn := jwt.BuildConnForJoin(ps, r)
 
 	// todo: get this from start conn
+	// todo: actually maybe dont need proxy type anymroe
 	proxyType := types.OS
 
 	tok, err := s.issuer.Mint(r.AuthCtx, conn, proxyType)
@@ -266,7 +285,13 @@ func (s *Service) mintJoinToken(r wrapper.WithAuth[request2.JoinRequest]) (strin
 
 	// return X-Proxy-Host ps.ProxyHostName, to be passed to load balancer for routing?
 	// or maybe just straight up manual routing
-	return tok, ps.ProxyHostName, nil
+	proxyHost, err := s.proxyhostsSvc.FindByHostname(context.TODO(), ps.ProxyHostName)
+	if err != nil || proxyHost == nil || proxyHost.Url == "" {
+		s.log.Error("Failed to find proxy host by hostname", zap.String("hostname", ps.ProxyHostName), zap.Error(err))
+		return "", "", errors.New("failed to find proxy host")
+	}
+
+	return tok, proxyHost.Url, nil
 }
 
 func (s *Service) getTicketIDOrError(p types.ConnectionPurpose, id string) (string, error) {
